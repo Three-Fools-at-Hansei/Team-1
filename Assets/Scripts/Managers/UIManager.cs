@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 
 public class UIManager : IManagerBase
@@ -28,7 +29,7 @@ public class UIManager : IManagerBase
         {
             GameObject eventSystemGo = new GameObject { name = "@EventSystem" };
             eventSystemGo.AddComponent<EventSystem>();
-            eventSystemGo.AddComponent<StandaloneInputModule>();
+            eventSystemGo.AddComponent<InputSystemUIInputModule>();
             Object.DontDestroyOnLoad(eventSystemGo);
         }
 
