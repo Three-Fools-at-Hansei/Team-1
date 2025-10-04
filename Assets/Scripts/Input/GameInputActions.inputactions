@@ -1,0 +1,40 @@
+{
+    "name": "GameInputActions",
+    "maps": [
+        {
+            "name": "None",
+            "id": "78bffde1-a878-4219-8dee-9fb794d707d1",
+            "actions": [],
+            "bindings": []
+        },
+        {
+            "name": "UI_PopupTest",
+            "id": "50e2ee2f-f5aa-4776-b4e3-f3998e679a96",
+            "actions": [
+                {
+                    "name": "Close",
+                    "type": "Button",
+                    "id": "8b2b8373-d163-4925-97c9-4204df7146f6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "9f8bf28d-3bfd-4489-8130-cc5d51d2594e",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Close",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
