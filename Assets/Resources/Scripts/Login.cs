@@ -8,27 +8,31 @@ using Unity.Services.Core;
 public class Login : MonoBehaviour
 {
 
+    CloudSave CS = new();
+    string PlayerID = "qwe";
+    string PlayerPW = "Qwe123!!";
 
-    
-        async void Awake()
+    async void Awake()
+    {
+        try
         {
-            try
-            {
-                await UnityServices.InitializeAsync();
-                Debug.Log("Unity Services initialized.");
+            await UnityServices.InitializeAsync();
+            Debug.Log("Unity Services initialized.");
 
-                // 이후 인증이나 다른 서비스 호출 가능
+            // 이후 인증이나 다른 서비스 호출 가능
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            await SignUpWithUsernamePasswordAsync(PlayerID, PlayerPW);
 
-                await SignUpWithUsernamePasswordAsync("qwe123", "Qwe123!!");
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-            }
+
         }
-   
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+
 
     async Task SignUpWithUsernamePasswordAsync(string username, string password)
     {
@@ -43,6 +47,7 @@ public class Login : MonoBehaviour
         {
             await AuthenticationService.Instance.SignUpWithUsernamePasswordAsync(username, password);
             Debug.Log("SignUp is successful.");
+            CS.SaveData(username);
         }
         catch (AuthenticationException ex)
         {
