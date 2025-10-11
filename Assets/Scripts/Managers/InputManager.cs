@@ -10,6 +10,9 @@ public class InputManager : IManagerBase
 
     private InputActionMap _currentActionMap;
 
+    // [추가된 부분] 현재 활성화된 액션맵의 이름을 반환합니다.
+    public string CurrentActionMapKey => _currentActionMap?.name;
+
     public void Init()
     {
         // input actions 생성
@@ -35,7 +38,7 @@ public class InputManager : IManagerBase
         // 2. 매개변수 키 값으로 액션맵 로드, 활성화
         _currentActionMap = _inputActions.asset.FindActionMap(mapName);
 
-        if (_currentActionMap == null )
+        if (_currentActionMap == null)
         {
             Debug.LogError($"[InputManager] SwitchActionMap() - 액션 맵 로드에 실패했습니다. key: {mapName}");
             return;

@@ -24,7 +24,7 @@ public class UIManager : IManagerBase
     /// Sorting Group 간의 order 간격
     /// </summary>
     private const int ORDER_STEP = 10;
-
+    private string _lastActionMap = "None";
     public void Init()
     {
         GameObject dontDestroyGo = GameObject.Find("@UI_Root_DontDestroy") ?? new GameObject { name = "@UI_Root_DontDestroy" };
@@ -48,6 +48,7 @@ public class UIManager : IManagerBase
 
     public void Clear()
     {
+        _lastActionMap = "None";
         _popupStack.Clear();
         _sortingOrder = 10;
         _sceneRoot = null;
@@ -82,6 +83,7 @@ public class UIManager : IManagerBase
         if (parent == null && view is UI_Popup popup)
         {
             _popupStack.Push(popup);
+            _lastActionMap = Managers.Input.CurrentActionMapKey;
             Managers.Input.SwitchActionMap(popup.ActionMapKey);
         }
 
@@ -126,6 +128,7 @@ public class UIManager : IManagerBase
         if (parent == null && view is UI_Popup popup)
         {
             _popupStack.Push(popup);
+            _lastActionMap = Managers.Input.CurrentActionMapKey;
             Managers.Input.SwitchActionMap(popup.ActionMapKey);
         }
 
@@ -233,7 +236,8 @@ public class UIManager : IManagerBase
                 // 스택이 빈 경우 기본 세팅("None")
                 else
                 {
-                    Managers.Input.SwitchActionMap("None");
+                    Managers.Input.SwitchActionMap(_lastActionMap);
+                    _lastActionMap = "None";
                 }
             }
         }
