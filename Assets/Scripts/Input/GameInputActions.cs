@@ -121,6 +121,126 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Lobby"",
+            ""id"": ""27c66193-b3d1-44a4-8904-9393ec3c42e9"",
+            ""actions"": [
+                {
+                    ""name"": ""Player"",
+                    ""type"": ""Value"",
+                    ""id"": ""39cdb4cb-773d-48ab-b1c0-4583f0795520"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Player_Interaction"",
+                    ""type"": ""Button"",
+                    ""id"": ""85608a89-13bc-4fb9-a9aa-a4f0720f5f76"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""386138d8-f4b4-42ed-92a1-ab2d429c8776"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Player"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""9ff89ca0-786f-4c33-94a4-5dd200cf7839"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Player"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""724dbedc-d7e7-4222-9234-5a6549ebb37e"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Player"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""d6e5d393-155e-4a39-8b2f-b23bae48717b"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Player"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""768721f4-81ec-429b-a005-8285d718d42b"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Player"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8b4c6c4a-9523-4dbf-9699-42b359648ba6"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Player_Interaction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""UI_DialogueWindow"",
+            ""id"": ""840e0149-8362-4b71-842b-3ff5c570aaeb"",
+            ""actions"": [
+                {
+                    ""name"": ""Next"",
+                    ""type"": ""Button"",
+                    ""id"": ""97ba5403-4882-4b61-9ce0-27a7ff709984"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""caccb4cd-aebd-4de4-97b9-a49c213c63e9"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Next"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -130,12 +250,21 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         // UI_PopupTest
         m_UI_PopupTest = asset.FindActionMap("UI_PopupTest", throwIfNotFound: true);
         m_UI_PopupTest_Close = m_UI_PopupTest.FindAction("Close", throwIfNotFound: true);
+        // Lobby
+        m_Lobby = asset.FindActionMap("Lobby", throwIfNotFound: true);
+        m_Lobby_Player = m_Lobby.FindAction("Player", throwIfNotFound: true);
+        m_Lobby_Player_Interaction = m_Lobby.FindAction("Player_Interaction", throwIfNotFound: true);
+        // UI_DialogueWindow
+        m_UI_DialogueWindow = asset.FindActionMap("UI_DialogueWindow", throwIfNotFound: true);
+        m_UI_DialogueWindow_Next = m_UI_DialogueWindow.FindAction("Next", throwIfNotFound: true);
     }
 
     ~@GameInputActions()
     {
         UnityEngine.Debug.Assert(!m_None.enabled, "This will cause a leak and performance issues, GameInputActions.None.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI_PopupTest.enabled, "This will cause a leak and performance issues, GameInputActions.UI_PopupTest.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Lobby.enabled, "This will cause a leak and performance issues, GameInputActions.Lobby.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_UI_DialogueWindow.enabled, "This will cause a leak and performance issues, GameInputActions.UI_DialogueWindow.Disable() has not been called.");
     }
 
     /// <summary>
@@ -388,6 +517,209 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="UI_PopupTestActions" /> instance referencing this action map.
     /// </summary>
     public UI_PopupTestActions @UI_PopupTest => new UI_PopupTestActions(this);
+
+    // Lobby
+    private readonly InputActionMap m_Lobby;
+    private List<ILobbyActions> m_LobbyActionsCallbackInterfaces = new List<ILobbyActions>();
+    private readonly InputAction m_Lobby_Player;
+    private readonly InputAction m_Lobby_Player_Interaction;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "Lobby".
+    /// </summary>
+    public struct LobbyActions
+    {
+        private @GameInputActions m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public LobbyActions(@GameInputActions wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "Lobby/Player".
+        /// </summary>
+        public InputAction @Player => m_Wrapper.m_Lobby_Player;
+        /// <summary>
+        /// Provides access to the underlying input action "Lobby/Player_Interaction".
+        /// </summary>
+        public InputAction @Player_Interaction => m_Wrapper.m_Lobby_Player_Interaction;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_Lobby; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="LobbyActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(LobbyActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="LobbyActions" />
+        public void AddCallbacks(ILobbyActions instance)
+        {
+            if (instance == null || m_Wrapper.m_LobbyActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_LobbyActionsCallbackInterfaces.Add(instance);
+            @Player.started += instance.OnPlayer;
+            @Player.performed += instance.OnPlayer;
+            @Player.canceled += instance.OnPlayer;
+            @Player_Interaction.started += instance.OnPlayer_Interaction;
+            @Player_Interaction.performed += instance.OnPlayer_Interaction;
+            @Player_Interaction.canceled += instance.OnPlayer_Interaction;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="LobbyActions" />
+        private void UnregisterCallbacks(ILobbyActions instance)
+        {
+            @Player.started -= instance.OnPlayer;
+            @Player.performed -= instance.OnPlayer;
+            @Player.canceled -= instance.OnPlayer;
+            @Player_Interaction.started -= instance.OnPlayer_Interaction;
+            @Player_Interaction.performed -= instance.OnPlayer_Interaction;
+            @Player_Interaction.canceled -= instance.OnPlayer_Interaction;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="LobbyActions.UnregisterCallbacks(ILobbyActions)" />.
+        /// </summary>
+        /// <seealso cref="LobbyActions.UnregisterCallbacks(ILobbyActions)" />
+        public void RemoveCallbacks(ILobbyActions instance)
+        {
+            if (m_Wrapper.m_LobbyActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="LobbyActions.AddCallbacks(ILobbyActions)" />
+        /// <seealso cref="LobbyActions.RemoveCallbacks(ILobbyActions)" />
+        /// <seealso cref="LobbyActions.UnregisterCallbacks(ILobbyActions)" />
+        public void SetCallbacks(ILobbyActions instance)
+        {
+            foreach (var item in m_Wrapper.m_LobbyActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_LobbyActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="LobbyActions" /> instance referencing this action map.
+    /// </summary>
+    public LobbyActions @Lobby => new LobbyActions(this);
+
+    // UI_DialogueWindow
+    private readonly InputActionMap m_UI_DialogueWindow;
+    private List<IUI_DialogueWindowActions> m_UI_DialogueWindowActionsCallbackInterfaces = new List<IUI_DialogueWindowActions>();
+    private readonly InputAction m_UI_DialogueWindow_Next;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "UI_DialogueWindow".
+    /// </summary>
+    public struct UI_DialogueWindowActions
+    {
+        private @GameInputActions m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public UI_DialogueWindowActions(@GameInputActions wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "UI_DialogueWindow/Next".
+        /// </summary>
+        public InputAction @Next => m_Wrapper.m_UI_DialogueWindow_Next;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_UI_DialogueWindow; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="UI_DialogueWindowActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(UI_DialogueWindowActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="UI_DialogueWindowActions" />
+        public void AddCallbacks(IUI_DialogueWindowActions instance)
+        {
+            if (instance == null || m_Wrapper.m_UI_DialogueWindowActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_UI_DialogueWindowActionsCallbackInterfaces.Add(instance);
+            @Next.started += instance.OnNext;
+            @Next.performed += instance.OnNext;
+            @Next.canceled += instance.OnNext;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="UI_DialogueWindowActions" />
+        private void UnregisterCallbacks(IUI_DialogueWindowActions instance)
+        {
+            @Next.started -= instance.OnNext;
+            @Next.performed -= instance.OnNext;
+            @Next.canceled -= instance.OnNext;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="UI_DialogueWindowActions.UnregisterCallbacks(IUI_DialogueWindowActions)" />.
+        /// </summary>
+        /// <seealso cref="UI_DialogueWindowActions.UnregisterCallbacks(IUI_DialogueWindowActions)" />
+        public void RemoveCallbacks(IUI_DialogueWindowActions instance)
+        {
+            if (m_Wrapper.m_UI_DialogueWindowActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="UI_DialogueWindowActions.AddCallbacks(IUI_DialogueWindowActions)" />
+        /// <seealso cref="UI_DialogueWindowActions.RemoveCallbacks(IUI_DialogueWindowActions)" />
+        /// <seealso cref="UI_DialogueWindowActions.UnregisterCallbacks(IUI_DialogueWindowActions)" />
+        public void SetCallbacks(IUI_DialogueWindowActions instance)
+        {
+            foreach (var item in m_Wrapper.m_UI_DialogueWindowActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_UI_DialogueWindowActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="UI_DialogueWindowActions" /> instance referencing this action map.
+    /// </summary>
+    public UI_DialogueWindowActions @UI_DialogueWindow => new UI_DialogueWindowActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "None" which allows adding and removing callbacks.
     /// </summary>
@@ -410,5 +742,42 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClose(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Lobby" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="LobbyActions.AddCallbacks(ILobbyActions)" />
+    /// <seealso cref="LobbyActions.RemoveCallbacks(ILobbyActions)" />
+    public interface ILobbyActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "Player" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPlayer(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Player_Interaction" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPlayer_Interaction(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI_DialogueWindow" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="UI_DialogueWindowActions.AddCallbacks(IUI_DialogueWindowActions)" />
+    /// <seealso cref="UI_DialogueWindowActions.RemoveCallbacks(IUI_DialogueWindowActions)" />
+    public interface IUI_DialogueWindowActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "Next" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnNext(InputAction.CallbackContext context);
     }
 }
