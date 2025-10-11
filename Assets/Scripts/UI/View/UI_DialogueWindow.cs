@@ -12,6 +12,7 @@ public class UI_DialogueWindow : UI_Popup
     [SerializeField] private Button _closeButton;
 
     private DialogueWindowViewModel _viewModel;
+    public override string ActionMapKey => "UI_DialogueWindow";
 
     public override void SetViewModel(IViewModel viewModel)
     {
