@@ -7,5 +7,7 @@ public enum eSceneType
     Combat,
     Dialogue,
 
+    Test,
+
     End,
 }

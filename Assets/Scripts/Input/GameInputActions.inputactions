@@ -1,0 +1,161 @@
+{
+    "version": 1,
+    "name": "GameInputActions",
+    "maps": [
+        {
+            "name": "None",
+            "id": "78bffde1-a878-4219-8dee-9fb794d707d1",
+            "actions": [],
+            "bindings": []
+        },
+        {
+            "name": "UI_PopupTest",
+            "id": "50e2ee2f-f5aa-4776-b4e3-f3998e679a96",
+            "actions": [
+                {
+                    "name": "Close",
+                    "type": "Button",
+                    "id": "8b2b8373-d163-4925-97c9-4204df7146f6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "9f8bf28d-3bfd-4489-8130-cc5d51d2594e",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Close",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Lobby",
+            "id": "27c66193-b3d1-44a4-8904-9393ec3c42e9",
+            "actions": [
+                {
+                    "name": "Player",
+                    "type": "Value",
+                    "id": "39cdb4cb-773d-48ab-b1c0-4583f0795520",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Player_Interaction",
+                    "type": "Button",
+                    "id": "85608a89-13bc-4fb9-a9aa-a4f0720f5f76",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "2D Vector",
+                    "id": "386138d8-f4b4-42ed-92a1-ab2d429c8776",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Player",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "9ff89ca0-786f-4c33-94a4-5dd200cf7839",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Player",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "724dbedc-d7e7-4222-9234-5a6549ebb37e",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Player",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "d6e5d393-155e-4a39-8b2f-b23bae48717b",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Player",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "768721f4-81ec-429b-a005-8285d718d42b",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Player",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "8b4c6c4a-9523-4dbf-9699-42b359648ba6",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Player_Interaction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "UI_DialogueWindow",
+            "id": "840e0149-8362-4b71-842b-3ff5c570aaeb",
+            "actions": [
+                {
+                    "name": "Next",
+                    "type": "Button",
+                    "id": "97ba5403-4882-4b61-9ce0-27a7ff709984",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "caccb4cd-aebd-4de4-97b9-a49c213c63e9",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Next",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
