@@ -9,7 +9,7 @@ public class Login : MonoBehaviour
 {
 
     CloudSave CS = new();
-    string PlayerID = "qwe";
+    string PlayerID = "qwe11212";
     string PlayerPW = "Qwe123!!";
 
     async void Awake()
@@ -33,7 +33,7 @@ public class Login : MonoBehaviour
     }
 
 
-
+// 회원가입 후 로그인
     async Task SignUpWithUsernamePasswordAsync(string username, string password)
     {
 
@@ -63,6 +63,34 @@ public class Login : MonoBehaviour
         }
     }
 
+    // 여기가 그냥 로그인
+    async Task SignInWithUsernamePasswordAsync(string username, string password)
+    {
+        if (AuthenticationService.Instance.IsSignedIn)
+        {
+            AuthenticationService.Instance.SignOut(true);
+            Debug.Log("로그아웃 완료");
+        }
+
+        try
+        {
+            await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(username, password);
+            Debug.Log("SignIn is successful.");
+        }
+        catch (AuthenticationException ex)
+        {
+            // Compare error code to AuthenticationErrorCodes
+            // Notify the player with the proper error message
+            Debug.LogException(ex);
+        }
+        catch (RequestFailedException ex)
+        {
+            // Compare error code to CommonErrorCodes
+            // Notify the player with the proper error message
+            Debug.LogException(ex);
+        }
+    }
+
 
 
 
@@ -73,12 +101,12 @@ public class Login : MonoBehaviour
     //// Start is called once before the first execution of Update after the MonoBehaviour is created
     //void Start()
     //{ // 일반적으로 스타트에는 초기화 문법
-        
+
     //}
 
     //// Update is called once per frame
     //void Update()
     //{ // 매 프레임마다 실행되어야 하는 행동들
-        
+
     //}
 }
