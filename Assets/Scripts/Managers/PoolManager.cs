@@ -9,14 +9,28 @@ public class PoolManager : IManagerBase
     private readonly Dictionary<int, IObjectPool<GameObject>> _pools = new();
     private Transform _root;
 
+    /// <summary>
+    /// 현재 씬의 Pool Root Transform을 반환합니다.
+    /// Root가 없거나 씬 전환으로 인해 파괴된 경우, 현재 씬에 새로 생성합니다.
+    /// </summary>
+    private Transform Root
+    {
+        get
+        {
+            if (_root == null)
+            {
+                GameObject rootGo = GameObject.Find("@PoolRoot") ?? new GameObject { name = "@PoolRoot" };
+                _root = rootGo.transform;
+                // Why: @PoolRoot는 씬에 종속적인 오브젝트들을 담는 컨테이너이므로,
+                // 씬이 파괴될 때 함께 파괴되어야 메모리 누수를 막을 수 있습니다.
+                // 따라서 DontDestroyOnLoad를 호출하지 않습니다.
+            }
+            return _root;
+        }
+    }
+
     public void Init()
     {
-        if (_root == null)
-        {
-            GameObject root = GameObject.Find("@PoolRoot") ?? new GameObject { name = "@PoolRoot" };
-            Object.DontDestroyOnLoad(root);
-            _root = root.transform;
-        }
         Debug.Log($"{ManagerType} Manager Init 합니다.");
     }
 
@@ -28,6 +42,12 @@ public class PoolManager : IManagerBase
             pool.Clear();
 
         _pools.Clear();
+
+        // Why: 씬이 전환될 때 Managers에 의해 Clear가 호출됩니다.
+        // 이때 _root 참조를 null로 설정해야, 다음 씬에서 Root 프로퍼티가 호출될 때
+        // 새로운 씬의 @PoolRoot를 찾거나 생성하게 되어 씬별로 풀이 올바르게 관리됩니다.
+        _root = null;
+
         Debug.Log($"{ManagerType} Manager Clear 합니다.");
     }
 
@@ -51,7 +71,8 @@ public class PoolManager : IManagerBase
             pool = new ObjectPool<GameObject>(
                 createFunc: () =>
                 {
-                    GameObject go = Object.Instantiate(prefab, _root);
+                    // 수정 이유: _root 필드 대신 Root 프로퍼티를 사용하여 항상 현재 씬에 종속적인 @PoolRoot를 참조하도록 합니다.
+                    GameObject go = Object.Instantiate(prefab, Root);
                     go.name = prefab.name;
 
                     go.GetOrAddComponent<Poolable>().PoolKey = key;
@@ -60,7 +81,9 @@ public class PoolManager : IManagerBase
                 actionOnGet: go => go.SetActive(true),
                 actionOnRelease: go =>
                 {
-                    go.transform.SetParent(_root);
+                    // 수정 이유: 오브젝트를 풀에 반환할 때, Root 프로퍼티를 통해 현재 활성화된 씬의 @PoolRoot 하위로 이동시킵니다.
+                    // 이렇게 하면 DontDestroyOnLoad 문제가 발생하지 않습니다.
+                    if (go != null) go.transform.SetParent(Root);
                     go.SetActive(false);
                 },
                 actionOnDestroy: go => Object.Destroy(go),
