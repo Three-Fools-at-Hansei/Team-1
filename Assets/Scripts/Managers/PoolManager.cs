@@ -72,6 +72,16 @@ public class PoolManager : IManagerBase
         }
 
         GameObject go = pool.Get();
+
+        // UI 오브젝트일 경우, 재사용 직전에 UI의 rect transform 초기화
+        // (풀 반납 시의 transform 초기화)
+        if (go.transform is RectTransform rectTransform)
+        {
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.localScale = Vector3.one;
+            rectTransform.localRotation = Quaternion.identity;
+        }
+
         go.transform.SetParent(parent, false);
 
         // 값이 있을 경우 UI가 아닌 오브젝트로 판단
@@ -91,7 +101,7 @@ public class PoolManager : IManagerBase
     /// <param name="go">반환할 GameObject</param>
     public void Despawn(GameObject go)
     {
-        if (go == null) 
+        if (go == null)
             return;
 
         if (go.TryGetComponent<Poolable>(out var poolable) && _pools.TryGetValue(poolable.PoolKey, out var pool))
