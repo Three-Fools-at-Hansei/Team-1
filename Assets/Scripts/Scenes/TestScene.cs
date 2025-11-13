@@ -66,6 +66,8 @@ public class TestScene : MonoBehaviour, IScene
         // 2. "BeginnerNPC" 주소를 가진 NPC 프리팹 생성
         // 생성과 동시에 위치를 (3,0,0)으로 설정
         await Managers.Resource.InstantiateAsync("BeginnerNPC", new Vector3(3, 0, 0));
+
+        await Managers.UI.ShowAsync<UI_PopupHello>(new HelloPopupViewModel());
     }
 
     void IScene.Clear()
