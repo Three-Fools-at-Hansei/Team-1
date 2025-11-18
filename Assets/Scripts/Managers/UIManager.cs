@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIManager : IManagerBase
 {
@@ -24,7 +25,7 @@ public class UIManager : IManagerBase
     /// Sorting Group 간의 order 간격
     /// </summary>
     private const int ORDER_STEP = 10;
-    private string _lastActionMap = "None";
+
     public void Init()
     {
         GameObject dontDestroyGo = GameObject.Find("@UI_Root_DontDestroy") ?? new GameObject { name = "@UI_Root_DontDestroy" };
@@ -48,7 +49,6 @@ public class UIManager : IManagerBase
 
     public void Clear()
     {
-        _lastActionMap = "None";
         _popupStack.Clear();
         _sortingOrder = 10;
         _sceneRoot = null;
@@ -83,7 +83,6 @@ public class UIManager : IManagerBase
         if (parent == null && view is UI_Popup popup)
         {
             _popupStack.Push(popup);
-            _lastActionMap = Managers.Input.CurrentActionMapKey;
             Managers.Input.SwitchActionMap(popup.ActionMapKey);
         }
 
@@ -93,7 +92,7 @@ public class UIManager : IManagerBase
         // Sorting Group의 순서를 설정합니다.
         SetSortingGroupOrder(go, view is UI_Popup);
 
-        // 입력받은 뷰모델을 세팅합니다.
+        // 입력받은 뷰모델을 세팅합니다. (여기서 AddRef)
         view.SetViewModel(viewModel);
 
         view.gameObject.SetActive(true);
@@ -128,7 +127,6 @@ public class UIManager : IManagerBase
         if (parent == null && view is UI_Popup popup)
         {
             _popupStack.Push(popup);
-            _lastActionMap = Managers.Input.CurrentActionMapKey;
             Managers.Input.SwitchActionMap(popup.ActionMapKey);
         }
 
@@ -236,11 +234,14 @@ public class UIManager : IManagerBase
                 // 스택이 빈 경우 기본 세팅("None")
                 else
                 {
-                    Managers.Input.SwitchActionMap(_lastActionMap);
-                    _lastActionMap = "None";
+                    Managers.Input.SwitchActionMap("None");
                 }
             }
         }
+
+        // UI를 풀로 반환하거나 파괴하기 전에 ViewModel과의 연결을 명시적으로 끊습니다.
+        // 기존 ViewModel이 Release() 될 때 참조 카운트가 감소하고, 필요시 OnDispose()가 호출됩니다.
+        view.SetViewModel(null);
 
         Managers.Resource.Destroy(view.gameObject);
     }
@@ -271,14 +272,21 @@ public class UIManager : IManagerBase
         if (_sceneRoot == null)
         {
             GameObject rootGo = GameObject.Find("@UI_Root_Scene");
-            
+
             //씬에 UI 루트가 없을 경우, Canvas와 필수 컴포넌트를 포함하여 새로 생성합니다.
             if (rootGo == null)
             {
                 rootGo = new GameObject { name = "@UI_Root_Scene" };
-                rootGo.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-                rootGo.AddComponent<UnityEngine.UI.CanvasScaler>();
-                rootGo.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+                Canvas canvas = rootGo.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = Camera.main; // 나중에 CameraManager에게서 가져오도록 바꿔야겠죠??
+                CanvasScaler scaler = rootGo.AddComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920, 1080);
+                scaler.matchWidthOrHeight = 1.0f;
+
+                rootGo.AddComponent<GraphicRaycaster>();
             }
             _sceneRoot = rootGo.transform;
         }

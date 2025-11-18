@@ -1,9 +1,9 @@
 using System;
 using UI;
 
-public class PopupTestViewModel : IViewModel
+public class PopupTestViewModel : ViewModelBase
 {
-    public event Action OnStateChanged;
+    public override event Action OnStateChanged;
     public event Action OnEscapeKeyDown;
 
     public string Title { get; private set; } = "Å×½ºÆ® ÆË¾÷";

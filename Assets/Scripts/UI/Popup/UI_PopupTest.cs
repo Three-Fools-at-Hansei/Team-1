@@ -18,9 +18,9 @@ public class UI_PopupTest : UI_Popup
         if (_viewModel != null)
             _viewModel.OnEscapeKeyDown -= OnClose;
 
-        base.SetViewModel(viewModel);
-
         _viewModel = viewModel as PopupTestViewModel;
+
+        base.SetViewModel(viewModel);
 
         _viewModel.OnEscapeKeyDown += OnClose;
     }
