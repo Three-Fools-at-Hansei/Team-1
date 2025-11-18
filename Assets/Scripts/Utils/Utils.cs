@@ -100,4 +100,22 @@ public class Utils
         Transform tr = FindChild<Transform>(go, name, recursive);
         return tr == null ? null : tr.gameObject;
     }
+
+    /// <summary>
+    /// 숫자를 K(천), M(백만) 단위로 축약하여 포매팅된 문자열로 반환합니다.
+    /// 10,000 미만: 그대로 표시 (예: 9999)
+    /// 10,000 이상 1,000,000 미만: K 단위, 소수점 첫째 자리까지 표시 (예: 10.5K, 999.9K)
+    /// 1,000,000 이상: M 단위, 소수점 첫째 자리까지 표시 (예: 1.2M, 123.4M)
+    /// </summary>
+    /// <param name="number">포매팅할 정수 값입니다.</param>
+    /// <returns>K 또는 M 단위로 포매팅된 문자열입니다.</returns>
+    public static string FormatNumber(int number)
+    {
+        if (number >= 1_000_000)
+            return $"{(number / 1_000_000.0f):0.#} M";
+        else if (number >= 10_000)
+            return $"{(number / 1_000.0f):0.#} K";
+        else
+            return number.ToString();
+    }
 }
