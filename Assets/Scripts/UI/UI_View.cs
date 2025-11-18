@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
-//using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 namespace UI
 {
@@ -29,18 +28,24 @@ namespace UI
         /// <param name="viewModel">주입할 ViewModel입니다.</param>
         public virtual void SetViewModel(IViewModel viewModel)
         {
-            // 기존 ViewModel이 있다면 이벤트 구독을 해제하여 메모리 누수를 방지합니다.
+            // 기존 ViewModel 연결 해제 및 참조 감소
             if (ViewModel != null)
+            {
                 ViewModel.OnStateChanged -= OnStateChanged;
+                (ViewModel as ViewModelBase)?.Release();
+            }
 
             ViewModel = viewModel;
 
-            // 새로운 ViewModel의 상태 변경 이벤트를 구독합니다.
+            // 새 ViewModel 연결 및 참조 증가
             if (ViewModel != null)
+            {
                 ViewModel.OnStateChanged += OnStateChanged;
+                (ViewModel as ViewModelBase)?.AddRef();
 
-            // ViewModel이 설정된 직후, 초기 데이터를 UI에 반영하기 위해 OnStateChanged를 호출합니다.
-            OnStateChanged();
+                // ViewModel이 설정된 직후, 초기 데이터를 UI에 반영하기 위해 OnStateChanged를 호출합니다.
+                OnStateChanged();
+            }
         }
 
         /// <summary>

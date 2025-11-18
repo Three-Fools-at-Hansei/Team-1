@@ -9,6 +9,7 @@ public enum eManagerType
     Input,
     Sound,
     Resource,
+    GameSystem,
 
     End,
 }

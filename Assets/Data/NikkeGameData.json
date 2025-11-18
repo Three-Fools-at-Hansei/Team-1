@@ -1,0 +1,752 @@
+{
+  "0": {
+    "id": 0,
+    "name": "알파",
+    "nikkeClass": "화력형",
+    "burstLevel": 3,
+    "element": "작열",
+    "rarity": "SSR",
+    "hp": 600000,
+    "attack": 25000,
+    "defense": 3500,
+    "color": {
+      "r": 1.0,
+      "g": 0.2,
+      "b": 0.2,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "AR",
+      "maxAmmo": 60,
+      "reloadTime": 1.0,
+      "controlType": "일반형",
+      "description": "스탠다드 돌격소총",
+      "damagePercent": 15.5
+    },
+    "skills": [
+      {
+        "skillID": 101,
+        "burstStage": 1,
+        "name": "알파 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Alpha_S1",
+        "values": [
+          {
+            "type": "Damage",
+            "minValue": "150%",
+            "maxValue": "300%"
+          }
+        ]
+      },
+      {
+        "skillID": 102,
+        "burstStage": 2,
+        "name": "알파 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Alpha_S2",
+        "values": [
+          {
+            "type": "AttackBuff",
+            "minValue": "10%",
+            "maxValue": "25%"
+          }
+        ]
+      },
+      {
+        "skillID": 103,
+        "burstStage": 3,
+        "name": "알파 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Alpha_S3",
+        "values": [
+          {
+            "type": "FinalDamage",
+            "minValue": "500%",
+            "maxValue": "1200%"
+          }
+        ]
+      }
+    ]
+  },
+  "1": {
+    "id": 1,
+    "name": "베타",
+    "nikkeClass": "방어형",
+    "burstLevel": 1,
+    "element": "수냉",
+    "rarity": "SSR",
+    "hp": 800000,
+    "attack": 18000,
+    "defense": 5000,
+    "color": {
+      "r": 0.2,
+      "g": 0.2,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "SG",
+      "maxAmmo": 9,
+      "reloadTime": 1.5,
+      "controlType": "일반형",
+      "description": "강력한 샷건",
+      "damagePercent": 250.0
+    },
+    "skills": [
+      {
+        "skillID": 201,
+        "burstStage": 1,
+        "name": "베타 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Beta_S1",
+        "values": [
+          {
+            "type": "DefenseBuff",
+            "minValue": "20%",
+            "maxValue": "40%"
+          }
+        ]
+      },
+      {
+        "skillID": 202,
+        "burstStage": 2,
+        "name": "베타 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Beta_S2",
+        "values": [
+          {
+            "type": "Taunt",
+            "minValue": "5s",
+            "maxValue": "10s"
+          }
+        ]
+      },
+      {
+        "skillID": 203,
+        "burstStage": 3,
+        "name": "베타 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Beta_S3",
+        "values": [
+          {
+            "type": "Shield",
+            "minValue": "30%",
+            "maxValue": "60%"
+          }
+        ]
+      }
+    ]
+  },
+  "2": {
+    "id": 2,
+    "name": "감마",
+    "nikkeClass": "지원형",
+    "burstLevel": 2,
+    "element": "풍압",
+    "rarity": "SSR",
+    "hp": 750000,
+    "attack": 20000,
+    "defense": 4000,
+    "color": {
+      "r": 0.2,
+      "g": 1.0,
+      "b": 0.2,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "SMG",
+      "maxAmmo": 120,
+      "reloadTime": 1.2,
+      "controlType": "일반형",
+      "description": "빠른 연사 속도의 SMG",
+      "damagePercent": 8.0
+    },
+    "skills": [
+      {
+        "skillID": 301,
+        "burstStage": 1,
+        "name": "감마 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Gamma_S1",
+        "values": [
+          {
+            "type": "Heal",
+            "minValue": "15%",
+            "maxValue": "30%"
+          }
+        ]
+      },
+      {
+        "skillID": 302,
+        "burstStage": 2,
+        "name": "감마 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Gamma_S2",
+        "values": [
+          {
+            "type": "CooldownReduction",
+            "minValue": "2s",
+            "maxValue": "5s"
+          }
+        ]
+      },
+      {
+        "skillID": 303,
+        "burstStage": 3,
+        "name": "감마 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Gamma_S3",
+        "values": [
+          {
+            "type": "Revive",
+            "minValue": "20%",
+            "maxValue": "50%"
+          }
+        ]
+      }
+    ]
+  },
+  "3": {
+    "id": 3,
+    "name": "델타",
+    "nikkeClass": "화력형",
+    "burstLevel": 3,
+    "element": "철갑",
+    "rarity": "SR",
+    "hp": 550000,
+    "attack": 28000,
+    "defense": 3000,
+    "color": {
+      "r": 0.5,
+      "g": 0.5,
+      "b": 0.5,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "RL",
+      "maxAmmo": 1,
+      "reloadTime": 2.0,
+      "controlType": "일반형",
+      "description": "로켓 런처",
+      "damagePercent": 70.0
+    },
+    "skills": [
+      {
+        "skillID": 401,
+        "burstStage": 1,
+        "name": "델타 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Delta_S1",
+        "values": [
+          {
+            "type": "Damage",
+            "minValue": "160%",
+            "maxValue": "320%"
+          }
+        ]
+      },
+      {
+        "skillID": 402,
+        "burstStage": 2,
+        "name": "델타 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Delta_S2",
+        "values": [
+          {
+            "type": "DefenseDebuff",
+            "minValue": "15%",
+            "maxValue": "30%"
+          }
+        ]
+      },
+      {
+        "skillID": 403,
+        "burstStage": 3,
+        "name": "델타 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Delta_S3",
+        "values": [
+          {
+            "type": "AreaDamage",
+            "minValue": "450%",
+            "maxValue": "1000%"
+          }
+        ]
+      }
+    ]
+  },
+  "4": {
+    "id": 4,
+    "name": "엡실론",
+    "nikkeClass": "방어형",
+    "burstLevel": 1,
+    "element": "작열",
+    "rarity": "SR",
+    "hp": 900000,
+    "attack": 15000,
+    "defense": 5500,
+    "color": {
+      "r": 1.0,
+      "g": 0.5,
+      "b": 0.0,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "MG",
+      "maxAmmo": 300,
+      "reloadTime": 2.5,
+      "controlType": "일반형",
+      "description": "머신건",
+      "damagePercent": 5.0
+    },
+    "skills": [
+      {
+        "skillID": 501,
+        "burstStage": 1,
+        "name": "엡실론 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Epsilon_S1",
+        "values": [
+          {
+            "type": "DamageShare",
+            "minValue": "25%",
+            "maxValue": "50%"
+          }
+        ]
+      },
+      {
+        "skillID": 502,
+        "burstStage": 2,
+        "name": "엡실론 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Epsilon_S2",
+        "values": [
+          {
+            "type": "SelfHeal",
+            "minValue": "10%",
+            "maxValue": "25%"
+          }
+        ]
+      },
+      {
+        "skillID": 503,
+        "burstStage": 3,
+        "name": "엡실론 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Epsilon_S3",
+        "values": [
+          {
+            "type": "Invincible",
+            "minValue": "3s",
+            "maxValue": "5s"
+          }
+        ]
+      }
+    ]
+  },
+  "5": {
+    "id": 5,
+    "name": "제타",
+    "nikkeClass": "지원형",
+    "burstLevel": 2,
+    "element": "수냉",
+    "rarity": "R",
+    "hp": 650000,
+    "attack": 22000,
+    "defense": 3800,
+    "color": {
+      "r": 0.5,
+      "g": 0.8,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "SR",
+      "maxAmmo": 6,
+      "reloadTime": 1.8,
+      "controlType": "일반형",
+      "description": "저격 소총",
+      "damagePercent": 80.0
+    },
+    "skills": [
+      {
+        "skillID": 601,
+        "burstStage": 1,
+        "name": "제타 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Zeta_S1",
+        "values": [
+          {
+            "type": "CriticalChanceBuff",
+            "minValue": "10%",
+            "maxValue": "25%"
+          }
+        ]
+      },
+      {
+        "skillID": 602,
+        "burstStage": 2,
+        "name": "제타 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Zeta_S2",
+        "values": [
+          {
+            "type": "CriticalDamageBuff",
+            "minValue": "20%",
+            "maxValue": "50%"
+          }
+        ]
+      },
+      {
+        "skillID": 603,
+        "burstStage": 3,
+        "name": "제타 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Zeta_S3",
+        "values": [
+          {
+            "type": "WeakPointDamageBuff",
+            "minValue": "50%",
+            "maxValue": "120%"
+          }
+        ]
+      }
+    ]
+  },
+  "6": {
+    "id": 6,
+    "name": "에타",
+    "nikkeClass": "화력형",
+    "burstLevel": 3,
+    "element": "풍압",
+    "rarity": "SSR",
+    "hp": 620000,
+    "attack": 26000,
+    "defense": 3300,
+    "color": {
+      "r": 0.8,
+      "g": 1.0,
+      "b": 0.5,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "AR",
+      "maxAmmo": 60,
+      "reloadTime": 1.0,
+      "controlType": "일반형",
+      "description": "스탠다드 돌격소총",
+      "damagePercent": 15.0
+    },
+    "skills": [
+      {
+        "skillID": 701,
+        "burstStage": 1,
+        "name": "에타 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Eta_S1",
+        "values": [
+          {
+            "type": "Damage",
+            "minValue": "155%",
+            "maxValue": "310%"
+          }
+        ]
+      },
+      {
+        "skillID": 702,
+        "burstStage": 2,
+        "name": "에타 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Eta_S2",
+        "values": [
+          {
+            "type": "AttackSpeedBuff",
+            "minValue": "15%",
+            "maxValue": "30%"
+          }
+        ]
+      },
+      {
+        "skillID": 703,
+        "burstStage": 3,
+        "name": "에타 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Eta_S3",
+        "values": [
+          {
+            "type": "FinalDamage",
+            "minValue": "550%",
+            "maxValue": "1300%"
+          }
+        ]
+      }
+    ]
+  },
+  "7": {
+    "id": 7,
+    "name": "세타",
+    "nikkeClass": "방어형",
+    "burstLevel": 1,
+    "element": "철갑",
+    "rarity": "SR",
+    "hp": 850000,
+    "attack": 17000,
+    "defense": 5200,
+    "color": {
+      "r": 0.9,
+      "g": 0.9,
+      "b": 0.9,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "SG",
+      "maxAmmo": 9,
+      "reloadTime": 1.5,
+      "controlType": "일반형",
+      "description": "강력한 샷건",
+      "damagePercent": 240.0
+    },
+    "skills": [
+      {
+        "skillID": 801,
+        "burstStage": 1,
+        "name": "세타 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Theta_S1",
+        "values": [
+          {
+            "type": "DefenseBuff",
+            "minValue": "22%",
+            "maxValue": "42%"
+          }
+        ]
+      },
+      {
+        "skillID": 802,
+        "burstStage": 2,
+        "name": "세타 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Theta_S2",
+        "values": [
+          {
+            "type": "Taunt",
+            "minValue": "6s",
+            "maxValue": "11s"
+          }
+        ]
+      },
+      {
+        "skillID": 803,
+        "burstStage": 3,
+        "name": "세타 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Theta_S3",
+        "values": [
+          {
+            "type": "Shield",
+            "minValue": "35%",
+            "maxValue": "65%"
+          }
+        ]
+      }
+    ]
+  },
+  "8": {
+    "id": 8,
+    "name": "이오타",
+    "nikkeClass": "지원형",
+    "burstLevel": 2,
+    "element": "작열",
+    "rarity": "SR",
+    "hp": 780000,
+    "attack": 19000,
+    "defense": 4200,
+    "color": {
+      "r": 1.0,
+      "g": 0.8,
+      "b": 0.2,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "SMG",
+      "maxAmmo": 120,
+      "reloadTime": 1.2,
+      "controlType": "일반형",
+      "description": "빠른 연사 속도의 SMG",
+      "damagePercent": 7.8
+    },
+    "skills": [
+      {
+        "skillID": 901,
+        "burstStage": 1,
+        "name": "이오타 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Iota_S1",
+        "values": [
+          {
+            "type": "Heal",
+            "minValue": "16%",
+            "maxValue": "32%"
+          }
+        ]
+      },
+      {
+        "skillID": 902,
+        "burstStage": 2,
+        "name": "이오타 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Iota_S2",
+        "values": [
+          {
+            "type": "CooldownReduction",
+            "minValue": "2.5s",
+            "maxValue": "5.5s"
+          }
+        ]
+      },
+      {
+        "skillID": 903,
+        "burstStage": 3,
+        "name": "이오타 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Iota_S3",
+        "values": [
+          {
+            "type": "Revive",
+            "minValue": "25%",
+            "maxValue": "55%"
+          }
+        ]
+      }
+    ]
+  },
+  "9": {
+    "id": 9,
+    "name": "카파",
+    "nikkeClass": "화력형",
+    "burstLevel": 3,
+    "element": "수냉",
+    "rarity": "R",
+    "hp": 500000,
+    "attack": 30000,
+    "defense": 2800,
+    "color": {
+      "r": 0.2,
+      "g": 0.5,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "weapon": {
+      "weaponClass": "RL",
+      "maxAmmo": 1,
+      "reloadTime": 2.0,
+      "controlType": "일반형",
+      "description": "로켓 런처",
+      "damagePercent": 75.0
+    },
+    "skills": [
+      {
+        "skillID": 1001,
+        "burstStage": 1,
+        "name": "카파 스킬 1",
+        "description": "버스트 1 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Kappa_S1",
+        "values": [
+          {
+            "type": "Damage",
+            "minValue": "170%",
+            "maxValue": "340%"
+          }
+        ]
+      },
+      {
+        "skillID": 1002,
+        "burstStage": 2,
+        "name": "카파 스킬 2",
+        "description": "버스트 2 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 20.0,
+        "skillIconPath": "Icons/Skills/Kappa_S2",
+        "values": [
+          {
+            "type": "DefenseDebuff",
+            "minValue": "16%",
+            "maxValue": "32%"
+          }
+        ]
+      },
+      {
+        "skillID": 1003,
+        "burstStage": 3,
+        "name": "카파 버스트",
+        "description": "버스트 3 스킬 설명",
+        "skillTypeName": "Active",
+        "cooldown": 40.0,
+        "skillIconPath": "Icons/Skills/Kappa_S3",
+        "values": [
+          {
+            "type": "AreaDamage",
+            "minValue": "480%",
+            "maxValue": "1100%"
+          }
+        ]
+      }
+    ]
+  }
+}

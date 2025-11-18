@@ -1,70 +1,50 @@
-//using UnityEngine;
-
-//public class TestScene : MonoBehaviour, IScene
-//{
-//    eSceneType IScene.SceneType => eSceneType.Test;
-
-//    void Awake()
-//    {
-//        Managers.Scene.SetCurrentScene(this);
-//        Debug.Log("Test Scene Awake() ÇÕ´Ï´Ù.");
-//    }
-
-//    void Start()
-//    {
-//        ((IScene)this).Init();
-//    }
-
-//    void IScene.Init()
-//    {
-//        Debug.Log("Test Scene Init() ÇÕ´Ï´Ù.");
-//        // ViewModelÀ» ¸ÕÀú »ı¼ºÇÏ°í UI »ı¼ºÀ» ¿äÃ»ÇÕ´Ï´Ù.
-//        var viewModel = new PopupTestViewModel();
-//        _ = Managers.UI.ShowAsync<UI_PopupTest>(viewModel);
-//    }
-
-//    void IScene.Clear()
-//    {
-//        Debug.Log("Test Scene Clear() ÇÕ´Ï´Ù.");
-//    }
-//}
-
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TestScene : MonoBehaviour, IScene
 {
     eSceneType IScene.SceneType => eSceneType.Test;
+    public List<string> RequiredDataFiles => new() 
+    { 
+        "NikkeGameData.json", 
+        "ItemGameData.json",
+        "MissionGameData.json",
+    };
+
+    UI_TabGroupPopup popup;
 
     void Awake()
     {
         Managers.Scene.SetCurrentScene(this);
+        Debug.Log("Test Scene Awake() Ã‡Ã•Â´ÃÂ´Ã™.");
     }
 
-    // ¾ÀÀÌ ½ÃÀÛµÇ¸é Init()À» È£ÃâÇØ¼­ ÁØºñµÈ ÇÁ¸®ÆéµéÀ» »ı¼ºÇÕ´Ï´Ù.
-    void Start()
+    void IScene.Init()
     {
-        // SceneManagerEx°¡ InitÀ» È£ÃâÇØÁÖÁö¸¸, Å×½ºÆ®¸¦ À§ÇØ Á÷Á¢ È£ÃâÇÕ´Ï´Ù.
-        ((IScene)this).Init();
-    }
+        Debug.Log("Test Scene Init() Ã‡Ã•Â´ÃÂ´Ã™.");
+        Debug.Log($"persistentDataPath: {Application.persistentDataPath}");
 
-    // async Å°¿öµå°¡ ÇÊ¿äÇÕ´Ï´Ù. (await »ç¿ë ¶§¹®)
-    async void IScene.Init()
+        ShowTestUI();
+    }
+    
+    private async void ShowTestUI()
     {
-        Debug.Log("Test Scene Init() - Player¿Í NPC¸¦ »ı¼ºÇÕ´Ï´Ù.");
+
+        Debug.Log("Test Scene Init() - PlayerÂ¿Ã NPCÂ¸Â¦ Â»Ã½Â¼ÂºÃ‡Ã•Â´ÃÂ´Ã™.");
 
         Managers.Input.SwitchActionMap("Lobby");
 
-        // ±ÔÁ¤ #3, #7 ÁØ¼ö: Manager¸¦ ÅëÇØ ¾îµå·¹½ººí ÁÖ¼Ò·Î ÇÁ¸®ÆÕÀ» »ı¼ºÇÕ´Ï´Ù.
+        // Â±Ã”ÃÂ¤ #3, #7 ÃÃ˜Â¼Ã¶: ManagerÂ¸Â¦ Ã…Ã«Ã‡Ã˜ Â¾Ã®ÂµÃ¥Â·Â¹Â½ÂºÂºÃ­ ÃÃ–Â¼Ã’Â·Ã Ã‡ÃÂ¸Â®Ã†Ã•Ã€Â» Â»Ã½Â¼ÂºÃ‡Ã•Â´ÃÂ´Ã™.
 
-        // 1. "Player" ÁÖ¼Ò¸¦ °¡Áø Player ÇÁ¸®ÆÕ »ı¼º
+        // 1. "Player" ÃÃ–Â¼Ã’Â¸Â¦ Â°Â¡ÃÃ¸ Player Ã‡ÃÂ¸Â®Ã†Ã• Â»Ã½Â¼Âº
         GameObject playerGo = await Managers.Resource.InstantiateAsync("Player");
         if (playerGo != null)
         {
-            playerGo.transform.position = Vector3.zero; // »ı¼º ÈÄ À§Ä¡¸¦ (0,0,0)À¸·Î ¼³Á¤
+            playerGo.transform.position = Vector3.zero; // Â»Ã½Â¼Âº ÃˆÃ„ Ã€Â§Ã„Â¡Â¸Â¦ (0,0,0)Ã€Â¸Â·Ã Â¼Â³ÃÂ¤
         }
 
-        // 2. "BeginnerNPC" ÁÖ¼Ò¸¦ °¡Áø NPC ÇÁ¸®ÆÕ »ı¼º
-        // »ı¼º°ú µ¿½Ã¿¡ À§Ä¡¸¦ (3,0,0)À¸·Î ¼³Á¤
+        // 2. "BeginnerNPC" ÃÃ–Â¼Ã’Â¸Â¦ Â°Â¡ÃÃ¸ NPC Ã‡ÃÂ¸Â®Ã†Ã• Â»Ã½Â¼Âº
+        // Â»Ã½Â¼ÂºÂ°Ãº ÂµÂ¿Â½ÃƒÂ¿Â¡ Ã€Â§Ã„Â¡Â¸Â¦ (3,0,0)Ã€Â¸Â·Ã Â¼Â³ÃÂ¤
         await Managers.Resource.InstantiateAsync("BeginnerNPC", new Vector3(3, 0, 0));
 
         await Managers.UI.ShowAsync<UI_PopupHello>(new HelloPopupViewModel());
@@ -72,6 +52,8 @@ public class TestScene : MonoBehaviour, IScene
 
     void IScene.Clear()
     {
-        Debug.Log("Test Scene Clear() ÇÕ´Ï´Ù.");
+        //Debug.Log("Test Scene Clear() Ã‡Ã•Â´ÃÂ´Ã™.");
+
+        Managers.UI.Close(popup);
     }
 }
