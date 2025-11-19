@@ -1,9 +1,12 @@
 using UnityEngine;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 public class LoginScene : MonoBehaviour, IScene
 {
     eSceneType IScene.SceneType => eSceneType.Login;
+
+    public List<string> RequiredDataFiles => new();
 
     private bool _initialized;
 

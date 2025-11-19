@@ -169,7 +169,7 @@ public class LoginViewModel : UI.IViewModel
         {
             HelperMessage = string.IsNullOrEmpty(result.Message) ? "로그인 성공!" : result.Message;
             Render();
-            Managers.Scene.LoadScene("SampleScene");
+            // Managers.Scene.LoadSceneAsync();
             return;
         }
 
