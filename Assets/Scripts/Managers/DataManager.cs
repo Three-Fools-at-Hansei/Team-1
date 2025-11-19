@@ -27,7 +27,6 @@ public class DataManager : IManagerBase
 
     public void Init()
     {
-        LoadUserData();
         Debug.Log($"{ManagerType} Manager Init 합니다.");
     }
 
@@ -156,10 +155,14 @@ public class DataManager : IManagerBase
     }
 
     /// <summary>
-    /// 파일에서 사용자 데이터를 로드합니다. Init()에서만 호출됩니다.
+    /// 유저 데이터를 로드합니다.
     /// </summary>
-    private void LoadUserData()
+    public async Task LoadUserData()
     {
+        // 1. 데이터 무결성 검사 (파일 없으면 템플릿 복제)
+        await EnsureUserDataReady();
+
+        // 2. 데이터 로드 수행
         string savePath = Path.Combine(Application.persistentDataPath, UserDataPath);
         if (File.Exists(savePath))
         {
@@ -172,8 +175,40 @@ public class DataManager : IManagerBase
         }
         else
         {
-            UserData = null;
-            Debug.LogWarning($"[DataManager] 유저 데이터 파일({UserDataPath})을 찾을 수 없습니다. UserData가 null입니다.");
+            // EnsureUserDataReady를 거쳤다면 이론상 도달할 수 없는 분기입니다.
+            Debug.LogError($"[DataManager] 유저 데이터 파일({UserDataPath})을 찾을 수 없습니다. UserData가 null입니다.");
+            UserData = new UserDataModel();
+        }
+    }
+
+    /// <summary>
+    /// 유저 데이터 파일이 없으면 템플릿을 복제하여 생성합니다.
+    /// </summary>
+    private async Task EnsureUserDataReady()
+    {
+        string savePath = Path.Combine(Application.persistentDataPath, UserDataPath);
+
+        if (!File.Exists(savePath))
+        {
+            Debug.LogWarning($"[DataManager] 유저 데이터가 없어 템플릿({UserDataPath})을 생성합니다.");
+
+            TextAsset defaultData = await Managers.Resource.LoadAsync<TextAsset>(UserDataPath);
+
+            if (defaultData == null)
+            {
+                Debug.LogError($"[DataManager] 템플릿 데이터({UserDataPath})를 찾을 수 없습니다!");
+                return;
+            }
+
+            try
+            {
+                File.WriteAllText(savePath, defaultData.text);
+                Debug.Log($"[DataManager] 기본 데이터 생성 완료: {savePath}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[DataManager] 파일 생성 중 오류 발생: {e.Message}");
+            }
         }
     }
 

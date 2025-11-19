@@ -35,6 +35,9 @@ public class SceneManagerEx : IManagerBase
         if (scene == null)
             return;
 
+        // 유저 데이터 로드
+        await Managers.Data.LoadUserData();
+
         // 씬에서 사용하는 게임 데이터 로드
         var requiredFiles = scene.RequiredDataFiles;
         if (requiredFiles != null && requiredFiles.Count > 0)
