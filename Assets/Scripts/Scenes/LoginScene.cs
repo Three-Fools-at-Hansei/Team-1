@@ -6,7 +6,12 @@ public class LoginScene : MonoBehaviour, IScene
 {
     eSceneType IScene.SceneType => eSceneType.Login;
 
-    public List<string> RequiredDataFiles => new();
+    public List<string> RequiredDataFiles => new()
+    {
+        "ItemGameData.json",
+        "MissionGameData.json",
+        "NikkeGameData.json",
+    };
 
     private bool _initialized;
 

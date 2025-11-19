@@ -12,7 +12,13 @@ public class MissionSystem : IDisposable
     public void Init()
     {
         Debug.Log("[MissionSystem] Init() 합니다.");
+    }
 
+    /// <summary>
+    /// 데이터 로드 완료 후 필요한 초기화 로직을 수행합니다.
+    /// </summary>
+    public void OnDataLoaded()
+    {
         // 1. DataManager 전역 참조 및 캐싱
         // 2. 데이터 참조
         _userData = Managers.Data.UserData;
@@ -38,21 +44,6 @@ public class MissionSystem : IDisposable
         // 그냥 함수 호출하도록 하는 것이 좋지 않을까?
         foreach (var nikke in _userData.Nikkes.Values)
             nikke.level.OnValueChanged += OnNikkeLevelChanged;
-    }
-
-    /// <summary>
-    /// 데이터 로드 완료 후 필요한 초기화 로직을 수행합니다.
-    /// </summary>
-    public void OnDataLoaded()
-    {
-        // 1. 게임 데이터 참조 (비동기 로드 완료 시점)
-        _missionGameData = Managers.Data.GetTable<MissionGameData>();
-
-        if (_missionGameData == null)
-        {
-            Debug.LogWarning("[MissionSystem] MissionGameData가 로드되지 않았습니다.");
-            return;
-        }
     }
 
     /// <summary>
