@@ -33,10 +33,14 @@ public class PlayerMove : MonoBehaviour
     public float moveSpeed = 5f;
     private Rigidbody2D _rigid;
     private Vector2 _moveInput;
+    private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
 
     void Awake()
     {
         _rigid = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void Start()
@@ -71,5 +75,20 @@ public class PlayerMove : MonoBehaviour
     void FixedUpdate()
     {
         _rigid.linearVelocity = _moveInput * moveSpeed;
+
+        // 애니메이션 제어
+        if (_animator != null)
+        {
+            // 이동 중인지 확인 (벡터의 크기가 0보다 크면 이동 중)
+            bool isMoving = _moveInput.magnitude > 0.1f;
+            _animator.SetBool("IsMoving", isMoving);
+
+            // 이동 방향에 따라 스프라이트 뒤집기
+            if (isMoving && _spriteRenderer != null)
+            {
+                // 오른쪽으로 이동하면 뒤집지 않고, 왼쪽으로 이동하면 뒤집기
+                _spriteRenderer.flipX = _moveInput.x < 0;
+            }
+        }
     }
 }
