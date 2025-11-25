@@ -143,14 +143,6 @@ public class LoginViewModel : UI.IViewModel
         if (!_canSubmit || IsBusy)
             return;
 
-        if (Login.Instance == null)
-        {
-            Debug.LogError("[LoginViewModel] Login 서비스 인스턴스를 찾을 수 없습니다.");
-            HelperMessage = "로그인 서비스를 찾을 수 없습니다.";
-            Render();
-            return;
-        }
-
         if (_mode == Mode.Login)
             await ProcessLoginAsync();
         else
@@ -163,18 +155,20 @@ public class LoginViewModel : UI.IViewModel
         HelperMessage = "로그인 중...";
         Render();
 
-        var result = await Login.Instance.SignInWithUsernamePasswordAsync(_loginId.Trim(), _loginPassword);
+        // [변경] Managers.Network 사용
+        var result = await Managers.Network.SignInAsync(_loginId.Trim(), _loginPassword);
 
-        if (result.IsSuccessful)
+        if (result.success)
         {
-            HelperMessage = string.IsNullOrEmpty(result.Message) ? "로그인 성공!" : result.Message;
+            HelperMessage = "로그인 성공!";
             Render();
-            // Managers.Scene.LoadSceneAsync();
+            // [변경] 성공 시 MainScene으로 이동
+            await Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
             return;
         }
 
         IsBusy = false;
-        HelperMessage = string.IsNullOrEmpty(result.Message) ? "아이디 또는 비밀번호를 다시 확인해주세요." : result.Message;
+        HelperMessage = result.message;
         Render();
     }
 
@@ -184,12 +178,13 @@ public class LoginViewModel : UI.IViewModel
         HelperMessage = "회원가입 중...";
         Render();
 
-        var result = await Login.Instance.SignUpWithUsernamePasswordAsync(_signupId.Trim(), _signupPassword);
+        // [변경] Managers.Network 사용
+        var result = await Managers.Network.SignUpAsync(_signupId.Trim(), _signupPassword);
 
         IsBusy = false;
-        if (result.IsSuccessful)
+        if (result.success)
         {
-            HelperMessage = string.IsNullOrEmpty(result.Message) ? "회원가입이 완료되었습니다." : result.Message;
+            HelperMessage = "회원가입이 완료되었습니다. 로그인해주세요.";
 
             // 회원가입 정보로 로그인 탭 자동 채우기
             _loginId = _signupId;
@@ -205,7 +200,7 @@ public class LoginViewModel : UI.IViewModel
             return;
         }
 
-        HelperMessage = string.IsNullOrEmpty(result.Message) ? "회원가입에 실패했습니다." : result.Message;
+        HelperMessage = result.message;
         Render();
     }
 

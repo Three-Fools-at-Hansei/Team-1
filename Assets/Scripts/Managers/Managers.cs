@@ -15,7 +15,8 @@ public class Managers : MonoBehaviour
     public static SoundManager Sound { get; private set; }
     public static ResourceManagerEx Resource { get; private set; }
     public static GameSystemManager GameSystem { get; private set; }
-
+    public static NetworkManagerEx Network { get; private set; }
+    
     private readonly IManagerBase[] _managers = new IManagerBase[(int)eManagerType.End];
 
     private void Awake()
@@ -62,6 +63,9 @@ public class Managers : MonoBehaviour
 
         GameSystem = new GameSystemManager();
         _managers[(int)eManagerType.GameSystem] = GameSystem;
+
+        Network = new NetworkManagerEx();
+        _managers[(int)eManagerType.Network] = Network;
 
         // 모든 매니저에 Init() 호출
         foreach (IManagerBase manager in _managers)

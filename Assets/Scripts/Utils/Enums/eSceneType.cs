@@ -1,11 +1,9 @@
 
 public enum eSceneType
 {
-    Login,
-    Main,
-    Campaign,
-    Combat,
-    Dialogue,
+    LoginScene,
+    MainScene,
+    CombatScene,
 
     Test,
 
