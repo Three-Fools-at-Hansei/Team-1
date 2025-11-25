@@ -4,12 +4,13 @@ using Unity.Netcode;
 
 public class CombatScene : MonoBehaviour, IScene
 {
-    eSceneType IScene.SceneType => eSceneType.Combat;
+    eSceneType IScene.SceneType => eSceneType.CombatScene;
 
     public List<string> RequiredDataFiles => new()
     {
         "NikkeGameData.json",
-        "ItemGameData.json", 
+        "ItemGameData.json",
+        "MissionGameData.json",
     };
 
     void Awake()

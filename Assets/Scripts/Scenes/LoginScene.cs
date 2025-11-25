@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class LoginScene : MonoBehaviour, IScene
 {
-    eSceneType IScene.SceneType => eSceneType.Login;
+    eSceneType IScene.SceneType => eSceneType.LoginScene;
 
     public List<string> RequiredDataFiles => new()
     {
