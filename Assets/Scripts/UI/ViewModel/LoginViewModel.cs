@@ -163,7 +163,7 @@ public class LoginViewModel : UI.IViewModel
             HelperMessage = "로그인 성공!";
             Render();
             // [변경] 성공 시 MainScene으로 이동
-            await Managers.Scene.LoadSceneAsync(eSceneType.Main);
+            await Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
             return;
         }
 
