@@ -161,8 +161,20 @@ public class NetworkManagerEx : IManagerBase
     {
         if (NetworkManager.Singleton == null)
         {
-            GameObject go = await Managers.Resource.InstantiateAsync("NetworkManager");
-            if (go != null) UnityEngine.Object.DontDestroyOnLoad(go);
+            // 1. 리소스 매니저를 통해 프리팹 원본만 로드 (풀링 사용 X)
+            GameObject prefab = await Managers.Resource.LoadAsync<GameObject>("NetworkManager");
+
+            if (prefab != null)
+            {
+                // 2. 부모 없이 최상위에 직접 생성
+                GameObject go = UnityEngine.Object.Instantiate(prefab);
+                go.name = "NetworkManager"; // 이름 깔끔하게 정리
+                UnityEngine.Object.DontDestroyOnLoad(go);
+            }
+            else
+            {
+                Debug.LogError("[NetworkManagerEx] NetworkManager 프리팹을 찾을 수 없습니다.");
+            }
         }
     }
 
