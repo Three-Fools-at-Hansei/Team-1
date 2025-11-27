@@ -30,17 +30,30 @@ using UnityEngine.InputSystem;
 
 public class PlayerMove : MonoBehaviour
 {
+    [Header("이동 설정")]
     public float moveSpeed = 5f;
+    
+    [Header("참조")]
+    [SerializeField] private Player _player;
+
     private Rigidbody2D _rigid;
     private Vector2 _moveInput;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    private Camera _mainCamera;
+    private Vector2 _aimDirection = Vector2.right;
 
     void Awake()
     {
         _rigid = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        _mainCamera = Camera.main;
+
+        if (_player == null)
+        {
+            _player = GetComponent<Player>();
+        }
     }
 
     void Start()
@@ -72,6 +85,18 @@ public class PlayerMove : MonoBehaviour
         _moveInput = context.ReadValue<Vector2>();
     }
 
+    void Update()
+    {
+        // 조준 방향 업데이트 (이동 방향 우선)
+        UpdateAimDirection();
+
+        if (_player != null)
+        {
+            _player.UpdateAimDirection(_aimDirection);
+            _player.Attack();
+        }
+    }
+
     void FixedUpdate()
     {
         _rigid.linearVelocity = _moveInput * moveSpeed;
@@ -90,5 +115,24 @@ public class PlayerMove : MonoBehaviour
                 _spriteRenderer.flipX = _moveInput.x < 0;
             }
         }
+    }
+
+    /// <summary>
+    /// 조준 방향 업데이트 (이동 방향 우선, 없으면 오른쪽)
+    /// </summary>
+    private void UpdateAimDirection()
+    {
+        // 이동 중이면 이동 방향을 사용
+        if (_moveInput.magnitude > 0.1f)
+        {
+            _aimDirection = _moveInput.normalized;
+        }
+        // 이동하지 않으면 기본 방향(오른쪽) 사용
+        else if (_aimDirection.magnitude < 0.1f)
+        {
+            _aimDirection = Vector2.right;
+        }
+
+        // Player 스크립트가 방향을 사용하도록 전달 (Update에서 처리)
     }
 }
