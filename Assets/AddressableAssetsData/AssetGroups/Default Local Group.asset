@@ -75,6 +75,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9014a34c62cec50469614f84a16c9687
+    m_Address: UI/Popup/UI_GameStartConfirmPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b410568108b95be49bbd787718045e4d
     m_Address: UI/View/UI_LoginView
     m_ReadOnly: 0
