@@ -231,10 +231,10 @@ public class UIManager : IManagerBase
                     var nextPopup = _popupStack.Peek();
                     Managers.Input.SwitchActionMap(nextPopup.ActionMapKey);
                 }
-                // 스택이 빈 경우 기본 세팅("None")
+                // 스택이 빈 경우 기본 세팅
                 else
                 {
-                    Managers.Input.SwitchActionMap("None");
+                    Managers.Input.SwitchActionMap(Managers.Input.DefaultActionMapKey);
                 }
             }
         }
