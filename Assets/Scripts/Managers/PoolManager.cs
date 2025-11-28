@@ -24,7 +24,7 @@ public class PoolManager : IManagerBase
 
     public void Init()
     {
-        Debug.Log($"{ManagerType} Manager Init ï¿½Õ´Ï´ï¿½.");
+        Debug.Log($"{ManagerType} Manager Init ÇÕ´Ï´Ù.");
     }
 
     public void Update() { }
@@ -35,20 +35,20 @@ public class PoolManager : IManagerBase
             pool.Clear();
 
         _pools.Clear();
-        Debug.Log($"{ManagerType} Manager Clear ï¿½Õ´Ï´ï¿½.");
+        Debug.Log($"{ManagerType} Manager Clear ÇÕ´Ï´Ù.");
     }
 
     /// <summary>
-    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ş¾ï¿½ Ç®ï¿½ï¿½ï¿½ï¿½ GameObject ï¿½Î½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½É´Ï´ï¿½.
-    /// ï¿½ï¿½ï¿½ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç®ï¿½ï¿½ ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ÇÁ¸®ÆÕ ¿øº»À» ¹Ş¾Æ Ç®¿¡¼­ GameObject ÀÎ½ºÅÏ½º¸¦ °¡Á®¿É´Ï´Ù.
+    /// ¸¸¾à ÇØ´ç ÇÁ¸®ÆÕÀÇ Ç®ÀÌ ¾ø´Ù¸é »õ·Î »ı¼ºÇÕ´Ï´Ù.
     /// </summary>
-    /// <param name="prefab">ï¿½Î½ï¿½ï¿½Ï½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½</param>
-    /// <param name="position">ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½Ä¡</param>
-    /// <param name="rotation">ï¿½Ê±ï¿½ È¸ï¿½ï¿½ï¿½ï¿½</param>
-    /// <param name="parent">ï¿½Î¸ï¿½ Transform</param>
-    /// <param name="defaultCapacity">Ç®ï¿½ï¿½ ï¿½âº» ï¿½ë·®</param>
-    /// <param name="maxSize">Ç®ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ë·®</param>
-    /// <returns>Ç®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½ï¿½ GameObject ï¿½Î½ï¿½ï¿½Ï½ï¿½</returns>
+    /// <param name="prefab">ÀÎ½ºÅÏ½ºÈ­ÇÒ ÇÁ¸®ÆÕ ¿øº»</param>
+    /// <param name="position">¹èÄ¡µÉ À§Ä¡</param>
+    /// <param name="rotation">ÃÊ±â È¸Àü°ª</param>
+    /// <param name="parent">ºÎ¸ğ Transform</param>
+    /// <param name="defaultCapacity">Ç®ÀÇ ±âº» ¿ë·®</param>
+    /// <param name="maxSize">Ç®ÀÇ ÃÖ´ë ¿ë·®</param>
+    /// <returns>Ç®¿¡¼­ ³ª¿Â È°¼ºÈ­µÈ GameObject ÀÎ½ºÅÏ½º</returns>
     public GameObject Spawn(GameObject prefab, Vector3? position = null, Quaternion? rotation = null, Transform parent = null, int defaultCapacity = 10, int maxSize = 50)
     {
         int key = prefab.GetInstanceID();
@@ -80,28 +80,20 @@ public class PoolManager : IManagerBase
         }
 
         GameObject go = pool.Get();
-        Debug.Log($"[PoolManager] Spawn: prefab={prefab.name}, go={go.name}, parent={parent?.name ?? "null"}");
 
         if (go.transform is RectTransform rectTransform)
         {
             RectTransform prefabRectTransform = prefab.transform as RectTransform;
-            rectTransform.localPosition = prefabRectTransform.localPosition; // zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
+            rectTransform.localPosition = prefabRectTransform.localPosition; // z°ª±îÁö ÃÊ±âÈ­
             rectTransform.localScale = prefabRectTransform.localScale;
             rectTransform.localRotation = prefabRectTransform.localRotation;
+            rectTransform.sizeDelta = prefabRectTransform.sizeDelta;
+            rectTransform.anchoredPosition = prefabRectTransform.anchoredPosition;
         }
 
-        // parentê°€ nullì´ ì•„ë‹ ë•Œë§Œ SetParent í˜¸ì¶œ (nullì´ë©´ ì”¬ ë£¨íŠ¸ì— ìœ ì§€)
-        if (parent != null)
-        {
-            Debug.Log($"[PoolManager] SetParent í˜¸ì¶œ: {go.name} -> {parent.name}");
-            go.transform.SetParent(parent, false);
-        }
-        else
-        {
-            Debug.Log($"[PoolManager] parentê°€ nullì´ë¯€ë¡œ SetParent í˜¸ì¶œ ì•ˆ í•¨: {go.name}");
-        }
+        go.transform.SetParent(parent, false);
         
-        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ UIï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ç´ï¿½
+        // °ªÀÌ ÀÖÀ» °æ¿ì UI°¡ ¾Æ´Ñ ¿ÀºêÁ§Æ®·Î ÆÇ´Ü
         if (position.HasValue || rotation.HasValue)
         {
             Vector3 finalPosition = position ?? go.transform.position;
@@ -113,9 +105,9 @@ public class PoolManager : IManagerBase
     }
 
     /// <summary>
-    /// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GameObjectï¿½ï¿½ Ç®ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
+    /// »ç¿ëÀÌ ³¡³­ GameObject¸¦ Ç®¿¡ ¹İÈ¯ÇÕ´Ï´Ù.
     /// </summary>
-    /// <param name="go">ï¿½ï¿½È¯ï¿½ï¿½ GameObject</param>
+    /// <param name="go">¹İÈ¯ÇÒ GameObject</param>
     public void Despawn(GameObject go)
     {
         if (go == null) 
@@ -127,7 +119,7 @@ public class PoolManager : IManagerBase
         }
         else
         {
-            Debug.LogWarning($"[PoolManager] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® '{go.name}'ï¿½ï¿½ Ç®ï¿½ï¿½ ï¿½Ò´ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½. Destroyï¿½ï¿½ È£ï¿½ï¿½ï¿½Õ´Ï´ï¿½.");
+            Debug.LogWarning($"[PoolManager] ¿ÀºêÁ§Æ® '{go.name}'´Â Ç®¿¡ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù. Destroy¸¦ È£ÃâÇÕ´Ï´Ù.");
             Object.Destroy(go);
         }
     }
