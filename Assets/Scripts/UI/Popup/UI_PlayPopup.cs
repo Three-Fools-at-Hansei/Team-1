@@ -23,50 +23,14 @@ public class UI_PlayPopup : UI_Popup
 
     private void OnEnable()
     {
-        // Object Pool에서 재사용될 때 Serialize된 필드가 손실될 수 있으므로
-        // 버튼 참조를 다시 찾아서 설정합니다. (게임 생성/참가 버튼만)
-        RefreshButtonReferences();
-        
         // 버튼 GameObject들을 명시적으로 활성화합니다.
         // Object Pool에서 재사용될 때 자식 GameObject들이 비활성화될 수 있습니다.
-        EnsureButtonsActive();
+        // EnsureButtonsActive();
         
         // 게임 생성/참가 버튼 리스너를 등록합니다.
         RegisterGameButtonsListeners();
     }
-    
-    /// <summary>
-    /// 버튼 참조를 다시 찾아서 설정합니다.
-    /// Object Pool에서 재사용될 때 Serialize된 필드가 손실될 수 있으므로 필요합니다.
-    /// 게임 생성/참가 버튼만 처리합니다.
-    /// </summary>
-    private void RefreshButtonReferences()
-    {
-        if (_createGameButton == null)
-        {
-            Transform createButtonTransform = transform.Find("ButtonContainer/CreateGameButton");
-            if (createButtonTransform != null)
-            {
-                _createGameButton = createButtonTransform.GetComponent<Button>();
-            }
-        }
-        
-        if (_joinGameButton == null)
-        {
-            Transform joinButtonTransform = transform.Find("ButtonContainer/JoinGameButton");
-            if (joinButtonTransform != null)
-            {
-                _joinGameButton = joinButtonTransform.GetComponent<Button>();
-            }
-        }
-        
-        // 디버그 로그 (문제 진단용)
-        if (_createGameButton == null || _joinGameButton == null)
-        {
-            Debug.LogWarning($"[UI_PlayPopup] 버튼 참조가 null입니다. CreateGameButton: {_createGameButton != null}, JoinGameButton: {_joinGameButton != null}");
-        }
-    }
-    
+
     /// <summary>
     /// 게임 생성/참가 버튼 GameObject를 명시적으로 활성화합니다.
     /// Object Pool에서 재사용될 때 자식 GameObject들이 비활성화될 수 있습니다.

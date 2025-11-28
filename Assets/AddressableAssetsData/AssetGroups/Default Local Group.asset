@@ -60,7 +60,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  # [HEAD Changes] New Popups
   - m_GUID: 64e1e1a8a7e6e4b469e7f0b3b3b12a75
     m_Address: UI/Popup/UI_SettingPopup
     m_ReadOnly: 0
@@ -81,7 +80,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  # [Main Changes] New Main Lobby View
   - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
     m_Address: UI/View/UI_MainLobby
     m_ReadOnly: 0
