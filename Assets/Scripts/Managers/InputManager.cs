@@ -10,13 +10,16 @@ public class InputManager : IManagerBase
 
     private InputActionMap _currentActionMap;
 
+    public string DefaultActionMapKey = "None";
+
     public void Init()
     {
         // input actions 생성
         _inputActions = new GameInputActions();
 
         // 기본값으로 "None" 액션맵 설정
-        SwitchActionMap("None");
+        DefaultActionMapKey = "None";
+        SwitchActionMap(DefaultActionMapKey);
 
         Debug.Log($"{ManagerType} Manager Init 합니다.");
     }
@@ -112,7 +115,7 @@ public class InputManager : IManagerBase
         _inputActions = new GameInputActions();
 
         // 기본 액션맵 세팅
-        SwitchActionMap("None");
+        SwitchActionMap(DefaultActionMapKey);
 
         Debug.Log($"{ManagerType} Manager Clear 합니다.");
     }
