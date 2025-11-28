@@ -14,6 +14,11 @@ GameObject:
   - component: {fileID: 2866760965682855414}
   - component: {fileID: 4485589998558085832}
   - component: {fileID: 7570519793851676606}
+  # HEAD Changes (Gameplay & Visuals)
+  - component: {fileID: 1234567890123456789}
+  - component: {fileID: 612345678901234567}
+  - component: {fileID: 5123456789012345678}
+  # Main Changes (Network Logic)
   - component: {fileID: 7549844700736971677}
   - component: {fileID: 3733453546391896365}
   m_Layer: 0
@@ -85,7 +90,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 978012912, guid: 99a24620d31e5ce4e823c32d11e17c2c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -135,6 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMove
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
+  _player: {fileID: 5123456789012345678}
 --- !u!50 &4485589998558085832
 Rigidbody2D:
   serializedVersion: 5
@@ -199,6 +205,68 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 1, y: 1}
   m_Direction: 0
+--- !u!95 &1234567890123456789
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 3080cbb3aaaaef64ba9621ca13924789, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &612345678901234567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c3f5e4c4b24747b0b4f7c7af0c1791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _offset: {x: 0, y: -0.6, z: 0}
+  _width: 0.9
+  _height: 0.12
+  _fillColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
+  _backgroundColor: {r: 0, g: 0, b: 0, a: 0.5}
+  _sortingOrderOffset: 10
+--- !u!114 &5123456789012345678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3ec5b9874f0b75469cd3df14a0cf5be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _hp: 100
+  _attackPower: 10
+  _attackSpeed: 1
+  _moveSpeed: 5
+  _attackRange: 2
+  _detectionRange: 10
+  _healthBar: {fileID: 612345678901234567}
+  _gun: {fileID: 0}
+  _bulletPrefab: {fileID: 4679516059571763972, guid: b9faab4d1ceaef1449076993f716fd49, type: 3}
+  _firePoint: {fileID: 0}
 --- !u!114 &7549844700736971677
 MonoBehaviour:
   m_ObjectHideFlags: 0
