@@ -55,6 +55,10 @@ public class HealthBar : MonoBehaviour
         Vector3 scale = _fillRenderer.transform.localScale;
         scale.x = _width * ratio;
         _fillRenderer.transform.localScale = scale;
+
+        Vector3 position = _fillRenderer.transform.localPosition;
+        position.x = -(_width - scale.x) * 0.5f; // 왼쪽 기준을 고정해 오른쪽만 줄어들도록 이동
+        _fillRenderer.transform.localPosition = position;
     }
 
     private void EnsureRenderers()
