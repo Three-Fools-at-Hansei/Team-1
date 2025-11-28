@@ -87,6 +87,8 @@ public class PoolManager : IManagerBase
             rectTransform.localPosition = prefabRectTransform.localPosition; // z값까지 초기화
             rectTransform.localScale = prefabRectTransform.localScale;
             rectTransform.localRotation = prefabRectTransform.localRotation;
+            rectTransform.sizeDelta = prefabRectTransform.sizeDelta;
+            rectTransform.anchoredPosition = prefabRectTransform.anchoredPosition;
         }
 
         go.transform.SetParent(parent, false);

@@ -60,6 +60,7 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  # [HEAD Changes] New Popups
   - m_GUID: 64e1e1a8a7e6e4b469e7f0b3b3b12a75
     m_Address: UI/Popup/UI_SettingPopup
     m_ReadOnly: 0
@@ -80,6 +81,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  # [Main Changes] New Main Lobby View
+  - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
+    m_Address: UI/View/UI_MainLobby
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b410568108b95be49bbd787718045e4d
     m_Address: UI/View/UI_LoginView
     m_ReadOnly: 0
@@ -90,8 +97,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3a53fc45d17d514eb77e0d88d8d6327
+    m_Address: Enemy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df9db96f5447a704f9f1320299b11023
+    m_Address: NetworkManager
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3716ee735925cd4aae4dcb6661d3c6e
     m_Address: UI/Popup/UI_DialogueWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2cc4b9ce3e5b724191223069e8b9185
+    m_Address: Core
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
