@@ -40,6 +40,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30a45a77f6466dc45b143153d98fc149
+    m_Address: UI/View/UI_LobbyView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3c007bc872aa4604c8d78ab5c047fece
     m_Address: ItemGameData.json
     m_ReadOnly: 0
@@ -55,6 +60,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  # [HEAD Changes] New Popups
+  - m_GUID: 64e1e1a8a7e6e4b469e7f0b3b3b12a75
+    m_Address: UI/Popup/UI_SettingPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7cf71c3e232254e4aab00c6079954f08
+    m_Address: UI/Popup/UI_PlayPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 895093bbbc4fe6942aff8a17c801ecdf
+    m_Address: UI/Popup/UI_ExitPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9014a34c62cec50469614f84a16c9687
+    m_Address: UI/Popup/UI_GameStartConfirmPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  # [Main Changes] New Main Lobby View
   - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
     m_Address: UI/View/UI_MainLobby
     m_ReadOnly: 0
