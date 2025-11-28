@@ -14,11 +14,9 @@ GameObject:
   - component: {fileID: 2866760965682855414}
   - component: {fileID: 4485589998558085832}
   - component: {fileID: 7570519793851676606}
-  # HEAD Changes (Gameplay & Visuals)
   - component: {fileID: 1234567890123456789}
   - component: {fileID: 612345678901234567}
   - component: {fileID: 5123456789012345678}
-  # Main Changes (Network Logic)
   - component: {fileID: 7549844700736971677}
   - component: {fileID: 3733453546391896365}
   m_Layer: 0
