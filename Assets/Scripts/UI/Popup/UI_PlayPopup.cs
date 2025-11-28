@@ -148,11 +148,10 @@ public class UI_PlayPopup : UI_Popup
     /// 게임 생성 버튼 클릭 시 호출됩니다.
     /// 현재는 미구현 상태입니다.
     /// </summary>
-    private void OnClickCreateGame()
+    private async void OnClickCreateGame()
     {
-        // TODO: 게임 생성 로직 구현 예정
-        // 예: Managers.Network.CreateGame() 또는 Managers.Scene.LoadScene(eSceneType.Combat)
-        Debug.Log("[UI_PlayPopup] 게임 생성 요청 (구현 예정)");
+        // 확인 팝업을 표시하여 사용자에게 게임 시작 여부를 묻습니다.
+        await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(new GameStartConfirmPopupViewModel());
     }
 
     /// <summary>

@@ -1,7 +1,13 @@
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEditor;
+using UnityEngine.Rendering;
+#if UNITY_EDITOR
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
+#endif
 
 /// <summary>
 /// UI_PlayPopup 프리팹을 이미지 레이아웃에 맞게 수정하는 에디터 스크립트입니다.
@@ -120,6 +126,147 @@ public class PlayPopupPrefabModifier
         Debug.Log("[PlayPopupPrefabModifier] UI_PlayPopup 프리팹 수정이 완료되었습니다.");
     }
 
+    [MenuItem("Tools/Create Game Start Confirm Popup")]
+    public static void CreateGameStartConfirmPopupPrefab()
+    {
+        Debug.Log("[PlayPopupPrefabModifier] UI_GameStartConfirmPopup 프리팹 생성을 시작합니다.");
+
+        string prefabPath = "Assets/Prefabs/UI/Popup/UI_GameStartConfirmPopup.prefab";
+        string directory = Path.GetDirectoryName(prefabPath);
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+
+        if (File.Exists(prefabPath))
+            AssetDatabase.DeleteAsset(prefabPath);
+
+        GameObject popup = CreateBasePopup("UI_GameStartConfirmPopup");
+        UI_GameStartConfirmPopup popupComponent = popup.AddComponent<UI_GameStartConfirmPopup>();
+
+        // 메시지 텍스트
+        GameObject messageGo = new GameObject("MessageText");
+        messageGo.transform.SetParent(popup.transform, false);
+        RectTransform messageRect = messageGo.AddComponent<RectTransform>();
+        messageRect.anchorMin = new Vector2(0.5f, 0.7f);
+        messageRect.anchorMax = new Vector2(0.5f, 0.7f);
+        messageRect.pivot = new Vector2(0.5f, 0.5f);
+        messageRect.sizeDelta = new Vector2(320, 80);
+
+        TMP_Text messageText = messageGo.AddComponent<TextMeshProUGUI>();
+        messageText.text = "게임을 시작할까요?";
+        messageText.fontSize = 32;
+        messageText.alignment = TextAlignmentOptions.Center;
+
+        // 버튼 컨테이너
+        GameObject buttonContainer = new GameObject("ButtonContainer");
+        buttonContainer.transform.SetParent(popup.transform, false);
+        RectTransform containerRect = buttonContainer.AddComponent<RectTransform>();
+        containerRect.anchorMin = new Vector2(0.5f, 0.35f);
+        containerRect.anchorMax = new Vector2(0.5f, 0.35f);
+        containerRect.pivot = new Vector2(0.5f, 0.5f);
+        containerRect.sizeDelta = new Vector2(360, 80);
+
+        GameObject confirmButton = CreateButton("ConfirmButton", "확인", buttonContainer.transform);
+        RectTransform confirmRect = confirmButton.GetComponent<RectTransform>();
+        confirmRect.sizeDelta = new Vector2(160, 60);
+        confirmRect.anchoredPosition = new Vector2(-100, 0);
+
+        GameObject cancelButton = CreateButton("CancelButton", "취소", buttonContainer.transform);
+        RectTransform cancelRect = cancelButton.GetComponent<RectTransform>();
+        cancelRect.sizeDelta = new Vector2(160, 60);
+        cancelRect.anchoredPosition = new Vector2(100, 0);
+
+        SerializedObject serializedObject = new SerializedObject(popupComponent);
+        serializedObject.FindProperty("_messageText").objectReferenceValue = messageText;
+        serializedObject.FindProperty("_confirmButton").objectReferenceValue = confirmButton.GetComponent<Button>();
+        serializedObject.FindProperty("_cancelButton").objectReferenceValue = cancelButton.GetComponent<Button>();
+        serializedObject.ApplyModifiedProperties();
+
+        PrefabUtility.SaveAsPrefabAsset(popup, prefabPath);
+        Object.DestroyImmediate(popup);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        // Addressable에 등록
+        RegisterToAddressable(prefabPath, "UI/Popup/UI_GameStartConfirmPopup");
+
+        Debug.Log("[PlayPopupPrefabModifier] UI_GameStartConfirmPopup 프리팹 생성이 완료되었습니다.");
+    }
+
+    [MenuItem("Tools/Register Game Start Confirm Popup to Addressable")]
+    public static void RegisterGameStartConfirmPopupToAddressable()
+    {
+        string prefabPath = "Assets/Prefabs/UI/Popup/UI_GameStartConfirmPopup.prefab";
+        
+        if (!File.Exists(prefabPath))
+        {
+            Debug.LogError($"[PlayPopupPrefabModifier] 프리팹을 찾을 수 없습니다: {prefabPath}");
+            return;
+        }
+
+        RegisterToAddressable(prefabPath, "UI/Popup/UI_GameStartConfirmPopup");
+        Debug.Log("[PlayPopupPrefabModifier] Addressable 등록이 완료되었습니다.");
+    }
+
+    /// <summary>
+    /// 프리팹을 Addressable 시스템에 등록합니다.
+    /// </summary>
+    private static void RegisterToAddressable(string assetPath, string addressableAddress)
+    {
+#if UNITY_EDITOR
+        try
+        {
+            // Addressable 설정 가져오기
+            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+            {
+                Debug.LogError("[PlayPopupPrefabModifier] Addressable 설정을 찾을 수 없습니다.");
+                return;
+            }
+
+            // 에셋 GUID 가져오기
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            if (string.IsNullOrEmpty(guid))
+            {
+                Debug.LogError($"[PlayPopupPrefabModifier] 에셋 GUID를 찾을 수 없습니다: {assetPath}");
+                return;
+            }
+
+            // 이미 등록되어 있는지 확인
+            AddressableAssetEntry existingEntry = settings.FindAssetEntry(guid);
+            if (existingEntry != null)
+            {
+                // 이미 등록되어 있으면 주소만 업데이트
+                existingEntry.SetAddress(addressableAddress);
+                Debug.Log($"[PlayPopupPrefabModifier] Addressable 주소 업데이트: {addressableAddress}");
+            }
+            else
+            {
+                // Default Group 가져오기
+                AddressableAssetGroup defaultGroup = settings.DefaultGroup;
+                if (defaultGroup == null)
+                {
+                    Debug.LogError("[PlayPopupPrefabModifier] Default Group을 찾을 수 없습니다.");
+                    return;
+                }
+
+                // Addressable에 추가
+                AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, defaultGroup, false, false);
+                entry.SetAddress(addressableAddress);
+                Debug.Log($"[PlayPopupPrefabModifier] Addressable에 등록 완료: {addressableAddress}");
+            }
+
+            // 변경사항 저장
+            EditorUtility.SetDirty(settings);
+            AssetDatabase.SaveAssets();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[PlayPopupPrefabModifier] Addressable 등록 실패: {e.Message}");
+        }
+#endif
+    }
+
     /// <summary>
     /// 기본 버튼을 생성합니다.
     /// </summary>
@@ -179,6 +326,53 @@ public class PlayPopupPrefabModifier
         }
 
         return null;
+    }
+    private static GameObject CreateBasePopup(string name)
+    {
+        GameObject popup = new GameObject(name);
+
+        Canvas canvas = popup.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 100;
+
+        CanvasScaler scaler = popup.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight = 1.0f;
+
+        popup.AddComponent<GraphicRaycaster>();
+
+        SortingGroup sortingGroup = popup.AddComponent<SortingGroup>();
+        sortingGroup.sortingOrder = 100;
+
+        CanvasGroup canvasGroup = popup.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+
+        GameObject backgroundPanel = new GameObject("BackgroundPanel");
+        backgroundPanel.transform.SetParent(popup.transform, false);
+        RectTransform bgRect = backgroundPanel.AddComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero;
+        bgRect.anchorMax = Vector2.one;
+        bgRect.sizeDelta = Vector2.zero;
+
+        Image bgImage = backgroundPanel.AddComponent<Image>();
+        bgImage.color = new Color(0, 0, 0, 0.5f);
+
+        GameObject popupPanel = new GameObject("PopupPanel");
+        popupPanel.transform.SetParent(popup.transform, false);
+        RectTransform panelRect = popupPanel.AddComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.sizeDelta = new Vector2(480, 320);
+
+        Image panelImage = popupPanel.AddComponent<Image>();
+        panelImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+
+        return popup;
     }
 }
 
