@@ -279,7 +279,8 @@ public class UIManager : IManagerBase
                 rootGo = new GameObject { name = "@UI_Root_Scene" };
 
                 Canvas canvas = rootGo.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                //canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.worldCamera = Camera.main; // 나중에 CameraManager에게서 가져오도록 바꿔야겠죠??
                 CanvasScaler scaler = rootGo.AddComponent<CanvasScaler>();
                 scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
