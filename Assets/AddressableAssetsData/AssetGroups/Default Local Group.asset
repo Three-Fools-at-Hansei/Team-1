@@ -65,6 +65,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65e170e82edfe1f42831e5631718a591
+    m_Address: UI/Popup/UI_GameJoinPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7cf71c3e232254e4aab00c6079954f08
     m_Address: UI/Popup/UI_PlayPopup
     m_ReadOnly: 0
