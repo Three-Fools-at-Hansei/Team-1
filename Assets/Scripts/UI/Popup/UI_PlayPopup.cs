@@ -156,13 +156,12 @@ public class UI_PlayPopup : UI_Popup
 
     /// <summary>
     /// 게임 참가 버튼 클릭 시 호출됩니다.
-    /// 현재는 미구현 상태입니다.
+    /// 게임 코드 입력 팝업을 표시합니다.
     /// </summary>
-    private void OnClickJoinGame()
+    private async void OnClickJoinGame()
     {
-        // TODO: 게임 참가 로직 구현 예정
-        // 예: Managers.Network.JoinGame() 또는 게임 목록 표시
-        Debug.Log("[UI_PlayPopup] 게임 참가 요청 (구현 예정)");
+        // 게임 코드 입력 팝업을 표시합니다.
+        await Managers.UI.ShowAsync<UI_GameJoinPopup>(new GameJoinPopupViewModel());
     }
 
     protected override void OnStateChanged()

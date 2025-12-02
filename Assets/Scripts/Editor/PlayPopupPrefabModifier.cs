@@ -208,6 +208,165 @@ public class PlayPopupPrefabModifier
         Debug.Log("[PlayPopupPrefabModifier] Addressable 등록이 완료되었습니다.");
     }
 
+    [MenuItem("Tools/Create Game Join Popup")]
+    public static void CreateGameJoinPopupPrefab()
+    {
+        Debug.Log("[PlayPopupPrefabModifier] UI_GameJoinPopup 프리팹 생성을 시작합니다.");
+
+        string prefabPath = "Assets/Prefabs/UI/Popup/UI_GameJoinPopup.prefab";
+        string directory = Path.GetDirectoryName(prefabPath);
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+
+        if (File.Exists(prefabPath))
+            AssetDatabase.DeleteAsset(prefabPath);
+
+        GameObject popup = CreateBasePopup("UI_GameJoinPopup");
+        UI_GameJoinPopup popupComponent = popup.AddComponent<UI_GameJoinPopup>();
+
+        // PopupPanel 찾기
+        Transform popupPanel = popup.transform.Find("PopupPanel");
+        if (popupPanel == null)
+        {
+            Debug.LogError("[PlayPopupPrefabModifier] PopupPanel을 찾을 수 없습니다.");
+            Object.DestroyImmediate(popup);
+            return;
+        }
+
+        // 메시지 텍스트
+        GameObject messageGo = new GameObject("MessageText");
+        messageGo.transform.SetParent(popupPanel, false);
+        RectTransform messageRect = messageGo.AddComponent<RectTransform>();
+        messageRect.anchorMin = new Vector2(0.5f, 0.7f);
+        messageRect.anchorMax = new Vector2(0.5f, 0.7f);
+        messageRect.pivot = new Vector2(0.5f, 0.5f);
+        messageRect.sizeDelta = new Vector2(320, 80);
+
+        TMP_Text messageText = messageGo.AddComponent<TextMeshProUGUI>();
+        messageText.text = "게임 코드 입력";
+        messageText.fontSize = 32;
+        messageText.alignment = TextAlignmentOptions.Center;
+
+        // 게임 코드 입력 필드
+        GameObject inputFieldGo = CreateInputField("CodeInputField", popupPanel);
+        RectTransform inputRect = inputFieldGo.GetComponent<RectTransform>();
+        inputRect.anchorMin = new Vector2(0.5f, 0.5f);
+        inputRect.anchorMax = new Vector2(0.5f, 0.5f);
+        inputRect.pivot = new Vector2(0.5f, 0.5f);
+        inputRect.sizeDelta = new Vector2(360, 60);
+        inputRect.anchoredPosition = Vector2.zero;
+
+        TMP_InputField inputField = inputFieldGo.GetComponent<TMP_InputField>();
+        inputField.placeholder.GetComponent<TMP_Text>().text = "게임 코드를 입력하세요";
+        inputField.contentType = TMP_InputField.ContentType.Alphanumeric;
+
+        // 입장하기 버튼
+        GameObject enterButton = CreateButton("EnterButton", "입장하기", popupPanel);
+        RectTransform enterRect = enterButton.GetComponent<RectTransform>();
+        enterRect.anchorMin = new Vector2(0.5f, 0.3f);
+        enterRect.anchorMax = new Vector2(0.5f, 0.3f);
+        enterRect.pivot = new Vector2(0.5f, 0.5f);
+        enterRect.sizeDelta = new Vector2(200, 60);
+        enterRect.anchoredPosition = Vector2.zero;
+
+        // Serialized 필드 연결
+        SerializedObject serializedObject = new SerializedObject(popupComponent);
+        serializedObject.FindProperty("_messageText").objectReferenceValue = messageText;
+        serializedObject.FindProperty("_codeInputField").objectReferenceValue = inputField;
+        serializedObject.FindProperty("_enterButton").objectReferenceValue = enterButton.GetComponent<Button>();
+        serializedObject.ApplyModifiedProperties();
+
+        PrefabUtility.SaveAsPrefabAsset(popup, prefabPath);
+        Object.DestroyImmediate(popup);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        // Addressable에 등록
+        RegisterToAddressable(prefabPath, "UI/Popup/UI_GameJoinPopup");
+
+        Debug.Log("[PlayPopupPrefabModifier] UI_GameJoinPopup 프리팹 생성이 완료되었습니다.");
+    }
+
+    /// <summary>
+    /// TMP_InputField를 생성합니다.
+    /// </summary>
+    private static GameObject CreateInputField(string name, Transform parent)
+    {
+        GameObject inputFieldGo = new GameObject(name);
+        inputFieldGo.transform.SetParent(parent, false);
+
+        RectTransform rect = inputFieldGo.AddComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(360, 60);
+
+        Image image = inputFieldGo.AddComponent<Image>();
+        image.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+
+        TMP_InputField inputField = inputFieldGo.AddComponent<TMP_InputField>();
+
+        // Text Area (Viewport)
+        GameObject textArea = new GameObject("Text Area");
+        textArea.transform.SetParent(inputFieldGo.transform, false);
+        RectTransform textAreaRect = textArea.AddComponent<RectTransform>();
+        textAreaRect.anchorMin = Vector2.zero;
+        textAreaRect.anchorMax = Vector2.one;
+        textAreaRect.offsetMin = new Vector2(10, 5);
+        textAreaRect.offsetMax = new Vector2(-10, -5);
+
+        // Viewport
+        GameObject viewport = new GameObject("Viewport");
+        viewport.transform.SetParent(textArea.transform, false);
+        RectTransform viewportRect = viewport.AddComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.sizeDelta = Vector2.zero;
+        viewportRect.anchoredPosition = Vector2.zero;
+
+        Mask mask = viewport.AddComponent<Mask>();
+        mask.showMaskGraphic = false;
+        Image viewportImage = viewport.AddComponent<Image>();
+        viewportImage.color = new Color(1, 1, 1, 0);
+
+        // Text
+        GameObject text = new GameObject("Text");
+        text.transform.SetParent(viewport.transform, false);
+        RectTransform textRect = text.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.sizeDelta = Vector2.zero;
+        textRect.anchoredPosition = Vector2.zero;
+
+        TMP_Text textComponent = text.AddComponent<TextMeshProUGUI>();
+        textComponent.text = string.Empty;
+        textComponent.fontSize = 24;
+        textComponent.color = Color.white;
+        textComponent.alignment = TextAlignmentOptions.Left;
+
+        // Placeholder
+        GameObject placeholder = new GameObject("Placeholder");
+        placeholder.transform.SetParent(viewport.transform, false);
+        RectTransform placeholderRect = placeholder.AddComponent<RectTransform>();
+        placeholderRect.anchorMin = Vector2.zero;
+        placeholderRect.anchorMax = Vector2.one;
+        placeholderRect.sizeDelta = Vector2.zero;
+        placeholderRect.anchoredPosition = Vector2.zero;
+
+        TMP_Text placeholderText = placeholder.AddComponent<TextMeshProUGUI>();
+        placeholderText.text = "게임 코드를 입력하세요";
+        placeholderText.fontSize = 24;
+        placeholderText.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+        placeholderText.alignment = TextAlignmentOptions.Left;
+        placeholderText.fontStyle = FontStyles.Italic;
+
+        // InputField 설정
+        inputField.textViewport = viewportRect;
+        inputField.textComponent = textComponent;
+        inputField.placeholder = placeholderText;
+        inputField.targetGraphic = image;
+
+        return inputFieldGo;
+    }
+
     /// <summary>
     /// 프리팹을 Addressable 시스템에 등록합니다.
     /// </summary>
