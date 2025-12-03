@@ -1,9 +1,10 @@
+using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
 /// 플레이어와 적의 기반 클래스
 /// </summary>
-public abstract class Entity : MonoBehaviour
+public abstract class Entity : NetworkBehaviour
 {
     [Header("기본 스탯")]
     [SerializeField] protected int _hp = 100;

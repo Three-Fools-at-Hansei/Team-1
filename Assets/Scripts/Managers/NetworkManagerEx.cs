@@ -186,13 +186,22 @@ public class NetworkManagerEx : IManagerBase
     private float _heartbeatTimer;
     private void HandleLobbyHeartbeat()
     {
-        if (_currentLobby != null && NetworkManager.Singleton.IsHost)
+        // [수정] NetworkManager.Singleton이 null인지 먼저 확인해야 합니다.
+        if (_currentLobby != null && NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost)
         {
             _heartbeatTimer -= Time.deltaTime;
             if (_heartbeatTimer <= 0f)
             {
                 _heartbeatTimer = 15f;
-                LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
+                // 핑 전송 중 예외 처리 추가 (안전성 강화)
+                try
+                {
+                    LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[Network] Heartbeat 실패: {e.Message}");
+                }
             }
         }
     }

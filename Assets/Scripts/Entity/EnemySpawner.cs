@@ -238,15 +238,12 @@ public class EnemySpawner : MonoBehaviour
     /// </summary>
     private IEnumerator SpawnEnemyCoroutine()
     {
-        //// 네트워크 체크 (호스트/서버만 스폰)
-        //if (NetworkManager.Singleton != null)
-        //{
-        //    if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer)
-        //    {
-        //        Debug.LogWarning("[EnemySpawner] 호스트/서버가 아닙니다. 스폰을 건너뜁니다.");
-        //        yield break;
-        //    }
-        //}
+        // 네트워크 체크 (호스트/서버만 스폰)
+        if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer)
+        {
+            Debug.LogWarning("[EnemySpawner] 호스트/서버가 아닙니다. 스폰을 건너뜁니다.");
+            yield break;
+        }
 
         // Managers.Resource null 체크
         if (Managers.Resource == null)
@@ -324,16 +321,16 @@ public class EnemySpawner : MonoBehaviour
         try
         {
             Debug.Log($"[EnemySpawner] SpawnEnemy() 시작");
-            
-            //// 네트워크 체크 (호스트/서버만 스폰)
-            //if (NetworkManager.Singleton != null)
-            //{
-            //    if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer)
-            //    {
-            //        Debug.LogWarning("[EnemySpawner] 호스트/서버가 아닙니다. 스폰을 건너뜁니다.");
-            //        return;
-            //    }
-            //}
+
+            // 네트워크 체크 (호스트/서버만 스폰)
+            if (NetworkManager.Singleton != null)
+            {
+                if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer)
+                {
+                    Debug.LogWarning("[EnemySpawner] 호스트/서버가 아닙니다. 스폰을 건너뜁니다.");
+                    return;
+                }
+            }
 
             // Managers.Resource null 체크
             if (Managers.Resource == null)
