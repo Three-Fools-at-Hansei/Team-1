@@ -15,11 +15,6 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: b83f4e9bea753a7478dfa187e570fdb0
   m_SerializeEntries:
-  - m_GUID: 05005f5ca62d17946ba68182eef987df
-    m_Address: UI/Popup/UI_PopupHello
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0bd09d950edcbe043be3b9b5cf4a4da8
     m_Address: Player
     m_ReadOnly: 0
@@ -30,33 +25,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1d43cab4b1953fe469e7d0c8a16eff96
-    m_Address: NikkeGameData.json
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2841c9eb472ca994ca3c238e17e6a37b
-    m_Address: UI/View/UI_SpeechBubble
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 30a45a77f6466dc45b143153d98fc149
     m_Address: UI/View/UI_LobbyView
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3c007bc872aa4604c8d78ab5c047fece
-    m_Address: ItemGameData.json
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 62971803ff942bb4fbeeef5a45c67663
     m_Address: BeginnerNPC
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6337c7980aa26e3479291c6aec0cc13e
-    m_Address: Prefabs/UI/Popup/UI_PopupTest
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -70,6 +45,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
+    m_Address: UI/View/UI_MainLobby
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 895093bbbc4fe6942aff8a17c801ecdf
     m_Address: UI/Popup/UI_ExitPopup
     m_ReadOnly: 0
@@ -80,18 +60,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
-    m_Address: UI/View/UI_MainLobby
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b410568108b95be49bbd787718045e4d
     m_Address: UI/View/UI_LoginView
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b74f450e5cc21ae4a81f923b8851a38c
-    m_Address: MissionGameData.json
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
