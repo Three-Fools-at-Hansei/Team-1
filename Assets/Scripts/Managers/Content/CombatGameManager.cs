@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
-using System.Threading.Tasks;
 
 public enum eGameState
 {
@@ -25,10 +24,15 @@ public class CombatGameManager : NetworkBehaviour
     public NetworkVariable<int> CurrentWave = new NetworkVariable<int>(1);
 
     private EnemySpawner _spawner;
-    private int _rewardSelectionCount = 0; // 보상 선택한 플레이어 수
+    private int _rewardSelectionCount = 0;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
     }
 
@@ -70,9 +74,9 @@ public class CombatGameManager : NetworkBehaviour
     public void StartGame()
     {
         if (!IsServer) return;
-
-        // TODO: 2명 체크 로직 (테스트를 위해 주석 처리 가능)
-        // if (NetworkManager.Singleton.ConnectedClientsIds.Count < MaxPlayers) return;
+        // 테스트를 위해 인원 체크는 로그로만 남김
+        if (NetworkManager.Singleton.ConnectedClientsIds.Count < MaxPlayers)
+            Debug.LogWarning("플레이어 수가 부족하지만 게임을 강제로 시작합니다.");
 
         StartCoroutine(CoGameLoop());
     }
@@ -81,11 +85,12 @@ public class CombatGameManager : NetworkBehaviour
     {
         // 1. 게임 시작
         Debug.Log("[GameLoop] 게임 시작!");
+        SetGameState(eGameState.WaveInProgress); // 바로 전투 상태로 진입 (웨이브 1)
         CurrentWave.Value = 1;
 
         while (true) // 웨이브 루프
         {
-            // 2. 웨이브 데이터 로드
+            // 1. 웨이브 데이터 확인
             WaveGameData waveData = Managers.Data.Get<WaveGameData>(CurrentWave.Value);
             if (waveData == null)
             {
@@ -94,25 +99,27 @@ public class CombatGameManager : NetworkBehaviour
                 yield break;
             }
 
-            // 3. 웨이브 진행 (전투)
+            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 진행 중...");
             SetGameState(eGameState.WaveInProgress);
+
+            // 2. 웨이브 스폰 실행
             yield return StartCoroutine(CoProcessWave(waveData));
 
-            // 4. 웨이브 클리어 대기 (모든 적 처치)
+            // 3. 적 전멸 대기
             yield return new WaitUntil(() => _spawner.GetActiveEnemyCount() == 0);
-            Debug.Log($"[GameLoop] 웨이브 {CurrentWave.Value} 클리어!");
+            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 클리어!");
 
-            // 5. 보상 선택 단계
-            SetGameState(eGameState.RewardSelection);
+            // 4. 보상 선택 단계 진입
             _rewardSelectionCount = 0;
+            SetGameState(eGameState.RewardSelection);
 
-            // 모든 플레이어가 선택할 때까지 대기
-            // (실제로는 타임아웃 등 안전장치 필요)
+            Debug.Log("[GameLoop] 보상 선택 대기 중...");
+            // 모든 접속자가 선택할 때까지 대기
             yield return new WaitUntil(() => _rewardSelectionCount >= NetworkManager.Singleton.ConnectedClientsIds.Count);
 
             Debug.Log("[GameLoop] 모든 플레이어 보상 선택 완료. 다음 웨이브로.");
 
-            // 6. 다음 웨이브 준비
+            // 5. 다음 웨이브
             CurrentWave.Value++;
             yield return new WaitForSeconds(3f); // 잠시 대기
         }
@@ -121,9 +128,7 @@ public class CombatGameManager : NetworkBehaviour
     private IEnumerator CoProcessWave(WaveGameData data)
     {
         float timer = 0f;
-
-        // 시간순 정렬 (혹시 모르니)
-        var events = new Queue<SpawnEventData>(data.events); // 이미 시간순이라 가정
+        var events = new Queue<SpawnEventData>(data.events);
 
         while (events.Count > 0)
         {
@@ -145,18 +150,31 @@ public class CombatGameManager : NetworkBehaviour
         GameState.Value = newState;
     }
 
+    public void TriggerDefeat()
+    {
+        if (IsServer)
+        {
+            StopAllCoroutines();
+            _spawner.ClearAllEnemies();
+            SetGameState(eGameState.Defeat);
+        }
+    }
+
     // --- Client RPCs ---
 
     /// <summary>
     /// 클라이언트가 보상을 선택했을 때 서버에 알림
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
-    public void SelectRewardServerRpc(int rewardId)
+    public void SelectRewardServerRpc(int rewardId, ServerRpcParams rpcParams = default)
     {
         _rewardSelectionCount++;
-        Debug.Log($"[CombatGameManager] 플레이어 보상 선택 확인. ({_rewardSelectionCount}명 완료)");
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        Debug.Log($"[CombatGameManager] Client({clientId}) 보상 선택 완료 (ID: {rewardId}). 진행: {_rewardSelectionCount}/{NetworkManager.Singleton.ConnectedClientsIds.Count}");
 
-        // 실제 보상 적용 로직 (UserData 갱신)은 여기서 처리
+        // TODO: 여기서 실제 스탯(RewardGameData)을 UserDataModel이나 Player 객체에 적용
+        // RewardGameData reward = Managers.Data.Get<RewardGameData>(rewardId);
+        // if (reward != null) { ... }
     }
 
     // --- State Change Handler ---
@@ -165,33 +183,10 @@ public class CombatGameManager : NetworkBehaviour
     {
         Debug.Log($"[CombatGameManager] 상태 변경: {previous} -> {current}");
 
-        // 상태에 따라 UI 팝업 등을 띄우는 로직은 여기서 Event로 전파하거나
-        // 각 UI ViewModel에서 GameState를 구독하여 처리
-
+        // 상태 변경 시 UI 팝업 자동 호출
         if (current == eGameState.RewardSelection)
         {
-            // 보상 팝업 오픈 (로컬)
-            // Managers.UI.ShowAsync<UI_RewardPopup>();
-        }
-        else if (current == eGameState.Victory)
-        {
-            Debug.Log("VICTORY POPUP OPEN");
-            // Managers.UI.ShowAsync<UI_VictoryPopup>();
-        }
-        else if (current == eGameState.Defeat)
-        {
-            Debug.Log("DEFEAT POPUP OPEN");
-            // Managers.UI.ShowAsync<UI_DefeatPopup>();
-        }
-    }
-
-    public void TriggerDefeat()
-    {
-        if (IsServer)
-        {
-            StopAllCoroutines();
-            SetGameState(eGameState.Defeat);
-            _spawner.ClearAllEnemies();
+            Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
         }
     }
 }
