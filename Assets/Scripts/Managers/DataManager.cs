@@ -59,6 +59,13 @@ public class DataManager : IManagerBase
                 case "MonsterGameData.json":
                     loadingTasks.Add(LoadJsonAsync<MonsterGameData>(fileName));
                     break;
+                case "WaveGameData.json":
+                    loadingTasks.Add(LoadJsonAsync<WaveGameData>(fileName));
+                    break;
+                case "RewardGameData.json":
+                    loadingTasks.Add(LoadJsonAsync<RewardGameData>(fileName));
+                    break;
+
                 // 새로운 GameData를 추가할 경우 여기에 case 구문을 추가
                 // 추후 WaveGameData, RewardGameData 추가 예정
 
