@@ -50,6 +50,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4fc614b0ee0ab1d479899c84eff5b024
+    m_Address: UI/Popup/UI_PopupCombatResult
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 62971803ff942bb4fbeeef5a45c67663
     m_Address: BeginnerNPC
     m_ReadOnly: 0
@@ -70,6 +75,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
+    m_Address: UI/View/UI_MainLobby
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 895093bbbc4fe6942aff8a17c801ecdf
     m_Address: UI/Popup/UI_ExitPopup
     m_ReadOnly: 0
@@ -77,11 +87,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9014a34c62cec50469614f84a16c9687
     m_Address: UI/Popup/UI_GameStartConfirmPopup
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
-    m_Address: UI/View/UI_MainLobby
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
