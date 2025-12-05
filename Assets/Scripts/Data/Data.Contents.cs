@@ -34,6 +34,39 @@ public class MonsterGameData : IDataId
 }
 #endregion
 
+#region WaveGameData
+[Serializable]
+public class WaveGameData : IDataId
+{
+    public int id; // Wave Level (1, 2, 3...)
+    public List<SpawnEventData> events; // 스폰 이벤트 목록
+
+    public int ID => id;
+}
+
+[Serializable]
+public class SpawnEventData
+{
+    public float time;       // 웨이브 시작 후 경과 시간 (초)
+    public int spawnerIdx;   // 스폰 포인트 인덱스 (0 ~ 15)
+    public int monsterId;    // 소환할 몬스터 ID
+}
+#endregion
+
+#region RewardGameData
+[Serializable]
+public class RewardGameData : IDataId
+{
+    public int id;
+    public string targetType; // "Individual" or "Team"
+    public string effectType; // "MaxHp", "Atk", "AtkSpeed", "MoveSpeed", "Heal" etc.
+    public float value;       // 적용 수치
+    public string description;
+
+    public int ID => id;
+}
+#endregion
+
 // ======================= User Data (Read-Write) =======================
 
 [Serializable]
