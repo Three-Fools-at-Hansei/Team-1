@@ -7,9 +7,6 @@ public class LoginScene : MonoBehaviour, IScene
 
     public List<string> RequiredDataFiles => new()
     {
-        "ItemGameData.json",
-        "MissionGameData.json",
-        "NikkeGameData.json",
     };
 
     void Awake()

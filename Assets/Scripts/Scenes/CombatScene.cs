@@ -8,9 +8,7 @@ public class CombatScene : MonoBehaviour, IScene
 
     public List<string> RequiredDataFiles => new()
     {
-        "NikkeGameData.json",
-        "ItemGameData.json",
-        "MissionGameData.json",
+        "MonsterGameData.json",
     };
 
     void Awake()
