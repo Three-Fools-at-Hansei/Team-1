@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 5123456789012345678}
   - component: {fileID: 7549844700736971677}
   - component: {fileID: 3733453546391896365}
+  - component: {fileID: 5107164769006343921}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -35,7 +36,7 @@ Transform:
   m_GameObject: {fileID: 4311675286977602641}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.96699, y: 1.42397, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -165,7 +166,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!70 &7570519793851676606
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -262,9 +263,9 @@ MonoBehaviour:
   _attackRange: 2
   _detectionRange: 10
   _healthBar: {fileID: 612345678901234567}
-  _gun: {fileID: 0}
+  _gun: {fileID: 5107164769006343921}
   _bulletPrefab: {fileID: 4679516059571763972, guid: b9faab4d1ceaef1449076993f716fd49, type: 3}
-  _firePoint: {fileID: 0}
+  _firePoint: {fileID: 3326281540445355402}
 --- !u!114 &7549844700736971677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,3 +329,20 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
+--- !u!114 &5107164769006343921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a57437e05f8a5934f99034532ef5ff70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gun
+  _aimDirection: {x: 1, y: 0}
+  _bulletPrefab: {fileID: 4679516059571763972, guid: b9faab4d1ceaef1449076993f716fd49, type: 3}
+  _firePoint: {fileID: 3326281540445355402}
+  _bulletSpeed: 10
+  _fireRate: 1
