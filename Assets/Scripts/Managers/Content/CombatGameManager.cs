@@ -25,8 +25,6 @@ public class CombatGameManager : NetworkBehaviour
 
     // 내부 관리 변수
     private EnemySpawner _spawner;
-
-    // [수정] 단순 카운트가 아닌, 선택한 클라이언트 ID를 저장하여 중복 방지 및 연결 끊김 대응
     private HashSet<ulong> _selectedRewardClients = new HashSet<ulong>();
 
     // 사망한 플레이어 목록 (ID)
@@ -75,7 +73,7 @@ public class CombatGameManager : NetworkBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
-        // [수정] 플레이어가 나갔을 때 보상 선택 목록 및 사망자 목록에서 제거
+        // 플레이어가 나갔을 때 보상 선택 목록 및 사망자 목록에서 제거
         if (_selectedRewardClients.Contains(clientId))
             _selectedRewardClients.Remove(clientId);
 
@@ -83,8 +81,6 @@ public class CombatGameManager : NetworkBehaviour
             _deadPlayers.Remove(clientId);
 
         Debug.Log($"[CombatGameManager] 플레이어 연결 종료 (ID: {clientId}). 대기열 갱신.");
-
-        // 보상 선택 단계였다면, 남은 인원으로 조건이 충족되었는지 즉시 확인됨 (CoGameLoop의 WaitUntil에서 감지)
     }
 
     // ========================================================================
@@ -148,7 +144,7 @@ public class CombatGameManager : NetworkBehaviour
             _selectedRewardClients.Clear(); // [수정] 선택 목록 초기화
             SetGameState(eGameState.RewardSelection);
 
-            // [수정] 접속 중인 모든 플레이어가 선택했는지 확인 (Deadlock 방지 로직 적용됨)
+            // 접속 중인 모든 플레이어가 선택했는지 확인 (Deadlock 방지 로직 적용됨)
             yield return new WaitUntil(CheckAllRewardsSelected);
 
             Debug.Log("[GameLoop] 모든 플레이어 보상 선택 완료.");
@@ -258,7 +254,7 @@ public class CombatGameManager : NetworkBehaviour
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
 
-        // [수정] 중복 선택 방지
+        // 중복 선택 방지
         if (_selectedRewardClients.Contains(clientId))
         {
             Debug.LogWarning($"[CombatGameManager] Client({clientId})는 이미 보상을 선택했습니다.");
@@ -322,12 +318,6 @@ public class CombatGameManager : NetworkBehaviour
 
             // 서버 측 데이터 변경
             ApplyStatChange(target, reward);
-
-            // 클라이언트 동기화 (Entity가 NetworkObject인 경우)
-            if (target.TryGetComponent(out NetworkObject netObj))
-            {
-                SyncStatClientRpc(netObj.NetworkObjectId, target.Hp, target.MaxHp, target.AttackPower, target.AttackSpeed, target.MoveSpeed);
-            }
         }
     }
 
@@ -336,51 +326,30 @@ public class CombatGameManager : NetworkBehaviour
     /// </summary>
     private void ApplyStatChange(Entity target, RewardGameData reward)
     {
+        // 값만 변경하면 NetworkVariable이 자동으로 전파합니다.
         switch (reward.effectType)
         {
             case "MaxHp":
                 target.IncreaseMaxHp((int)reward.value);
                 break;
             case "Atk":
-                if (target is Player pAtk) pAtk.IncreaseAttackPower((int)reward.value);
+                target.IncreaseAttackPower((int)reward.value);
                 break;
             case "AtkSpeed":
-                // 공격 속도는 값이 클수록 빠르다고 가정
-                if (target is Player pSpd) pSpd.IncreaseAttackSpeed(reward.value);
+                target.IncreaseAttackSpeed(reward.value);
                 break;
             case "MoveSpeed":
                 target.IncreaseMoveSpeed(reward.value);
                 break;
             case "Heal":
-                // 전체 체력 비례 회복 (value가 퍼센트라고 가정)
-                int healAmount = Mathf.FloorToInt(target.MaxHp * (reward.value / 100f));
+            case "CoreHeal":
+                int healAmount = (reward.effectType == "CoreHeal") ? (int)reward.value : Mathf.FloorToInt(target.MaxHp * (reward.value / 100f));
                 if (healAmount < 1) healAmount = 1;
                 target.Heal(healAmount);
-                break;
-            case "CoreHeal":
-                target.Heal((int)reward.value);
                 break;
         }
     }
 
-    /// <summary>
-    /// 변경된 스탯을 모든 클라이언트에 전파하여 UI/로직 갱신
-    /// </summary>
-    [ClientRpc]
-    private void SyncStatClientRpc(ulong networkObjectId, int hp, int maxHp, int atk, float atkSpeed, float moveSpeed)
-    {
-        // 로컬에 존재하는 해당 NetworkObject 찾기
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out var netObj))
-        {
-            var entity = netObj.GetComponent<Entity>();
-            if (entity != null)
-            {
-                // Entity에 새로 만든 SyncStats 메서드 호출
-                entity.SyncStats(hp, maxHp, atk, atkSpeed, moveSpeed);
-                Debug.Log($"[CombatGameManager] Stat Sync 완료: {netObj.name} (HP:{hp}/{maxHp})");
-            }
-        }
-    }
 
     // ========================================================================
     // State Change Handler (UI Trigger)
