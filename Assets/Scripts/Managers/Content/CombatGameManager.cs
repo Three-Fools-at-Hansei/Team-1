@@ -25,8 +25,12 @@ public class CombatGameManager : NetworkBehaviour
 
     // 내부 관리 변수
     private EnemySpawner _spawner;
-    private int _rewardSelectionCount = 0; // 보상 선택을 완료한 인원 수
-    private HashSet<ulong> _deadPlayers = new HashSet<ulong>(); // 사망한 플레이어 목록 (ID)
+
+    // [수정] 단순 카운트가 아닌, 선택한 클라이언트 ID를 저장하여 중복 방지 및 연결 끊김 대응
+    private HashSet<ulong> _selectedRewardClients = new HashSet<ulong>();
+
+    // 사망한 플레이어 목록 (ID)
+    private HashSet<ulong> _deadPlayers = new HashSet<ulong>();
 
     private void Awake()
     {
@@ -45,8 +49,9 @@ public class CombatGameManager : NetworkBehaviour
             GameState.Value = eGameState.Waiting;
             _spawner = FindAnyObjectByType<EnemySpawner>();
 
-            // 클라이언트 접속 이벤트 연결
+            // 클라이언트 접속/해제 이벤트 연결
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
 
         // 상태 변경 이벤트 연결 (Server/Client 모두)
@@ -58,6 +63,7 @@ public class CombatGameManager : NetworkBehaviour
         if (IsServer && NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
         GameState.OnValueChanged -= OnGameStateChanged;
     }
@@ -65,6 +71,20 @@ public class CombatGameManager : NetworkBehaviour
     private void OnClientConnected(ulong clientId)
     {
         Debug.Log($"[CombatGameManager] 플레이어 접속 (ID: {clientId}). 현재 인원: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        // [수정] 플레이어가 나갔을 때 보상 선택 목록 및 사망자 목록에서 제거
+        if (_selectedRewardClients.Contains(clientId))
+            _selectedRewardClients.Remove(clientId);
+
+        if (_deadPlayers.Contains(clientId))
+            _deadPlayers.Remove(clientId);
+
+        Debug.Log($"[CombatGameManager] 플레이어 연결 종료 (ID: {clientId}). 대기열 갱신.");
+
+        // 보상 선택 단계였다면, 남은 인원으로 조건이 충족되었는지 즉시 확인됨 (CoGameLoop의 WaitUntil에서 감지)
     }
 
     // ========================================================================
@@ -119,24 +139,37 @@ public class CombatGameManager : NetworkBehaviour
             yield return StartCoroutine(CoProcessWave(waveData));
 
             // 3. 적 전멸 대기
-            // 스폰이 끝난 후 필드에 적이 없을 때까지 대기
             yield return new WaitUntil(() => _spawner.GetActiveEnemyCount() == 0);
             Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 적 전멸 확인.");
 
             // 4. 보상 선택 단계
             Debug.Log("[GameLoop] 보상 선택 단계 진입");
-            _rewardSelectionCount = 0;
+
+            _selectedRewardClients.Clear(); // [수정] 선택 목록 초기화
             SetGameState(eGameState.RewardSelection);
 
-            // 접속한 모든 플레이어가 보상을 선택할 때까지 대기
-            yield return new WaitUntil(() => _rewardSelectionCount >= NetworkManager.Singleton.ConnectedClientsIds.Count);
+            // [수정] 접속 중인 모든 플레이어가 선택했는지 확인 (Deadlock 방지 로직 적용됨)
+            yield return new WaitUntil(CheckAllRewardsSelected);
 
             Debug.Log("[GameLoop] 모든 플레이어 보상 선택 완료.");
 
             // 5. 다음 웨이브 준비
             CurrentWave.Value++;
-            yield return new WaitForSeconds(3f); // 3초 정도 정비 시간 부여
+            yield return new WaitForSeconds(3f); // 3초 정비 시간
         }
+    }
+
+    /// <summary>
+    /// 현재 접속자 수와 보상 선택자 수를 비교하여 진행 여부 결정
+    /// </summary>
+    private bool CheckAllRewardsSelected()
+    {
+        int connectedCount = NetworkManager.Singleton.ConnectedClientsIds.Count;
+        int selectedCount = _selectedRewardClients.Count;
+
+        if (connectedCount == 0) return true; // 아무도 없으면 진행 (혹은 종료)
+
+        return selectedCount >= connectedCount;
     }
 
     /// <summary>
@@ -145,14 +178,12 @@ public class CombatGameManager : NetworkBehaviour
     private IEnumerator CoProcessWave(WaveGameData data)
     {
         float timer = 0f;
-        // 시간 순서대로 처리하기 위해 큐에 담음
         var events = new Queue<SpawnEventData>(data.events);
 
         while (events.Count > 0)
         {
             timer += Time.deltaTime;
 
-            // 현재 타이머보다 등장 시간이 같거나 빠른 몬스터들 모두 스폰
             while (events.Count > 0 && events.Peek().time <= timer)
             {
                 var evt = events.Dequeue();
@@ -226,9 +257,17 @@ public class CombatGameManager : NetworkBehaviour
     public void SelectRewardServerRpc(int rewardId, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        _rewardSelectionCount++;
 
-        Debug.Log($"[CombatGameManager] Client({clientId}) 보상 선택: {rewardId}. (완료: {_rewardSelectionCount})");
+        // [수정] 중복 선택 방지
+        if (_selectedRewardClients.Contains(clientId))
+        {
+            Debug.LogWarning($"[CombatGameManager] Client({clientId})는 이미 보상을 선택했습니다.");
+            return;
+        }
+
+        _selectedRewardClients.Add(clientId);
+
+        Debug.Log($"[CombatGameManager] Client({clientId}) 보상 선택: {rewardId}. (완료: {_selectedRewardClients.Count}/{NetworkManager.Singleton.ConnectedClientsIds.Count})");
 
         // 실제 보상 효과 적용
         ApplyRewardEffect(rewardId, clientId);
