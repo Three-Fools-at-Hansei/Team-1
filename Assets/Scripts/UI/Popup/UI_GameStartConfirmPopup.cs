@@ -42,7 +42,10 @@ public class UI_GameStartConfirmPopup : UI_Popup
 
     private void OnClickConfirm()
     {
-        // TODO: 게임 시작 로직 구현 예정
+        // 호스트 시작 요청
+        _viewModel?.ConfirmGameStart();
+
+        // 팝업 닫기
         Managers.UI.Close(this);
     }
 
