@@ -1,7 +1,6 @@
-using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem; // [추가] New Input System 네임스페이스
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerMove))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -13,7 +12,7 @@ public class Player : Entity
     [SerializeField] private Transform _firePoint;
 
     private PlayerMove _playerMove;
-    private Camera _mainCamera; // [추가] 마우스 좌표 변환용 카메라 캐싱
+    private Camera _mainCamera;
 
     protected override void Awake()
     {
@@ -42,6 +41,8 @@ public class Player : Entity
     /// </summary>
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn(); // [필수] Entity의 NetworkVariable 초기화
+
         if (IsOwner)
         {
             // Managers.Input을 통해 "Fire" 액션 바인딩
@@ -55,12 +56,11 @@ public class Player : Entity
     /// </summary>
     public override void OnNetworkDespawn()
     {
-        if (IsOwner)
+        base.OnNetworkDespawn();
+
+        if (IsOwner && Managers.Inst != null)
         {
-            if (Managers.Inst != null)
-            {
-                Managers.Input.UnbindAction("Fire", HandleFire, InputActionPhase.Performed);
-            }
+            Managers.Input.UnbindAction("Fire", HandleFire, InputActionPhase.Performed);
         }
     }
 
@@ -73,7 +73,6 @@ public class Player : Entity
 
         // 마우스 위치 가져오기 (New Input System 방식)
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
-
         if (_mainCamera == null) _mainCamera = Camera.main;
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
 
@@ -91,9 +90,7 @@ public class Player : Entity
         // 서버에서 조준 방향 갱신
         Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
         UpdateAimDirection(dir);
-
-        // 실제 발사 로직 수행 (Gun.cs는 PoolManager를 통해 총알 생성)
-        _gun?.Attack(_attackPower);
+        _gun?.Attack(AttackPower); // NetworkVariable AttackPower 사용
     }
 
     /// <summary>
@@ -114,26 +111,12 @@ public class Player : Entity
 
         if (IsDead()) return;
 
-        _hp = Mathf.Max(0, _hp - damage);
-        UpdateHealthBar(); // 서버 측 체력바 갱신
-
-        // 변경된 스탯(HP)을 모든 클라이언트에 동기화
-        SyncStatsClientRpc(GetComponent<NetworkObject>().NetworkObjectId, _hp, _maxHp, _attackPower, _attackSpeed, _moveSpeed);
+        Hp = Mathf.Max(0, Hp - damage); // 값만 바꾸면 자동 동기화
 
         if (IsDead())
         {
             Die();
         }
-    }
-
-    /// <summary>
-    /// 서버에서 변경된 스탯을 클라이언트들에게 전파
-    /// </summary>
-    [ClientRpc]
-    private void SyncStatsClientRpc(ulong networkObjectId, int hp, int maxHp, int atk, float atkSpeed, float moveSpeed)
-    {
-        // 자신(Player)의 Entity.SyncStats 호출
-        SyncStats(hp, maxHp, atk, atkSpeed, moveSpeed);
     }
 
     private void Die()

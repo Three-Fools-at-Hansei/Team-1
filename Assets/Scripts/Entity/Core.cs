@@ -17,6 +17,8 @@ public class Core : Entity
         if (Instance != null && Instance != this)
         {
             Debug.LogWarning("[Core] 이미 다른 Core 인스턴스가 존재합니다.");
+            Destroy(gameObject);
+            return;
         }
 
         Instance = this;
@@ -30,11 +32,11 @@ public class Core : Entity
 
     public override void TakeDamage(int damage)
     {
-        if (IsDead())
+        if (!IsServer || IsDead())
             return;
 
-        _hp = Mathf.Max(0, _hp - damage);
-        UpdateHealthBar();
+        // [수정] NetworkVariable 프로퍼티 사용
+        Hp = Mathf.Max(0, Hp - damage);
 
         // 서버에서만 사망 체크 및 게임 오버 트리거
         if (IsDead())
@@ -51,6 +53,8 @@ public class Core : Entity
     {
         Debug.Log("[Core] 코어가 파괴되었습니다.");
         CoreDestroyed?.Invoke();
+
+        // 코어 파괴 시 비활성화 (서버에서 끄면 클라이언트도 꺼짐)
         gameObject.SetActive(false);
     }
 }

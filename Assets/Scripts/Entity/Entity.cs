@@ -2,33 +2,91 @@ using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
-/// 플레이어와 적의 기반 클래스
+/// 플레이어와 적, 코어의 기반 클래스
+/// NetworkVariable을 도입하여 모든 스탯을 자동으로 동기화합니다.
 /// </summary>
 public abstract class Entity : NetworkBehaviour
 {
-    [Header("기본 스탯")]
-    [SerializeField] protected int _hp = 100;
-    [SerializeField] protected int _maxHp = 100; // 최대 체력 추가
-    [SerializeField] protected int _attackPower = 10;
-    [SerializeField] protected float _attackSpeed = 1.0f;
-    [SerializeField] protected float _moveSpeed = 5.0f;
+    [Header("기본 스탯 (초기값)")]
+    [SerializeField] protected int _defaultHp = 100;
+    [SerializeField] protected int _defaultAttackPower = 10;
+    [SerializeField] protected float _defaultAttackSpeed = 1.0f;
+    [SerializeField] protected float _defaultMoveSpeed = 5.0f;
     [SerializeField] protected float _attackRange = 2.0f;
     [SerializeField] protected float _detectionRange = 10.0f;
 
     [Header("UI")]
     [SerializeField] private HealthBar _healthBar;
 
-    public int Hp => _hp;
-    public int MaxHp => _maxHp;
-    public int AttackPower => _attackPower;
-    public float AttackSpeed => _attackSpeed;
-    public float MoveSpeed => _moveSpeed;
+    // [핵심] 네트워크 변수 선언 (자동 동기화)
+    public readonly NetworkVariable<int> NetHp = new NetworkVariable<int>(100);
+    public readonly NetworkVariable<int> NetMaxHp = new NetworkVariable<int>(100);
+    public readonly NetworkVariable<int> NetAttackPower = new NetworkVariable<int>(10);
+    public readonly NetworkVariable<float> NetAttackSpeed = new NetworkVariable<float>(1.0f);
+    public readonly NetworkVariable<float> NetMoveSpeed = new NetworkVariable<float>(5.0f);
+
+    // 프로퍼티가 NetworkVariable을 참조하도록 연결
+    public int Hp
+    {
+        get => NetHp.Value;
+        protected set { if (IsServer) NetHp.Value = value; }
+    }
+    public int MaxHp
+    {
+        get => NetMaxHp.Value;
+        protected set { if (IsServer) NetMaxHp.Value = value; }
+    }
+    public int AttackPower
+    {
+        get => NetAttackPower.Value;
+        protected set { if (IsServer) NetAttackPower.Value = value; }
+    }
+    public float AttackSpeed
+    {
+        get => NetAttackSpeed.Value;
+        protected set { if (IsServer) NetAttackSpeed.Value = value; }
+    }
+    public float MoveSpeed
+    {
+        get => NetMoveSpeed.Value;
+        protected set { if (IsServer) NetMoveSpeed.Value = value; }
+    }
 
     protected virtual void Awake()
     {
-        _maxHp = _hp; // 초기 체력을 최대 체력으로 설정
-        InitializeHealthBar();
+        // Awake 시점에는 네트워크 연결 전이므로 초기화하지 않음
     }
+
+    public override void OnNetworkSpawn()
+    {
+        // 서버인 경우 초기값 설정
+        if (IsServer)
+        {
+            NetHp.Value = _defaultHp;
+            NetMaxHp.Value = _defaultHp;
+            NetAttackPower.Value = _defaultAttackPower;
+            NetAttackSpeed.Value = _defaultAttackSpeed;
+            NetMoveSpeed.Value = _defaultMoveSpeed;
+        }
+
+        // 값이 변경될 때마다 UI 갱신 이벤트 연결 (서버/클라이언트 모두 동작)
+        NetHp.OnValueChanged += OnHpChanged;
+        NetMaxHp.OnValueChanged += OnMaxHpChanged;
+
+        // 초기 UI 설정
+        InitializeHealthBar();
+        UpdateHealthBar();
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        NetHp.OnValueChanged -= OnHpChanged;
+        NetMaxHp.OnValueChanged -= OnMaxHpChanged;
+    }
+
+    // NetworkVariable 콜백 함수
+    private void OnHpChanged(int prev, int curr) => UpdateHealthBar();
+    private void OnMaxHpChanged(int prev, int curr) => InitializeHealthBar();
 
     public abstract void Attack();
     public abstract void TakeDamage(int damage);
@@ -38,9 +96,8 @@ public abstract class Entity : NetworkBehaviour
     /// </summary>
     public virtual void Heal(int amount)
     {
-        if (IsDead()) return;
-        _hp = Mathf.Min(_hp + amount, _maxHp);
-        UpdateHealthBar();
+        if (!IsServer || IsDead()) return;
+        Hp = Mathf.Min(Hp + amount, MaxHp); // 자동 동기화
     }
 
     /// <summary>
@@ -48,37 +105,24 @@ public abstract class Entity : NetworkBehaviour
     /// </summary>
     public void IncreaseMaxHp(int amount)
     {
-        _maxHp += amount;
-        _hp += amount;
-        UpdateHealthBar();
+        if (!IsServer) return;
+        MaxHp += amount;
+        Hp += amount;
     }
 
-    public void IncreaseAttackPower(int amount) => _attackPower += amount;
-    public void IncreaseAttackSpeed(float amount) => _attackSpeed += amount; // 공격 속도는 낮을수록 빠른지, 높을수록 빠른지 정의 필요 (여기선 높을수록 빠름 가정)
-    public void IncreaseMoveSpeed(float amount) => _moveSpeed += amount;
+    public void IncreaseAttackPower(int amount) { if (IsServer) AttackPower += amount; }
+    public void IncreaseAttackSpeed(float amount) { if (IsServer) AttackSpeed += amount; }
+    public void IncreaseMoveSpeed(float amount) { if (IsServer) MoveSpeed += amount; }
 
-    /// <summary>
-    /// (클라이언트 동기화용) 스탯 강제 설정
-    /// </summary>
-    public void SyncStats(int currentHp, int maxHp, int atk, float atkSpeed, float moveSpeed)
-    {
-        _hp = currentHp;
-        _maxHp = maxHp;
-        _attackPower = atk;
-        _attackSpeed = atkSpeed;
-        _moveSpeed = moveSpeed;
-        UpdateHealthBar();
-    }
-
-    protected bool IsDead() => _hp <= 0;
+    protected bool IsDead() => Hp <= 0;
 
     protected void InitializeHealthBar()
     {
-        if (_healthBar != null) _healthBar.Initialize(transform, _maxHp);
+        if (_healthBar != null) _healthBar.Initialize(transform, MaxHp);
     }
 
     protected void UpdateHealthBar()
     {
-        _healthBar?.SetValue(_hp);
+        _healthBar?.SetValue(Hp);
     }
 }

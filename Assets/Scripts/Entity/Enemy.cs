@@ -36,9 +36,6 @@ public class Enemy : Entity
         {
             _rigidbody.linearVelocity = Vector2.zero;
         }
-
-        // 필요한 경우 스탯 초기화 로직 추가 (예: _hp = _maxHp 등)
-        // 현재 구조상 Spawn 직후 별도 Init 호출이 권장되므로 여기서는 플래그와 물리 상태만 리셋합니다.
     }
 
     private void Start()
@@ -50,6 +47,9 @@ public class Enemy : Entity
     {
         // 사망 시 행동 중지
         if (_isDead) return;
+
+        // 서버에서만 AI 로직 수행 (위치는 NetworkTransform으로 동기화)
+        if (!IsServer) return;
 
         CacheTargets();
         UpdateTarget();
@@ -107,7 +107,7 @@ public class Enemy : Entity
         }
 
         direction.Normalize();
-        _rigidbody.linearVelocity = direction * _moveSpeed;
+        _rigidbody.linearVelocity = direction * MoveSpeed; // NetMoveSpeed 사용 (프로퍼티 연결됨)
         UpdateAnimator(true);
     }
 
@@ -137,22 +137,19 @@ public class Enemy : Entity
             return;
 
         Entity targetEntity = _currentTarget.GetComponent<Entity>();
-        targetEntity?.TakeDamage(_attackPower);
+        targetEntity?.TakeDamage(AttackPower);
     }
 
     public override void TakeDamage(int damage)
     {
-        // [중요] 데미지 판정과 사망 처리는 서버에서만 수행합니다.
+        // 서버에서만 데미지 처리
         if (!IsServer || _isDead)
             return;
 
-        _hp = Mathf.Max(0, _hp - damage);
+        // [수정] NetworkVariable 프로퍼티 사용 -> 값 변경 시 자동 동기화 및 UI 갱신
+        Hp = Mathf.Max(0, Hp - damage);
 
-        // 피격 애니메이션 트리거 (NetworkAnimator가 있다면 자동 동기화됨)
         _animator?.SetTrigger("Hit");
-
-        // 체력바 갱신
-        UpdateHealthBar();
 
         if (IsDead())
         {
@@ -162,17 +159,16 @@ public class Enemy : Entity
 
     private void Die()
     {
-        if (_isDead)
-            return;
-
+        if (_isDead) return;
         _isDead = true;
+
         Debug.Log("[Enemy] 적이 사망했습니다.");
 
         _rigidbody.linearVelocity = Vector2.zero;
         UpdateAnimator(false);
         _animator?.SetTrigger("Die");
 
-        // [핵심 수정] 서버에서 Despawn을 호출하면, 
+        // 서버에서 Despawn을 호출하면, 
         // 등록된 NetworkObjectPool 핸들러를 통해 로컬 PoolManager.Despawn이 실행됩니다.
         if (IsServer && IsSpawned)
         {
@@ -180,5 +176,4 @@ public class Enemy : Entity
         }
     }
 }
-
 
