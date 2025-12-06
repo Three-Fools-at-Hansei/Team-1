@@ -10,6 +10,9 @@ public class PlayPopupViewModel : ViewModelBase
 {
     public override event Action OnStateChanged;
 
+    // View가 구독할 이벤트 정의 (매개변수로 다음 팝업의 ViewModel을 전달)
+    public event Action<GameStartConfirmPopupViewModel> OnCreateGamePopupRequested;
+
     /// <summary>
     /// 게임 참가 (Quick Join)
     /// </summary>
@@ -23,23 +26,25 @@ public class PlayPopupViewModel : ViewModelBase
         if (success)
         {
             Debug.Log("[PlayPopupViewModel] 참가 성공! 호스트의 씬으로 이동 대기 중...");
-            // 성공 시, NetworkManager에 의해 자동으로 씬 동기화가 이루어지므로
-            // 별도의 씬 로드 호출은 필요 없습니다.
-            // 필요하다면 여기서 팝업을 닫거나 "입장 중..." UI를 표시할 수 있습니다.
         }
         else
         {
-            Debug.LogWarning("[PlayPopupViewModel] 참가 실패. (방이 없거나 오류)");
-            // 실패 알림 처리 (추후 구현)
+            Debug.LogWarning("[PlayPopupViewModel] 참가 실패.");
         }
     }
 
     /// <summary>
-    /// 게임 생성 확인 팝업 표시
+    /// 게임 생성 팝업 요청
     /// </summary>
-    public async void ShowCreateGamePopup()
+    public void ShowCreateGamePopup()
     {
-        Debug.Log("[PlayPopupViewModel] 게임 생성 확인 팝업 표시");
-        await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(new GameStartConfirmPopupViewModel());
+        Debug.Log("[PlayPopupViewModel] 게임 생성 확인 팝업 요청 이벤트 발생");
+
+        // 새로운 ViewModel을 생성하여 이벤트와 함께 전달
+        // ViewModel은 View(UI_GameStartConfirmPopup)를 몰라도 됩니다.
+        var confirmVm = new GameStartConfirmPopupViewModel();
+
+        // View에게 "팝업을 띄워달라"고 요청
+        OnCreateGamePopupRequested?.Invoke(confirmVm);
     }
 }
