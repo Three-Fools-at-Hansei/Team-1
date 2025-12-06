@@ -251,5 +251,20 @@ public class Enemy : Entity
             NetworkObject.Despawn();
         }
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        // 공격 범위 (빨간색)
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, _attackRange);
+
+        // 감지 범위 (노란색)
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, _detectionRange);
+
+        // 정지 거리 (파란색)
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, _stopDistance);
+    }
 }
 
