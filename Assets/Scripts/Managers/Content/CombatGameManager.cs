@@ -5,11 +5,11 @@ using Unity.Netcode;
 
 public enum eGameState
 {
-    Waiting,
-    WaveInProgress,
-    RewardSelection,
-    Victory,
-    Defeat
+    Waiting,            // 대기 중 (인원 모집)
+    WaveInProgress,     // 전투 웨이브 진행 중
+    RewardSelection,    // 웨이브 클리어 후 보상 선택
+    Victory,            // 모든 웨이브 클리어 (승리)
+    Defeat              // 게임 오버 (패배)
 }
 
 public class CombatGameManager : NetworkBehaviour
@@ -17,14 +17,16 @@ public class CombatGameManager : NetworkBehaviour
     public static CombatGameManager Instance { get; private set; }
 
     [Header("Settings")]
-    public int MaxPlayers = 2;
+    public int MaxPlayers = 2; // 게임 시작에 필요한 플레이어 수
 
-    // 게임 상태 동기화
+    // 게임 상태 및 웨이브 정보 동기화
     public NetworkVariable<eGameState> GameState = new NetworkVariable<eGameState>(eGameState.Waiting);
     public NetworkVariable<int> CurrentWave = new NetworkVariable<int>(1);
 
+    // 내부 관리 변수
     private EnemySpawner _spawner;
-    private int _rewardSelectionCount = 0;
+    private int _rewardSelectionCount = 0; // 보상 선택을 완료한 인원 수
+    private HashSet<ulong> _deadPlayers = new HashSet<ulong>(); // 사망한 플레이어 목록 (ID)
 
     private void Awake()
     {
@@ -43,11 +45,11 @@ public class CombatGameManager : NetworkBehaviour
             GameState.Value = eGameState.Waiting;
             _spawner = FindAnyObjectByType<EnemySpawner>();
 
-            // 플레이어 접속 이벤트 구독
+            // 클라이언트 접속 이벤트 연결
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
 
-        // 상태 변경 구독 (UI 갱신 등)
+        // 상태 변경 이벤트 연결 (Server/Client 모두)
         GameState.OnValueChanged += OnGameStateChanged;
     }
 
@@ -62,83 +64,102 @@ public class CombatGameManager : NetworkBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        // 2명이 모이면 게임 시작 버튼 활성화 등의 로직을 UI에 전달 가능
-        Debug.Log($"[CombatGameManager] 플레이어 접속. 현재 인원: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
+        Debug.Log($"[CombatGameManager] 플레이어 접속 (ID: {clientId}). 현재 인원: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
     }
 
-    // --- Host Controls ---
+    // ========================================================================
+    // Game Flow Logic (Server Only)
+    // ========================================================================
 
     /// <summary>
-    /// 호스트가 게임 시작 버튼을 누르면 호출
+    /// 호스트가 HUD의 '게임 시작' 버튼을 눌렀을 때 호출
     /// </summary>
     public void StartGame()
     {
         if (!IsServer) return;
-        // 테스트를 위해 인원 체크는 로그로만 남김
+
+        // 테스트 편의를 위해 인원이 부족해도 시작은 가능하게 하되 경고 출력
         if (NetworkManager.Singleton.ConnectedClientsIds.Count < MaxPlayers)
-            Debug.LogWarning("플레이어 수가 부족하지만 게임을 강제로 시작합니다.");
+        {
+            Debug.LogWarning($"[CombatGameManager] 인원 부족 ({NetworkManager.Singleton.ConnectedClientsIds.Count}/{MaxPlayers}). 게임을 강제 시작합니다.");
+        }
 
         StartCoroutine(CoGameLoop());
     }
 
+    /// <summary>
+    /// 전체 게임 루프 (웨이브 -> 클리어 -> 보상 -> 다음 웨이브)
+    /// </summary>
     private IEnumerator CoGameLoop()
     {
-        // 1. 게임 시작
-        Debug.Log("[GameLoop] 게임 시작!");
-        SetGameState(eGameState.WaveInProgress); // 바로 전투 상태로 진입 (웨이브 1)
+        Debug.Log("[GameLoop] 게임 루프 시작");
+
+        // 상태 초기화
+        _deadPlayers.Clear();
         CurrentWave.Value = 1;
 
-        while (true) // 웨이브 루프
+        while (true)
         {
-            // 1. 웨이브 데이터 확인
+            // 1. 현재 웨이브 데이터 가져오기
             WaveGameData waveData = Managers.Data.Get<WaveGameData>(CurrentWave.Value);
+
+            // 데이터가 없으면 모든 웨이브를 클리어한 것으로 간주 -> 승리
             if (waveData == null)
             {
-                // 더 이상 웨이브가 없으면 승리
+                Debug.Log("[GameLoop] 모든 웨이브 클리어! 승리!");
                 SetGameState(eGameState.Victory);
                 yield break;
             }
 
-            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 진행 중...");
+            // 2. 웨이브 전투 시작
+            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 시작");
             SetGameState(eGameState.WaveInProgress);
 
-            // 2. 웨이브 스폰 실행
+            // 스포너에게 스폰 명령 전달 (코루틴 대기)
             yield return StartCoroutine(CoProcessWave(waveData));
 
             // 3. 적 전멸 대기
+            // 스폰이 끝난 후 필드에 적이 없을 때까지 대기
             yield return new WaitUntil(() => _spawner.GetActiveEnemyCount() == 0);
-            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 클리어!");
+            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} 적 전멸 확인.");
 
-            // 4. 보상 선택 단계 진입
+            // 4. 보상 선택 단계
+            Debug.Log("[GameLoop] 보상 선택 단계 진입");
             _rewardSelectionCount = 0;
             SetGameState(eGameState.RewardSelection);
 
-            Debug.Log("[GameLoop] 보상 선택 대기 중...");
-            // 모든 접속자가 선택할 때까지 대기
+            // 접속한 모든 플레이어가 보상을 선택할 때까지 대기
             yield return new WaitUntil(() => _rewardSelectionCount >= NetworkManager.Singleton.ConnectedClientsIds.Count);
 
-            Debug.Log("[GameLoop] 모든 플레이어 보상 선택 완료. 다음 웨이브로.");
+            Debug.Log("[GameLoop] 모든 플레이어 보상 선택 완료.");
 
-            // 5. 다음 웨이브
+            // 5. 다음 웨이브 준비
             CurrentWave.Value++;
-            yield return new WaitForSeconds(3f); // 잠시 대기
+            yield return new WaitForSeconds(3f); // 3초 정도 정비 시간 부여
         }
     }
 
+    /// <summary>
+    /// 웨이브 데이터를 기반으로 시간 흐름에 따라 적 스폰
+    /// </summary>
     private IEnumerator CoProcessWave(WaveGameData data)
     {
         float timer = 0f;
+        // 시간 순서대로 처리하기 위해 큐에 담음
         var events = new Queue<SpawnEventData>(data.events);
 
         while (events.Count > 0)
         {
             timer += Time.deltaTime;
 
-            // 현재 시간보다 같거나 작은 이벤트 모두 실행
+            // 현재 타이머보다 등장 시간이 같거나 빠른 몬스터들 모두 스폰
             while (events.Count > 0 && events.Peek().time <= timer)
             {
                 var evt = events.Dequeue();
-                _spawner.SpawnEnemy(evt.spawnerIdx, evt.monsterId);
+                if (_spawner != null)
+                {
+                    _spawner.SpawnEnemy(evt.spawnerIdx, evt.monsterId);
+                }
             }
 
             yield return null;
@@ -150,43 +171,199 @@ public class CombatGameManager : NetworkBehaviour
         GameState.Value = newState;
     }
 
+    // ========================================================================
+    // Defeat & Death Logic (Server Only)
+    // ========================================================================
+
+    /// <summary>
+    /// 플레이어 사망 시 호출 (Player.cs에서 호출)
+    /// </summary>
+    public void OnPlayerDied(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        if (!_deadPlayers.Contains(clientId))
+        {
+            _deadPlayers.Add(clientId);
+            Debug.Log($"[CombatGameManager] Player {clientId} 사망. (현재 사망자: {_deadPlayers.Count}/{NetworkManager.Singleton.ConnectedClientsIds.Count})");
+
+            // 모든 플레이어가 사망했는지 확인
+            if (_deadPlayers.Count >= NetworkManager.Singleton.ConnectedClientsIds.Count)
+            {
+                Debug.Log("[CombatGameManager] 전원 사망. 패배 처리.");
+                TriggerDefeat();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 패배 조건 충족 시 호출 (Core 파괴 or 전원 사망)
+    /// </summary>
     public void TriggerDefeat()
     {
         if (IsServer)
         {
+            // 게임 루프 정지
             StopAllCoroutines();
-            _spawner.ClearAllEnemies();
+
+            // 적 모두 제거
+            if (_spawner != null)
+                _spawner.ClearAllEnemies();
+
+            // 상태 변경 -> Defeat
             SetGameState(eGameState.Defeat);
         }
     }
 
-    // --- Client RPCs ---
+    // ========================================================================
+    // Reward Logic (Server -> Client)
+    // ========================================================================
 
     /// <summary>
-    /// 클라이언트가 보상을 선택했을 때 서버에 알림
+    /// 클라이언트가 보상을 선택했을 때 호출 (ServerRpc)
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     public void SelectRewardServerRpc(int rewardId, ServerRpcParams rpcParams = default)
     {
-        _rewardSelectionCount++;
         ulong clientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"[CombatGameManager] Client({clientId}) 보상 선택 완료 (ID: {rewardId}). 진행: {_rewardSelectionCount}/{NetworkManager.Singleton.ConnectedClientsIds.Count}");
+        _rewardSelectionCount++;
 
-        // TODO: 여기서 실제 스탯(RewardGameData)을 UserDataModel이나 Player 객체에 적용
-        // RewardGameData reward = Managers.Data.Get<RewardGameData>(rewardId);
-        // if (reward != null) { ... }
+        Debug.Log($"[CombatGameManager] Client({clientId}) 보상 선택: {rewardId}. (완료: {_rewardSelectionCount})");
+
+        // 실제 보상 효과 적용
+        ApplyRewardEffect(rewardId, clientId);
     }
 
-    // --- State Change Handler ---
-
-    private void OnGameStateChanged(eGameState previous, eGameState current)
+    /// <summary>
+    /// 보상 데이터에 따라 효과를 적용하고 클라이언트에 동기화
+    /// </summary>
+    private void ApplyRewardEffect(int rewardId, ulong targetClientId)
     {
-        Debug.Log($"[CombatGameManager] 상태 변경: {previous} -> {current}");
+        RewardGameData reward = Managers.Data.Get<RewardGameData>(rewardId);
+        if (reward == null)
+        {
+            Debug.LogError($"[CombatGameManager] 보상 데이터(ID:{rewardId})를 찾을 수 없습니다.");
+            return;
+        }
 
-        // 상태 변경 시 UI 팝업 자동 호출
+        // 1. 효과 적용 대상 찾기
+        List<Entity> targets = new List<Entity>();
+
+        if (reward.targetType == "Team")
+        {
+            if (reward.effectType == "CoreHeal")
+            {
+                // 코어 회복
+                if (Core.Instance != null) targets.Add(Core.Instance);
+            }
+            else
+            {
+                // 팀 전체 (모든 플레이어)
+                foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+                {
+                    if (client.PlayerObject != null)
+                        targets.Add(client.PlayerObject.GetComponent<Player>());
+                }
+            }
+        }
+        else // Individual
+        {
+            // 보상을 선택한 개인 플레이어
+            if (NetworkManager.Singleton.ConnectedClients.TryGetValue(targetClientId, out var client))
+            {
+                if (client.PlayerObject != null)
+                    targets.Add(client.PlayerObject.GetComponent<Player>());
+            }
+        }
+
+        // 2. 효과 적용 및 동기화
+        foreach (var target in targets)
+        {
+            if (target == null) continue;
+
+            // 서버 측 데이터 변경
+            ApplyStatChange(target, reward);
+
+            // 클라이언트 동기화 (Entity가 NetworkObject인 경우)
+            if (target.TryGetComponent(out NetworkObject netObj))
+            {
+                SyncStatClientRpc(netObj.NetworkObjectId, target.Hp, target.MaxHp, target.AttackPower, target.AttackSpeed, target.MoveSpeed);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 실제 스탯 계산 로직
+    /// </summary>
+    private void ApplyStatChange(Entity target, RewardGameData reward)
+    {
+        switch (reward.effectType)
+        {
+            case "MaxHp":
+                target.IncreaseMaxHp((int)reward.value);
+                break;
+            case "Atk":
+                if (target is Player pAtk) pAtk.IncreaseAttackPower((int)reward.value);
+                break;
+            case "AtkSpeed":
+                // 공격 속도는 값이 클수록 빠르다고 가정
+                if (target is Player pSpd) pSpd.IncreaseAttackSpeed(reward.value);
+                break;
+            case "MoveSpeed":
+                target.IncreaseMoveSpeed(reward.value);
+                break;
+            case "Heal":
+                // 전체 체력 비례 회복 (value가 퍼센트라고 가정)
+                int healAmount = Mathf.FloorToInt(target.MaxHp * (reward.value / 100f));
+                if (healAmount < 1) healAmount = 1;
+                target.Heal(healAmount);
+                break;
+            case "CoreHeal":
+                target.Heal((int)reward.value);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 변경된 스탯을 모든 클라이언트에 전파하여 UI/로직 갱신
+    /// </summary>
+    [ClientRpc]
+    private void SyncStatClientRpc(ulong networkObjectId, int hp, int maxHp, int atk, float atkSpeed, float moveSpeed)
+    {
+        // 로컬에 존재하는 해당 NetworkObject 찾기
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out var netObj))
+        {
+            var entity = netObj.GetComponent<Entity>();
+            if (entity != null)
+            {
+                // Entity에 새로 만든 SyncStats 메서드 호출
+                entity.SyncStats(hp, maxHp, atk, atkSpeed, moveSpeed);
+                Debug.Log($"[CombatGameManager] Stat Sync 완료: {netObj.name} (HP:{hp}/{maxHp})");
+            }
+        }
+    }
+
+    // ========================================================================
+    // State Change Handler (UI Trigger)
+    // ========================================================================
+
+    private async void OnGameStateChanged(eGameState previous, eGameState current)
+    {
+        Debug.Log($"[CombatGameManager] GameState 변경: {previous} -> {current}");
+
+        // 상태 변경에 따른 UI 자동 팝업 처리
         if (current == eGameState.RewardSelection)
         {
-            // Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+            // 보상 선택 팝업 표시 (로컬)
+            await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+        }
+        else if (current == eGameState.Victory)
+        {
+            // 승리 시 처리
+        }
+        else if (current == eGameState.Defeat)
+        {
+            // 패배 시 처리
         }
     }
 }
