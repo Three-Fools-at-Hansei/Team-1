@@ -40,6 +40,8 @@ public class PoolManager : IManagerBase
             pool.Clear();
 
         _pools.Clear();
+        _registeredNetPrefabHashes.Clear();
+
         Debug.Log($"{ManagerType} Manager Clear 합니다.");
     }
 
@@ -60,6 +62,9 @@ public class PoolManager : IManagerBase
 
         if (!_pools.TryGetValue(key, out var pool))
         {
+            // [수정] 풀 생성 시점에 이 프리팹이 NetworkObject인지 미리 확인합니다.
+            bool isNetworkObject = prefab.GetComponent<NetworkObject>() != null;
+
             pool = new ObjectPool<GameObject>(
                 createFunc: () =>
                 {
@@ -73,8 +78,16 @@ public class PoolManager : IManagerBase
                 actionOnRelease: go =>
                 {
                     if (go != null)
-                        go.transform.SetParent(Root);
-                    go.SetActive(false);
+                    {
+                        go.SetActive(false);
+
+                        // [핵심 수정] NetworkObject가 아닐 경우에만 부모를 Root로 정리합니다.
+                        // NetworkObject는 Despawn 과정 중 부모 변경 시 에러가 발생하므로 그대로 둡니다.
+                        if (!isNetworkObject)
+                        {
+                            go.transform.SetParent(Root);
+                        }
+                    }
                 },
                 actionOnDestroy: go => Object.Destroy(go),
                 collectionCheck: false,
@@ -96,6 +109,7 @@ public class PoolManager : IManagerBase
             rectTransform.anchoredPosition = prefabRectTransform.anchoredPosition;
         }
 
+        // 재사용 시점에 부모를 다시 설정해주므로, NetworkObject도 이 시점엔 안전하게 부모가 변경됩니다.
         go.transform.SetParent(parent, false);
 
         // 값이 있을 경우 UI가 아닌 오브젝트로 판단
@@ -128,6 +142,7 @@ public class PoolManager : IManagerBase
             Object.Destroy(go);
         }
     }
+
     // ========================================================================
     // Network Object Pooling Extensions
     // ========================================================================
