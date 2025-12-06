@@ -16,8 +16,20 @@ public class UI_PlayPopup : UI_Popup
 
     public override void SetViewModel(IViewModel viewModel)
     {
+        // 기존 구독 해제
+        if (_viewModel != null)
+        {
+            _viewModel.OnCreateGamePopupRequested -= OnCreateGamePopupRequested;
+        }
+
         _viewModel = viewModel as PlayPopupViewModel;
         base.SetViewModel(viewModel);
+
+        // 새 구독 연결
+        if (_viewModel != null)
+        {
+            _viewModel.OnCreateGamePopupRequested += OnCreateGamePopupRequested;
+        }
     }
 
     protected override void Awake()
@@ -30,61 +42,27 @@ public class UI_PlayPopup : UI_Popup
 
     private void OnEnable()
     {
-        RegisterGameButtonsListeners();
+        if (_createGameButton != null) _createGameButton.onClick.AddListener(OnClickCreateGame);
+        if (_joinGameButton != null) _joinGameButton.onClick.AddListener(OnClickJoinGame);
     }
 
     private void OnDisable()
     {
-        UnregisterGameButtonsListeners();
+        if (_createGameButton != null) _createGameButton.onClick.RemoveListener(OnClickCreateGame);
+        if (_joinGameButton != null) _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
     }
 
-    private void RegisterGameButtonsListeners()
-    {
-        if (_createGameButton != null)
-            _createGameButton.onClick.AddListener(OnClickCreateGame);
-
-        if (_joinGameButton != null)
-            _joinGameButton.onClick.AddListener(OnClickJoinGame);
-    }
+    private void OnClickClose() => Managers.UI.Close(this);
+    private void OnClickCreateGame() => _viewModel?.ShowCreateGamePopup();
+    private void OnClickJoinGame() => _viewModel?.JoinGame();
 
     /// <summary>
-    /// 게임 생성/참가 버튼 리스너를 제거합니다.
+    /// ViewModel의 요청에 의해 실제 팝업 UI를 띄우는 로직 (View의 역할)
     /// </summary>
-    private void UnregisterGameButtonsListeners()
+    private async void OnCreateGamePopupRequested(GameStartConfirmPopupViewModel vm)
     {
-        if (_createGameButton != null)
-            _createGameButton.onClick.RemoveListener(OnClickCreateGame);
-
-        if (_joinGameButton != null)
-            _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
+        await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(vm);
     }
 
-    private void OnClickClose()
-    {
-        Managers.UI.Close(this);
-    }
-
-    /// <summary>
-    /// 게임 생성 버튼 클릭 -> ViewModel 위임
-    /// </summary>
-    private void OnClickCreateGame()
-    {
-        _viewModel?.ShowCreateGamePopup();
-    }
-
-    /// <summary>
-    /// 게임 참가 버튼 클릭 -> ViewModel 위임
-    /// </summary>
-    private void OnClickJoinGame()
-    {
-        _viewModel?.JoinGame();
-    }
-
-    protected override void OnStateChanged()
-    {
-        // 상태 변경 시 UI 갱신 로직 (필요 시 구현)
-    }
+    protected override void OnStateChanged() { }
 }
-
-
-
