@@ -48,19 +48,23 @@ public class Gun : Weapon
         _lastFireTime = Time.time;
 
         // 1. 총알 생성 (서버 로컬)
-        // 풀링을 사용하지 않고 직접 Instantiate 합니다. (NGO 호환성 위함)
-        GameObject bulletGo = Instantiate(_bulletPrefab, _firePoint.position, Quaternion.identity);
+        // Managers.Pool.Spawn을 사용합니다.
+        // CombatScene에서 Bullet 프리팹이 네트워크 풀 핸들러에 등록되어 있다면,
+        // 아래 Spawn() 호출 시 클라이언트들도 핸들러(NetworkObjectPool)를 통해 객체를 생성(Pool.Spawn)합니다.
+        GameObject bulletGo = Managers.Pool.Spawn(_bulletPrefab, _firePoint.position, Quaternion.identity);
 
         // 2. 네트워크 스폰 (모든 클라이언트에 복제)
         var netObj = bulletGo.GetComponent<NetworkObject>();
         if (netObj != null)
         {
+            // 이미 풀에서 가져온 객체이므로 활성화된 상태입니다.
+            // NetworkObject.Spawn()을 호출하여 네트워크 ID를 할당하고 클라이언트들에게 전파합니다.
             netObj.Spawn();
         }
         else
         {
             Debug.LogError("[Gun] Bullet Prefab에 NetworkObject 컴포넌트가 없습니다!");
-            Destroy(bulletGo); // 동기화 불가능하므로 즉시 파괴
+            Managers.Pool.Despawn(bulletGo); // 동기화 불가능하므로 즉시 반환
             return;
         }
 
