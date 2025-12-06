@@ -50,11 +50,6 @@ public class Bullet : NetworkBehaviour
         _attackDamage = damage;
         _speed = speed;
 
-        // 방향 회전 (오른쪽(Vector2.right)이 0도 기준일 때의 회전 처리)
-        // 만약 스프라이트가 위쪽을 보고 있다면 -90도 보정이 필요할 수 있습니다.
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
         // 속도 적용
         if (_rigidbody != null)
         {

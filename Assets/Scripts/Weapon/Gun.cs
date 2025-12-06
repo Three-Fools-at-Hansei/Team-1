@@ -47,11 +47,10 @@ public class Gun : Weapon
 
         _lastFireTime = Time.time;
 
-        // 1. 총알 생성 (서버 로컬)
-        // Managers.Pool.Spawn을 사용합니다.
-        // CombatScene에서 Bullet 프리팹이 네트워크 풀 핸들러에 등록되어 있다면,
-        // 아래 Spawn() 호출 시 클라이언트들도 핸들러(NetworkObjectPool)를 통해 객체를 생성(Pool.Spawn)합니다.
-        GameObject bulletGo = Managers.Pool.Spawn(_bulletPrefab, _firePoint.position, Quaternion.identity);
+        // 1. Bullet 생성
+        float angle = Mathf.Atan2(_aimDirection.y, _aimDirection.x) * Mathf.Rad2Deg;
+        Quaternion rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
+        GameObject bulletGo = Managers.Pool.Spawn(_bulletPrefab, _firePoint.position, rotation);
 
         // 2. 네트워크 스폰 (모든 클라이언트에 복제)
         var netObj = bulletGo.GetComponent<NetworkObject>();
@@ -72,6 +71,7 @@ public class Gun : Weapon
         Bullet bullet = bulletGo.GetComponent<Bullet>();
         if (bullet != null)
         {
+            // 회전은 이미 적용되었으므로 공격력과 속도만 설정
             bullet.Initialize(attackPower, _aimDirection, _bulletSpeed);
         }
     }
