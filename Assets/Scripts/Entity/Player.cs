@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 /// <summary>
 /// 플레이어 캐릭터 구현
@@ -69,25 +70,35 @@ public class Player : Entity
 
     public override void TakeDamage(int damage)
     {
-        if (IsDead())
-            return;
+        // 서버 권한 체크가 필요하지만, Entity 구조상 일단 실행 후 검증하거나
+        // NetworkBehaviour인 PlayerMove를 통해 처리하는 것이 정석입니다.
+        // 여기서는 피격 로직이 서버에서 호출된다고 가정합니다 (Bullet 충돌 로직 등).
+
+        if (IsDead()) return;
 
         _hp = Mathf.Max(0, _hp - damage);
+        UpdateHealthBar();
 
         if (IsDead())
         {
             Die();
         }
-
-        UpdateHealthBar();
     }
 
     private void Die()
     {
         Debug.Log("[Player] 플레이어가 사망했습니다.");
         gameObject.SetActive(false);
-        // TODO: 다른 플레이어로 시점 전환 등 추가 연출
+
+        // 서버라면 매니저에게 사망 알림
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            // NetworkObject 컴포넌트를 통해 ClientId 확인
+            var netObj = GetComponent<NetworkObject>();
+            if (netObj != null)
+            {
+                CombatGameManager.Instance?.OnPlayerDied(netObj.OwnerClientId);
+            }
+        }
     }
 }
-
-
