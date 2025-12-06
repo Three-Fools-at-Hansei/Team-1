@@ -7,82 +7,73 @@ public abstract class Entity : MonoBehaviour
 {
     [Header("기본 스탯")]
     [SerializeField] protected int _hp = 100;
+    [SerializeField] protected int _maxHp = 100; // 최대 체력 추가
     [SerializeField] protected int _attackPower = 10;
     [SerializeField] protected float _attackSpeed = 1.0f;
     [SerializeField] protected float _moveSpeed = 5.0f;
     [SerializeField] protected float _attackRange = 2.0f;
     [SerializeField] protected float _detectionRange = 10.0f;
+
     [Header("UI")]
     [SerializeField] private HealthBar _healthBar;
 
-    // 프로퍼티
-    public int Hp 
-    { 
-        get => _hp; 
-        protected set => _hp = value; 
-    }
-
-    public int AttackPower 
-    { 
-        get => _attackPower; 
-        protected set => _attackPower = value; 
-    }
-
-    public float AttackSpeed 
-    { 
-        get => _attackSpeed; 
-        protected set => _attackSpeed = value; 
-    }
-
-    public float MoveSpeed 
-    { 
-        get => _moveSpeed; 
-        protected set => _moveSpeed = value; 
-    }
-
-    public float AttackRange 
-    { 
-        get => _attackRange; 
-        protected set => _attackRange = value; 
-    }
-
-    public float DetectionRange 
-    { 
-        get => _detectionRange; 
-        protected set => _detectionRange = value; 
-    }
+    public int Hp => _hp;
+    public int MaxHp => _maxHp;
+    public int AttackPower => _attackPower;
+    public float AttackSpeed => _attackSpeed;
+    public float MoveSpeed => _moveSpeed;
 
     protected virtual void Awake()
     {
+        _maxHp = _hp; // 초기 체력을 최대 체력으로 설정
         InitializeHealthBar();
     }
 
-    /// <summary>
-    /// 공격 메서드 (추상)
-    /// </summary>
     public abstract void Attack();
-
-    /// <summary>
-    /// 피격 메서드 (추상)
-    /// </summary>
-    /// <param name="damage">받을 데미지</param>
     public abstract void TakeDamage(int damage);
 
     /// <summary>
-    /// 체력이 0 이하인지 확인
+    /// 체력 회복
     /// </summary>
-    /// <returns>체력이 0 이하면 true</returns>
-    protected bool IsDead()
+    public virtual void Heal(int amount)
     {
-        return _hp <= 0;
+        if (IsDead()) return;
+        _hp = Mathf.Min(_hp + amount, _maxHp);
+        UpdateHealthBar();
     }
+
+    /// <summary>
+    /// 최대 체력 증가 (증가한 만큼 현재 체력도 회복)
+    /// </summary>
+    public void IncreaseMaxHp(int amount)
+    {
+        _maxHp += amount;
+        _hp += amount;
+        UpdateHealthBar();
+    }
+
+    public void IncreaseAttackPower(int amount) => _attackPower += amount;
+    public void IncreaseAttackSpeed(float amount) => _attackSpeed += amount; // 공격 속도는 낮을수록 빠른지, 높을수록 빠른지 정의 필요 (여기선 높을수록 빠름 가정)
+    public void IncreaseMoveSpeed(float amount) => _moveSpeed += amount;
+
+    /// <summary>
+    /// (클라이언트 동기화용) 스탯 강제 설정
+    /// </summary>
+    public void SyncStats(int currentHp, int maxHp, int atk, float atkSpeed, float moveSpeed)
+    {
+        _hp = currentHp;
+        _maxHp = maxHp;
+        _attackPower = atk;
+        _attackSpeed = atkSpeed;
+        _moveSpeed = moveSpeed;
+        UpdateHealthBar();
+    }
+
+    protected bool IsDead() => _hp <= 0;
 
     protected void InitializeHealthBar()
     {
-        if (_healthBar != null)
-        {
-            _healthBar.Initialize(transform, _hp);
-        }
+        if (_healthBar != null) _healthBar.Initialize(transform, _maxHp);
     }
 
     protected void UpdateHealthBar()
@@ -90,4 +81,3 @@ public abstract class Entity : MonoBehaviour
         _healthBar?.SetValue(_hp);
     }
 }
-
