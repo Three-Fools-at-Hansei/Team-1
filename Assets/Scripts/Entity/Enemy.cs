@@ -13,10 +13,10 @@ public class Enemy : Entity
     [SerializeField] private float _stopDistance = 0.1f;
 
     private Rigidbody2D _rigidbody;
-    private Player _player;
     private Transform _currentTarget;
     private float _lastAttackTime;
     private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
     private bool _isDead;
 
     protected override void Awake()
@@ -24,6 +24,7 @@ public class Enemy : Entity
         base.Awake();
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     /// <summary>
@@ -36,11 +37,16 @@ public class Enemy : Entity
         {
             _rigidbody.linearVelocity = Vector2.zero;
         }
+        transform.rotation = Quaternion.identity;
     }
 
     private void Start()
     {
-        CacheTargets();
+        // Core 타겟은 처음에 한 번만 찾아서 캐싱 (Core는 하나뿐이므로)
+        if (_coreTarget == null && Core.Instance != null)
+        {
+            _coreTarget = Core.Instance.transform;
+        }
     }
 
     private void Update()
@@ -48,45 +54,68 @@ public class Enemy : Entity
         // 사망 시 행동 중지
         if (_isDead) return;
 
-        // 서버에서만 AI 로직 수행 (위치는 NetworkTransform으로 동기화)
+        // 서버에서만 AI 로직 수행
         if (!IsServer) return;
 
-        CacheTargets();
+        // 타겟 갱신 (매 프레임 혹은 코루틴으로 최적화 가능)
         UpdateTarget();
+
+        // 이동 및 공격
         MoveTowardsTarget();
         TryAttack();
     }
 
-    private void CacheTargets()
+    /// <summary>
+    /// 가장 가까운 생존 플레이어 또는 코어를 타겟으로 설정합니다.
+    /// </summary>
+    private void UpdateTarget()
     {
-        if (_coreTarget == null && Core.Instance != null)
-        {
-            _coreTarget = Core.Instance.transform;
-            if (_currentTarget == null)
-            {
-                _currentTarget = _coreTarget;
-            }
-        }
+        // 1. 가장 가까운 플레이어 찾기
+        Player closestPlayer = FindClosestPlayer();
 
-        if (_player == null)
+        // 2. 플레이어가 감지 범위 내에 있다면 타겟으로 설정
+        if (closestPlayer != null)
         {
-            _player = FindObjectOfType<Player>();
+            _currentTarget = closestPlayer.transform;
+        }
+        else
+        {
+            // 3. 플레이어가 없거나 멀면 코어를 타겟으로 설정
+            _currentTarget = _coreTarget;
         }
     }
 
-    private void UpdateTarget()
+    /// <summary>
+    /// 접속 중인 클라이언트 중, 살아서 범위 내에 있는 가장 가까운 플레이어를 반환합니다.
+    /// </summary>
+    private Player FindClosestPlayer()
     {
-        if (_player != null)
+        if (NetworkManager.Singleton == null) return null;
+
+        Player closest = null;
+        float minDistance = _detectionRange; // 감지 범위보다 멀면 무시
+
+        // 모든 연결된 클라이언트 순회
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            float playerDistance = Vector2.Distance(transform.position, _player.transform.position);
-            if (playerDistance <= _detectionRange)
+            if (client.PlayerObject == null) continue;
+
+            var player = client.PlayerObject.GetComponent<Player>();
+
+            // 플레이어가 없거나, 죽었거나(비활성), HP가 0 이하라면 무시
+            if (player == null || !player.gameObject.activeInHierarchy || player.Hp <= 0)
+                continue;
+
+            float distance = Vector2.Distance(transform.position, player.transform.position);
+
+            if (distance < minDistance)
             {
-                _currentTarget = _player.transform;
-                return;
+                minDistance = distance;
+                closest = player;
             }
         }
 
-        _currentTarget = _coreTarget;
+        return closest;
     }
 
     private void MoveTowardsTarget()
@@ -107,7 +136,14 @@ public class Enemy : Entity
         }
 
         direction.Normalize();
-        _rigidbody.linearVelocity = direction * MoveSpeed; // NetMoveSpeed 사용 (프로퍼티 연결됨)
+
+        _rigidbody.linearVelocity = direction * MoveSpeed;
+
+        if (_spriteRenderer != null)
+        {
+            _spriteRenderer.flipX = direction.x < 0;
+        }
+
         UpdateAnimator(true);
     }
 
@@ -146,7 +182,7 @@ public class Enemy : Entity
         if (!IsServer || _isDead)
             return;
 
-        // [수정] NetworkVariable 프로퍼티 사용 -> 값 변경 시 자동 동기화 및 UI 갱신
+        // NetworkVariable 프로퍼티 사용 -> 값 변경 시 자동 동기화 및 UI 갱신
         Hp = Mathf.Max(0, Hp - damage);
 
         _animator?.SetTrigger("Hit");
