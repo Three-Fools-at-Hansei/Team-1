@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 823344556677889900}
   - component: {fileID: 5838507744539895042}
   - component: {fileID: 6367006156915339711}
+  - component: {fileID: 8034744237084815545}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -196,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3897655858
+  GlobalObjectIdHash: 530465994
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -225,9 +226,9 @@ MonoBehaviour:
   _defaultHp: 100
   _defaultAttackPower: 10
   _defaultAttackSpeed: 1
-  _defaultMoveSpeed: 5
-  _attackRange: 1.5
-  _detectionRange: 8
+  _defaultMoveSpeed: 3
+  _attackRange: 0.8
+  _detectionRange: 6
   _healthBar: {fileID: 933322211144556677}
   _coreTarget: {fileID: 0}
   _attackCooldown: 1
@@ -278,11 +279,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
-  RotationInterpolationType: 0
-  ScaleInterpolationType: 0
+  PositionInterpolationType: 1
+  RotationInterpolationType: 1
+  ScaleInterpolationType: 1
   PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
+  PositionMaxInterpolationTime: 0.02
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
@@ -326,3 +327,18 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
+--- !u!114 &8034744237084815545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1234567890123456789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9c26e64dc6c1104284148f1a4fcad5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClientNetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 423344556677889900}
