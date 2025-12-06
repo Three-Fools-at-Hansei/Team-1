@@ -40,11 +40,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 62971803ff942bb4fbeeef5a45c67663
-    m_Address: BeginnerNPC
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 64e1e1a8a7e6e4b469e7f0b3b3b12a75
     m_Address: UI/Popup/UI_SettingPopup
     m_ReadOnly: 0
