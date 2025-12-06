@@ -1,6 +1,7 @@
 using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem; // [추가] New Input System 네임스페이스
 
 [RequireComponent(typeof(PlayerMove))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -12,11 +13,13 @@ public class Player : Entity
     [SerializeField] private Transform _firePoint;
 
     private PlayerMove _playerMove;
+    private Camera _mainCamera; // [추가] 마우스 좌표 변환용 카메라 캐싱
 
     protected override void Awake()
     {
         base.Awake();
         _playerMove = GetComponent<PlayerMove>();
+        _mainCamera = Camera.main;
 
         if (_gun == null) _gun = GetComponent<Gun>();
         if (_gun == null) _gun = gameObject.AddComponent<Gun>();
@@ -34,21 +37,48 @@ public class Player : Entity
         _gun.SetFirePoint(_firePoint != null ? _firePoint : transform);
     }
 
-    private void Update()
+    /// <summary>
+    /// 네트워크 스폰 시 입력 이벤트 바인딩
+    /// </summary>
+    public override void OnNetworkSpawn()
     {
-        // 로컬 플레이어(본인)만 입력을 처리하여 서버로 요청
         if (IsOwner)
         {
-            // 마우스 왼쪽 클릭 감지 (추후 InputManager의 Action으로 교체 권장)
-            if (UnityEngine.Input.GetMouseButtonDown(0))
-            {
-                // 마우스 위치를 월드 좌표로 변환
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(UnityEngine.Input.mousePosition);
+            // Managers.Input을 통해 "Fire" 액션 바인딩
+            // 주의: GameInputActions의 "Lobby" 맵에 "Fire" 액션이 추가되어 있어야 함
+            Managers.Input.BindAction("Fire", HandleFire, InputActionPhase.Performed);
+        }
+    }
 
-                // 서버에 발사 요청
-                FireServerRpc(mousePos);
+    /// <summary>
+    /// 네트워크 디스폰 시 입력 이벤트 해제
+    /// </summary>
+    public override void OnNetworkDespawn()
+    {
+        if (IsOwner)
+        {
+            if (Managers.Inst != null)
+            {
+                Managers.Input.UnbindAction("Fire", HandleFire, InputActionPhase.Performed);
             }
         }
+    }
+
+    /// <summary>
+    /// 발사 입력 처리 핸들러
+    /// </summary>
+    private void HandleFire(InputAction.CallbackContext context)
+    {
+        if (!IsOwner) return;
+
+        // 마우스 위치 가져오기 (New Input System 방식)
+        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+
+        if (_mainCamera == null) _mainCamera = Camera.main;
+        Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
+
+        // 서버에 발사 요청
+        FireServerRpc(mouseWorldPos);
     }
 
     /// <summary>
@@ -62,7 +92,7 @@ public class Player : Entity
         Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
         UpdateAimDirection(dir);
 
-        // 실제 발사 로직 수행 (Gun.cs가 서버 스폰 방식으로 수정되었다고 가정)
+        // 실제 발사 로직 수행 (Gun.cs는 PoolManager를 통해 총알 생성)
         _gun?.Attack(_attackPower);
     }
 
@@ -74,8 +104,7 @@ public class Player : Entity
     public override void Attack()
     {
         // Entity 추상 메서드 구현체
-        // 실제 로직은 FireServerRpc -> _gun.Attack()으로 처리되므로, 
-        // 여기서는 로컬 클라이언트의 시각적/청각적 효과(발사음 등)를 처리하거나 비워둡니다.
+        // 실제 로직은 FireServerRpc -> _gun.Attack()으로 처리됨
     }
 
     public override void TakeDamage(int damage)
