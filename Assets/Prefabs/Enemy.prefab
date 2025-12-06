@@ -196,7 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3897655858
+  GlobalObjectIdHash: 530465994
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -222,17 +222,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _hp: 50
-  _maxHp: 100
-  _attackPower: 5
-  _attackSpeed: 1
-  _moveSpeed: 2.5
+  _defaultHp: 100
+  _defaultAttackPower: 10
+  _defaultAttackSpeed: 1
+  _defaultMoveSpeed: 5
   _attackRange: 1.5
-  _detectionRange: 3
+  _detectionRange: 8
   _healthBar: {fileID: 933322211144556677}
   _coreTarget: {fileID: 0}
   _attackCooldown: 1
-  _stopDistance: 0.2
+  _stopDistance: 0.5
 --- !u!114 &933322211144556677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,13 +292,13 @@ MonoBehaviour:
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
   SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
