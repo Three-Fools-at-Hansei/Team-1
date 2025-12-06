@@ -186,7 +186,7 @@ public class CombatGameManager : NetworkBehaviour
         // 상태 변경 시 UI 팝업 자동 호출
         if (current == eGameState.RewardSelection)
         {
-            Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+            // Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
         }
     }
 }
