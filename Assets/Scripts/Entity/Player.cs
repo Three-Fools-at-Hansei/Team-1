@@ -121,14 +121,24 @@ public class Player : Entity
 
     private void Die()
     {
-        // 서버에서만 호출됨
-        Debug.Log($"[Player] 플레이어가 사망했습니다. OwnerID: {OwnerClientId}");
-        gameObject.SetActive(false);
-
-        // 매니저에게 사망 알림
+        // 서버 로직: 매니저에게 알리고 Rpc 호출
         if (IsServer)
         {
+            Debug.Log($"[Player] 플레이어 사망 처리 (Server). OwnerID: {OwnerClientId}");
             CombatGameManager.Instance?.OnPlayerDied(OwnerClientId);
+
+            // 모든 클라이언트에게 사망 알림 전송
+            DieClientRpc();
         }
+    }
+
+    /// <summary>
+    /// 서버에서 호출하여 모든 클라이언트에서 플레이어 오브젝트를 비활성화합니다.
+    /// </summary>
+    [ClientRpc]
+    private void DieClientRpc()
+    {
+        Debug.Log($"[Player] 플레이어 비활성화 (Client). OwnerID: {OwnerClientId}");
+        gameObject.SetActive(false);
     }
 }
