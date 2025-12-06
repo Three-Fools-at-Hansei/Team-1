@@ -1,12 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using Unity.Netcode;
 
 public class PoolManager : IManagerBase
 {
     public eManagerType ManagerType { get; } = eManagerType.Pool;
 
     private readonly Dictionary<int, IObjectPool<GameObject>> _pools = new();
+
+    // NGO에 등록된 프리팹 핸들러의 해시를 직접 추적 관리하기 위한 집합
+    private readonly HashSet<uint> _registeredNetPrefabHashes = new();
+
     private Transform _root;
 
     private Transform Root
@@ -67,7 +72,7 @@ public class PoolManager : IManagerBase
                 actionOnGet: go => go.SetActive(true),
                 actionOnRelease: go =>
                 {
-                    if (go != null) 
+                    if (go != null)
                         go.transform.SetParent(Root);
                     go.SetActive(false);
                 },
@@ -92,7 +97,7 @@ public class PoolManager : IManagerBase
         }
 
         go.transform.SetParent(parent, false);
-        
+
         // 값이 있을 경우 UI가 아닌 오브젝트로 판단
         if (position.HasValue || rotation.HasValue)
         {
@@ -110,7 +115,7 @@ public class PoolManager : IManagerBase
     /// <param name="go">반환할 GameObject</param>
     public void Despawn(GameObject go)
     {
-        if (go == null) 
+        if (go == null)
             return;
 
         if (go.TryGetComponent<Poolable>(out var poolable) && _pools.TryGetValue(poolable.PoolKey, out var pool))
@@ -121,6 +126,68 @@ public class PoolManager : IManagerBase
         {
             Debug.LogWarning($"[PoolManager] 오브젝트 '{go.name}'는 풀에 할당되지 않았습니다. Destroy를 호출합니다.");
             Object.Destroy(go);
+        }
+    }
+    // ========================================================================
+    // Network Object Pooling Extensions
+    // ========================================================================
+
+    /// <summary>
+    /// 특정 프리팹을 NGO의 Custom Prefab Handler(NetworkObjectPool)에 등록합니다.
+    /// </summary>
+    public void RegisterNetworkPrefab(GameObject prefab)
+    {
+        if (prefab == null) return;
+
+        if (!prefab.TryGetComponent(out NetworkObject netObj))
+        {
+            Debug.LogWarning($"[PoolManager] {prefab.name}에는 NetworkObject 컴포넌트가 없어 네트워크 풀링을 등록할 수 없습니다.");
+            return;
+        }
+
+        if (NetworkManager.Singleton == null || NetworkManager.Singleton.PrefabHandler == null)
+        {
+            Debug.LogError("[PoolManager] NetworkManager가 초기화되지 않았습니다.");
+            return;
+        }
+
+        uint hash = netObj.PrefabIdHash;
+        var handler = NetworkManager.Singleton.PrefabHandler;
+
+        // 직접 관리하는 HashSet을 통해 중복 확인
+        if (_registeredNetPrefabHashes.Contains(hash))
+        {
+            handler.RemoveHandler(hash);
+            _registeredNetPrefabHashes.Remove(hash);
+        }
+
+        // NetworkObjectPool 생성 및 등록
+        handler.AddHandler(hash, new NetworkObjectPool(prefab));
+        _registeredNetPrefabHashes.Add(hash); // 등록 목록에 추가
+
+        Debug.Log($"[PoolManager] 네트워크 풀 핸들러 등록 완료: {prefab.name} (Hash: {hash})");
+    }
+
+    /// <summary>
+    /// 등록된 네트워크 프리팹 핸들러를 해제합니다.
+    /// </summary>
+    public void UnregisterNetworkPrefab(GameObject prefab)
+    {
+        if (prefab == null) return;
+
+        if (prefab.TryGetComponent(out NetworkObject netObj))
+        {
+            uint hash = netObj.PrefabIdHash;
+
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.PrefabHandler != null)
+            {
+                // HashSet 확인 후 제거
+                if (_registeredNetPrefabHashes.Contains(hash))
+                {
+                    NetworkManager.Singleton.PrefabHandler.RemoveHandler(hash);
+                    _registeredNetPrefabHashes.Remove(hash);
+                }
+            }
         }
     }
 }
