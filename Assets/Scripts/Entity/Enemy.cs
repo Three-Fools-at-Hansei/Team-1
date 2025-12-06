@@ -19,12 +19,47 @@ public class Enemy : Entity
     private SpriteRenderer _spriteRenderer;
     private bool _isDead;
 
+    private readonly NetworkVariable<bool> _netIsFacingLeft = new NetworkVariable<bool>(false);
+
     protected override void Awake()
     {
         base.Awake();
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        // [추가] 네트워크 변수 변경 시 호출될 콜백 연결
+        _netIsFacingLeft.OnValueChanged += OnFacingChanged;
+
+        // 초기 상태 적용 (접속 시점의 방향 동기화)
+        UpdateSpriteFlip(_netIsFacingLeft.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        _netIsFacingLeft.OnValueChanged -= OnFacingChanged;
+    }
+
+    private void UpdateSpriteFlip(bool isLeft)
+    {
+        if (_spriteRenderer != null)
+        {
+            _spriteRenderer.flipX = isLeft;
+        }
+    }
+
+    /// <summary>
+    /// 네트워크 변수 값이 변경되면 호출됩니다. (모든 클라이언트)
+    /// </summary>
+    private void OnFacingChanged(bool previous, bool current)
+    {
+        UpdateSpriteFlip(current);
     }
 
     /// <summary>
@@ -139,9 +174,14 @@ public class Enemy : Entity
 
         _rigidbody.linearVelocity = direction * MoveSpeed;
 
-        if (_spriteRenderer != null)
+        if (IsServer)
         {
-            _spriteRenderer.flipX = direction.x < 0;
+            bool isLeft = direction.x < 0;
+            // 값이 다를 때만 변경 (네트워크 트래픽 최적화)
+            if (_netIsFacingLeft.Value != isLeft)
+            {
+                _netIsFacingLeft.Value = isLeft;
+            }
         }
 
         UpdateAnimator(true);

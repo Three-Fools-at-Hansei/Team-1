@@ -76,21 +76,31 @@ public class Player : Entity
         if (_mainCamera == null) _mainCamera = Camera.main;
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
 
-        // 서버에 발사 요청
-        FireServerRpc(mouseWorldPos);
+        // 발사 요청 시, 현재 클라이언트 기준의 총구 위치(_firePoint.position)를 함께 보냅니다.
+        // 서버 위치는 미세하게 다를 수 있기 때문입니다.
+        FireServerRpc(mouseWorldPos, _firePoint.position);
     }
 
     /// <summary>
-    /// 클라이언트 -> 서버: 발사 요청 (ServerRpc)
+    /// 클라이언트 -> 서버: 발사 요청
     /// </summary>
-    /// <param name="targetPos">목표 지점(마우스 위치)</param>
+    /// <param name="targetPos">조준 목표 지점</param>
+    /// <param name="clientFirePos">클라이언트가 계산한 발사 원점</param>
     [ServerRpc]
-    private void FireServerRpc(Vector2 targetPos)
+    private void FireServerRpc(Vector2 targetPos, Vector2 clientFirePos)
     {
-        // 서버에서 조준 방향 갱신
+        // 1. 조준 방향 업데이트
         Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
         UpdateAimDirection(dir);
-        _gun?.Attack(AttackPower); // NetworkVariable AttackPower 사용
+
+        // 2. 보안 검사 (Anti-Cheat)
+        // 클라이언트가 보낸 위치가 서버상의 실제 위치와 너무 차이나면 해킹으로 간주하고 무시하거나 서버 위치 사용
+        // 여기서는 허용 오차를 2.0f 정도로 둡니다. (핑이 튈 때를 대비해 넉넉하게)
+        float distance = Vector2.Distance(clientFirePos, _firePoint.position);
+        Vector2 spawnPos = (distance > 2.0f) ? _firePoint.position : clientFirePos;
+
+        // 3. 보정된 위치로 발사
+        _gun?.Attack(spawnPos, AttackPower);
     }
 
     /// <summary>

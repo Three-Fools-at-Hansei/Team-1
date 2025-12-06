@@ -24,12 +24,11 @@ public class Gun : Weapon
     }
 
     /// <summary>
-    /// 서버에서 호출되어 실제 총알을 생성하고 네트워크에 스폰합니다.
-    /// (Player.cs의 FireServerRpc를 통해 호출됨)
+    /// 서버에서 호출되어 총알을 생성하고 네트워크에 스폰합니다.
     /// </summary>
-    public override void Attack(int attackPower)
+    public void Attack(Vector2 spawnPosition, int attackPower)
     {
-        // [중요] 서버 권한 체크 (서버만 스폰 가능)
+        // 서버 권한 체크 (서버만 스폰 가능)
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
             return;
 
@@ -47,12 +46,13 @@ public class Gun : Weapon
 
         _lastFireTime = Time.time;
 
-        // 1. Bullet 생성
+        // 1. 회전 계산
         float angle = Mathf.Atan2(_aimDirection.y, _aimDirection.x) * Mathf.Rad2Deg;
         Quaternion rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
-        GameObject bulletGo = Managers.Pool.Spawn(_bulletPrefab, _firePoint.position, rotation);
 
-        // 2. 네트워크 스폰 (모든 클라이언트에 복제)
+        // 2. 전달받은 spawnPosition(클라이언트가 요청한 위치)에서 생성
+        GameObject bulletGo = Managers.Pool.Spawn(_bulletPrefab, spawnPosition, rotation);
+
         var netObj = bulletGo.GetComponent<NetworkObject>();
         if (netObj != null)
         {
@@ -74,6 +74,12 @@ public class Gun : Weapon
             // 회전은 이미 적용되었으므로 공격력과 속도만 설정
             bullet.Initialize(attackPower, _aimDirection, _bulletSpeed);
         }
+    }
+
+    // 기존 추상 메서드 구현 유지를 위한 오버로딩 (필요하다면 유지, 안 쓰면 삭제 가능)
+    public override void Attack(int attackPower)
+    {
+        Attack(_firePoint.position, attackPower);
     }
 
     /// <summary>
