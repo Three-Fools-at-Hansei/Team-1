@@ -9,39 +9,38 @@ public class CombatScene : MonoBehaviour, IScene
     public List<string> RequiredDataFiles => new()
     {
         "MonsterGameData.json",
+        "WaveGameData.json",
+        "RewardGameData.json"
     };
 
     void Awake()
     {
-        Managers.Input.DefaultActionMapKey = "Lobby";
-
+        Managers.Input.DefaultActionMapKey = "Lobby"; // or "Player"
         Managers.Scene.SetCurrentScene(this);
     }
 
-    void IScene.Init()
+    async void IScene.Init()
     {
-        Debug.Log("Combat Scene Init() - 전투 시작!");
+        Debug.Log("Combat Scene Init() - 전투 준비");
 
-        // NGO에서는 NetworkManager가 플레이어를 자동 스폰합니다.
-        // 따라서 별도로 InstantiateAsync("Player")를 호출할 필요가 없습니다.
-        // 다만, 카메라 세팅이나 UI 초기화 등은 여기서 수행해야 합니다.
-        ShowTestUI();
-    }
+        // 1. Core 생성 (호스트가 네트워크 오브젝트로 스폰하지 않았다면 로컬 생성)
+        // 주의: Core가 NetworkObject라면 호스트에서만 생성해야 함.
+        // 여기서는 테스트를 위해 로컬 리소스로 생성한다고 가정하거나, 
+        // CombatGameManager가 관리하도록 할 수 있습니다.
 
-    private async void ShowTestUI()
-    {
-        Debug.Log("Test Scene Init() - Player와 NPC를 생성합니다.");
-
-
-        // 1. Core 프리팹 생성
-        GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
-        if (coreGo != null)
+        if (NetworkManager.Singleton.IsServer)
         {
-            coreGo.transform.position = Vector3.zero; // 생성 후 위치를 (0,0,0)으로 설정
-            Debug.Log("[TestScene] Core 생성 완료");
+            GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
+            if (coreGo != null)
+            {
+                coreGo.transform.position = Vector3.zero;
+                var netObj = coreGo.GetComponent<NetworkObject>();
+                if (netObj != null && !netObj.IsSpawned) netObj.Spawn();
+            }
         }
-        else
-            Debug.LogError("[TestScene] Core 생성 실패 - Addressable 주소 'Core'를 확인하세요");
+
+        // 2. HUD 표시
+        await Managers.UI.ShowAsync<UI_CombatHUD>(new CombatHUDViewModel());
     }
 
     void IScene.Clear()
