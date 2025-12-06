@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Unity.Netcode;
 
 /// <summary>
 /// 코어 오브젝트
@@ -21,13 +22,6 @@ public class Core : Entity
         Instance = this;
     }
 
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
 
     public override void Attack()
     {
@@ -40,13 +34,17 @@ public class Core : Entity
             return;
 
         _hp = Mathf.Max(0, _hp - damage);
+        UpdateHealthBar();
 
+        // 서버에서만 사망 체크 및 게임 오버 트리거
         if (IsDead())
         {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+            {
+                CombatGameManager.Instance?.TriggerDefeat();
+            }
             OnCoreDestroyed();
         }
-
-        UpdateHealthBar();
     }
 
     private void OnCoreDestroyed()
@@ -56,5 +54,4 @@ public class Core : Entity
         gameObject.SetActive(false);
     }
 }
-
 
