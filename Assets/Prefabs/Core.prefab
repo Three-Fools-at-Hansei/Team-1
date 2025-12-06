@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 204567890123456789}
   - component: {fileID: 7740258969134315543}
   - component: {fileID: 304567890123456789}
-  - component: {fileID: 7595305517725260854}
+  - component: {fileID: 5842254995175131637}
   m_Layer: 0
   m_Name: Core
   m_TagString: Untagged
@@ -150,16 +150,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _hp: 200
-  _maxHp: 200
-  _attackPower: 0
-  _attackSpeed: 0
-  _moveSpeed: 0
+  _defaultHp: 100
+  _defaultAttackPower: 10
+  _defaultAttackSpeed: 1
+  _defaultMoveSpeed: 5
   _attackRange: 0
   _detectionRange: 0
   _healthBar: {fileID: 204567890123456789}
---- !u!61 &7595305517725260854
-BoxCollider2D:
+--- !u!58 &5842254995175131637
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -193,14 +192,4 @@ BoxCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3.82, y: 4.98}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 3.82, y: 4.98}
-  m_EdgeRadius: 0
+  m_Radius: 1

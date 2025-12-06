@@ -184,7 +184,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.45
+  m_Radius: 0.4
 --- !u!114 &7015587790408504694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 530465994
+  GlobalObjectIdHash: 3897655858
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -227,12 +227,12 @@ MonoBehaviour:
   _defaultAttackPower: 10
   _defaultAttackSpeed: 1
   _defaultMoveSpeed: 3
-  _attackRange: 0.8
-  _detectionRange: 6
+  _attackRange: 0.85
+  _detectionRange: 5.5
   _healthBar: {fileID: 933322211144556677}
   _coreTarget: {fileID: 0}
   _attackCooldown: 1
-  _stopDistance: 0.5
+  _stopDistance: 0.8
 --- !u!114 &933322211144556677
 MonoBehaviour:
   m_ObjectHideFlags: 0
