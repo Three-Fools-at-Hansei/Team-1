@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CameraManager : IManagerBase
 {
@@ -29,31 +30,10 @@ public class CameraManager : IManagerBase
     public void Init()
     {
         Debug.Log($"{ManagerType} Manager Init 완료.");
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    public void Update() { }
-
-    public void Clear()
-    {
-        // 씬 전환 시 데이터 정리
-        _registeredCameras.Clear();
-        _activeCamera = null;
-        _previousCamera = null;
-        _mainCamera = null;
-        _brain = null;
-
-        Debug.Log($"{ManagerType} Manager Clear 완료.");
-    }
-
-    // ========================================================================
-    // Scene Setup & Registration
-    // ========================================================================
-
-    /// <summary>
-    /// 현재 씬에 있는 메인 카메라와 시네머신 카메라들을 찾아 설정합니다.
-    /// SceneManagerEx.SetCurrentScene()에서 호출됩니다.
-    /// </summary>
-    public void RegisterCamerasInScene()
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // 1. Main Camera & Brain 갱신
         if (MainCamera != null)
@@ -77,6 +57,24 @@ public class CameraManager : IManagerBase
 
         Debug.Log($"[CameraManager] 씬 카메라 스캔 완료. 발견된 카메라: {cams.Length}개");
     }
+
+    public void Update() { }
+
+    public void Clear()
+    {
+        // 씬 전환 시 데이터 정리
+        _registeredCameras.Clear();
+        _activeCamera = null;
+        _previousCamera = null;
+        _mainCamera = null;
+        _brain = null;
+
+        Debug.Log($"{ManagerType} Manager Clear 완료.");
+    }
+
+    // ========================================================================
+    // Scene Setup & Registration
+    // ========================================================================
 
     /// <summary>
     /// 특정 카메라를 매니저에 수동으로 등록합니다.
