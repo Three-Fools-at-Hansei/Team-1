@@ -76,31 +76,6 @@ public class UI_PlayPopup : UI_Popup
             _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
     }
 
-    private void OnClickClose()
-    {
-        Managers.UI.Close(this);
-    }
-
-    /// <summary>
-    /// 게임 생성 버튼 클릭 시 호출됩니다.
-    /// 현재는 미구현 상태입니다.
-    /// </summary>
-    private async void OnClickCreateGame()
-    {
-        // 확인 팝업을 표시하여 사용자에게 게임 시작 여부를 묻습니다.
-        await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(new GameStartConfirmPopupViewModel());
-    }
-
-    /// <summary>
-    /// 게임 참가 버튼 클릭 시 호출됩니다.
-    /// 게임 코드 입력 팝업을 표시합니다.
-    /// </summary>
-    private async void OnClickJoinGame()
-    {
-        // 게임 코드 입력 팝업을 표시합니다.
-        await Managers.UI.ShowAsync<UI_GameJoinPopup>(new GameJoinPopupViewModel());
-    }
-
     protected override void OnStateChanged()
     {
         // ViewModel에서 데이터를 받아 UI를 업데이트하는 로직이 필요할 경우 여기에 구현
