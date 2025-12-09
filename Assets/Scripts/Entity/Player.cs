@@ -14,9 +14,11 @@ public class Player : Entity
     [SerializeField] private Gun _gun;
     [SerializeField] private GameObject _bulletPrefab;
     [SerializeField] private Transform _firePoint;
+    [SerializeField] private WeaponUI _weaponUI;
 
     private PlayerMove _playerMove;
     private Camera _mainCamera;
+    private Vector2 _lastMouseAimDirection = Vector2.right;
 
     protected override void Awake()
     {
@@ -26,6 +28,30 @@ public class Player : Entity
 
         if (_gun == null) _gun = GetComponent<Gun>();
         if (_gun == null) _gun = gameObject.AddComponent<Gun>();
+
+        if (_weaponUI == null) _weaponUI = GetComponent<WeaponUI>();
+    }
+
+    private void Update()
+    {
+        // Owner인 경우 마우스 조준 방향을 지속적으로 업데이트
+        if (IsOwner && _mainCamera != null && Mouse.current != null)
+        {
+            Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+            Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
+            Vector2 firePos = GetCurrentFirePointPosition();
+            Vector2 direction = (mouseWorldPos - firePos).normalized;
+            
+            // 방향이 변경되었을 때만 업데이트
+            if (Vector2.Distance(direction, _lastMouseAimDirection) > 0.01f)
+            {
+                _lastMouseAimDirection = direction;
+                if (_playerMove != null)
+                {
+                    _playerMove.UpdateMouseAimDirection(direction);
+                }
+            }
+        }
     }
 
     private void Start()
@@ -46,6 +72,14 @@ public class Player : Entity
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn(); // [필수] Entity의 NetworkVariable 초기화
+
+        // 총 UI 초기화
+        if (_weaponUI != null)
+        {
+            _weaponUI.Initialize(transform);
+        }
+
+        // FirePoint는 WeaponUI의 총구 위치를 사용하도록 설정됨 (GetCurrentFirePointPosition 사용)
 
         if (IsOwner)
         {
@@ -72,6 +106,24 @@ public class Player : Entity
     }
 
     /// <summary>
+    /// 현재 총구 위치를 반환합니다 (WeaponUI가 있으면 그 위치, 없으면 FirePoint 위치)
+    /// </summary>
+    private Vector2 GetCurrentFirePointPosition()
+    {
+        if (_weaponUI != null)
+        {
+            return _weaponUI.GetMuzzlePosition();
+        }
+        
+        if (_firePoint != null)
+        {
+            return _firePoint.position;
+        }
+        
+        return transform.position;
+    }
+
+    /// <summary>
     /// 발사 입력 처리 핸들러
     /// </summary>
     private void HandleFire(InputAction.CallbackContext context)
@@ -83,9 +135,12 @@ public class Player : Entity
         if (_mainCamera == null) _mainCamera = Camera.main;
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
 
-        // 발사 요청 시, 현재 클라이언트 기준의 총구 위치(_firePoint.position)를 함께 보냅니다.
+        // WeaponUI의 총구 위치를 사용
+        Vector2 firePos = GetCurrentFirePointPosition();
+
+        // 발사 요청 시, 현재 클라이언트 기준의 총구 위치를 함께 보냅니다.
         // 서버 위치는 미세하게 다를 수 있기 때문입니다.
-        FireServerRpc(mouseWorldPos, _firePoint.position);
+        FireServerRpc(mouseWorldPos, firePos);
     }
 
     /// <summary>
@@ -96,17 +151,19 @@ public class Player : Entity
     [ServerRpc]
     private void FireServerRpc(Vector2 targetPos, Vector2 clientFirePos)
     {
-        // 1. 조준 방향 업데이트
-        Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
+        // 1. 조준 방향 업데이트 (총구 위치에서 마우스 방향으로)
+        Vector2 firePos = GetCurrentFirePointPosition();
+        Vector2 dir = (targetPos - firePos).normalized;
         UpdateAimDirection(dir);
 
         // 2. 보안 검사 (Anti-Cheat)
         // 클라이언트가 보낸 위치가 서버상의 실제 위치와 너무 차이나면 해킹으로 간주하고 무시하거나 서버 위치 사용
         // 여기서는 허용 오차를 2.0f 정도로 둡니다. (핑이 튈 때를 대비해 넉넉하게)
-        float distance = Vector2.Distance(clientFirePos, _firePoint.position);
-        Vector2 spawnPos = (distance > 2.0f) ? _firePoint.position : clientFirePos;
+        Vector2 serverFirePos = GetCurrentFirePointPosition();
+        float distance = Vector2.Distance(clientFirePos, serverFirePos);
+        Vector2 spawnPos = (distance > 2.0f) ? serverFirePos : clientFirePos;
 
-        // 3. 보정된 위치로 발사
+        // 4. 보정된 위치로 발사
         _gun?.Attack(spawnPos, AttackPower);
     }
 
