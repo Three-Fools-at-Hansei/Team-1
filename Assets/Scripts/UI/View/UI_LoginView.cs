@@ -52,14 +52,26 @@ public class UI_LoginView : UI_View, ILoginView
         _loginPasswordInput.onValueChanged.AddListener(value => _viewModel.OnChangeLoginPassword(value));
         _loginPasswordInput.onSubmit.AddListener(_ => _viewModel.OnPressEnter());
         _loginSubmitButton.onClick.AddListener(async () => await _viewModel.OnClickSubmit());
-        _openSignupButton.onClick.AddListener(_viewModel.OnRequestSignupMode);
+        _openSignupButton.onClick.AddListener(OnTogglePanel);
 
         _signupNicknameInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupNickname(value));
         _signupIdInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupId(value));
         _signupPasswordInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupPassword(value));
         _signupPasswordConfirmInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupPasswordConfirm(value));
         _signupSubmitButton.onClick.AddListener(async () => await _viewModel.OnClickSubmit());
-        _backToLoginButton.onClick.AddListener(_viewModel.OnRequestLoginMode);
+        _backToLoginButton.onClick.AddListener(OnTogglePanel);
+    }
+
+    private void OnTogglePanel()
+    {
+        if (_isLoginLayout)
+        {
+            _viewModel.OnRequestSignupMode();
+        }
+        else
+        {
+            _viewModel.OnRequestLoginMode();
+        }
     }
 
     public void SetIdInputText(string text)
@@ -130,6 +142,7 @@ public class UI_LoginView : UI_View, ILoginView
         _signupPanel.SetActive(false);
         SetSubmitButtonEnabled(_lastSubmitEnabled);
         SetSubmitButtonColor(_lastSubmitColor);
+        UpdateBackToLoginButtonRotation();
     }
 
     public void ShowSignupLayout()
@@ -139,6 +152,21 @@ public class UI_LoginView : UI_View, ILoginView
         _signupPanel.SetActive(true);
         SetSubmitButtonEnabled(_lastSubmitEnabled);
         SetSubmitButtonColor(_lastSubmitColor);
+        UpdateBackToLoginButtonRotation();
+    }
+
+    private void UpdateBackToLoginButtonRotation()
+    {
+        if (_backToLoginButton != null)
+        {
+            RectTransform buttonRect = _backToLoginButton.GetComponent<RectTransform>();
+            if (buttonRect != null)
+            {
+                Vector3 scale = buttonRect.localScale;
+                scale.x = _isLoginLayout ? -1f : 1f;
+                buttonRect.localScale = scale;
+            }
+        }
     }
 
     protected override void OnStateChanged() { }
