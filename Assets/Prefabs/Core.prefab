@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 85955234072310046}
   - component: {fileID: 64170346671981529}
   - component: {fileID: 204567890123456789}
+  - component: {fileID: 7740258969134315543}
   - component: {fileID: 304567890123456789}
+  - component: {fileID: 5842254995175131637}
   m_Layer: 0
   m_Name: Core
   m_TagString: Untagged
@@ -104,12 +106,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4c3f5e4c4b24747b0b4f7c7af0c1791, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _offset: {x: 0, y: -0.4, z: 0}
-  _width: 1
-  _height: 0.12
+  _offset: {x: 0, y: -0.6, z: 0}
+  _width: 4
+  _height: 0.48
   _fillColor: {r: 0.2, g: 0.6, b: 0.9, a: 1}
   _backgroundColor: {r: 0, g: 0, b: 0, a: 0.5}
   _sortingOrderOffset: 10
+--- !u!114 &7740258969134315543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8296010458588607337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 2505618134
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &304567890123456789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,10 +149,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3efcc9954bc1cf1448afdd4dfef95c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hp: 150
-  _attackPower: 0
-  _attackSpeed: 0
-  _moveSpeed: 0
+  ShowTopMostFoldoutHeaderGroup: 1
+  _defaultHp: 100
+  _defaultAttackPower: 10
+  _defaultAttackSpeed: 1
+  _defaultMoveSpeed: 5
   _attackRange: 0
   _detectionRange: 0
   _healthBar: {fileID: 204567890123456789}
+--- !u!58 &5842254995175131637
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8296010458588607337}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 1

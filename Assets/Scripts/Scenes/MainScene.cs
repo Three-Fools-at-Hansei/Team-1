@@ -8,9 +8,6 @@ public class MainScene : MonoBehaviour, IScene
 
     public List<string> RequiredDataFiles => new List<string>()
     {
-        "NikkeGameData.json",
-        "ItemGameData.json",
-        "MissionGameData.json",
     };
 
     void Awake()

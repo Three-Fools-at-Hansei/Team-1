@@ -56,17 +56,18 @@ public class DataManager : IManagerBase
             // switch 문을 통해 파일 이름(string)과 실제 데이터 타입(class)을 명확하게 연결합니다.
             switch (fileName)
             {
-                case "NikkeGameData.json":
-                    loadingTasks.Add(LoadJsonAsync<NikkeGameData>(fileName));
+                case "MonsterGameData.json":
+                    loadingTasks.Add(LoadJsonAsync<MonsterGameData>(fileName));
                     break;
-                case "ItemGameData.json":
-                    loadingTasks.Add(LoadJsonAsync<ItemGameData>(fileName));
+                case "WaveGameData.json":
+                    loadingTasks.Add(LoadJsonAsync<WaveGameData>(fileName));
                     break;
-                case "MissionGameData.json":
-                    loadingTasks.Add(LoadJsonAsync<MissionGameData>(fileName));
+                case "RewardGameData.json":
+                    loadingTasks.Add(LoadJsonAsync<RewardGameData>(fileName));
                     break;
 
                 // 새로운 GameData를 추가할 경우 여기에 case 구문을 추가
+                // 추후 WaveGameData, RewardGameData 추가 예정
 
                 default:
                     Debug.LogWarning($"[DataManager] 로드 규칙이 정의되지 않은 파일입니다: {fileName}");

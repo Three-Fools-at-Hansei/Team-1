@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 /// <summary>
 /// 적 캐릭터
@@ -12,62 +13,144 @@ public class Enemy : Entity
     [SerializeField] private float _stopDistance = 0.1f;
 
     private Rigidbody2D _rigidbody;
-    private Player _player;
     private Transform _currentTarget;
     private float _lastAttackTime;
     private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
     private bool _isDead;
+
+    private readonly NetworkVariable<bool> _netIsFacingLeft = new NetworkVariable<bool>(false);
 
     protected override void Awake()
     {
         base.Awake();
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        // [추가] 네트워크 변수 변경 시 호출될 콜백 연결
+        _netIsFacingLeft.OnValueChanged += OnFacingChanged;
+
+        // 초기 상태 적용 (접속 시점의 방향 동기화)
+        UpdateSpriteFlip(_netIsFacingLeft.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        _netIsFacingLeft.OnValueChanged -= OnFacingChanged;
+    }
+
+    private void UpdateSpriteFlip(bool isLeft)
+    {
+        if (_spriteRenderer != null)
+        {
+            _spriteRenderer.flipX = isLeft;
+        }
+    }
+
+    /// <summary>
+    /// 네트워크 변수 값이 변경되면 호출됩니다. (모든 클라이언트)
+    /// </summary>
+    private void OnFacingChanged(bool previous, bool current)
+    {
+        UpdateSpriteFlip(current);
+    }
+
+    /// <summary>
+    /// 오브젝트 풀에서 재사용될 때 상태를 초기화합니다.
+    /// </summary>
+    private void OnEnable()
+    {
+        _isDead = false;
+        if (_rigidbody != null)
+        {
+            _rigidbody.linearVelocity = Vector2.zero;
+        }
+        transform.rotation = Quaternion.identity;
     }
 
     private void Start()
     {
-        CacheTargets();
+        // Core 타겟은 처음에 한 번만 찾아서 캐싱 (Core는 하나뿐이므로)
+        if (_coreTarget == null && Core.Instance != null)
+        {
+            _coreTarget = Core.Instance.transform;
+        }
     }
 
     private void Update()
     {
-        CacheTargets();
+        // 사망 시 행동 중지
+        if (_isDead) return;
+
+        // 서버에서만 AI 로직 수행
+        if (!IsServer) return;
+
+        // 타겟 갱신 (매 프레임 혹은 코루틴으로 최적화 가능)
         UpdateTarget();
+
+        // 이동 및 공격
         MoveTowardsTarget();
         TryAttack();
     }
 
-    private void CacheTargets()
+    /// <summary>
+    /// 가장 가까운 생존 플레이어 또는 코어를 타겟으로 설정합니다.
+    /// </summary>
+    private void UpdateTarget()
     {
-        if (_coreTarget == null && Core.Instance != null)
-        {
-            _coreTarget = Core.Instance.transform;
-            if (_currentTarget == null)
-            {
-                _currentTarget = _coreTarget;
-            }
-        }
+        // 1. 가장 가까운 플레이어 찾기
+        Player closestPlayer = FindClosestPlayer();
 
-        if (_player == null)
+        // 2. 플레이어가 감지 범위 내에 있다면 타겟으로 설정
+        if (closestPlayer != null)
         {
-            _player = FindObjectOfType<Player>();
+            _currentTarget = closestPlayer.transform;
+        }
+        else
+        {
+            // 3. 플레이어가 없거나 멀면 코어를 타겟으로 설정
+            _currentTarget = _coreTarget;
         }
     }
 
-    private void UpdateTarget()
+    /// <summary>
+    /// 접속 중인 클라이언트 중, 살아서 범위 내에 있는 가장 가까운 플레이어를 반환합니다.
+    /// </summary>
+    private Player FindClosestPlayer()
     {
-        if (_player != null)
+        if (NetworkManager.Singleton == null) return null;
+
+        Player closest = null;
+        float minDistance = _detectionRange; // 감지 범위보다 멀면 무시
+
+        // 모든 연결된 클라이언트 순회
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            float playerDistance = Vector2.Distance(transform.position, _player.transform.position);
-            if (playerDistance <= _detectionRange)
+            if (client.PlayerObject == null) continue;
+
+            var player = client.PlayerObject.GetComponent<Player>();
+
+            // 플레이어가 없거나, 죽었거나(비활성), HP가 0 이하라면 무시
+            if (player == null || !player.gameObject.activeInHierarchy || player.Hp <= 0)
+                continue;
+
+            float distance = Vector2.Distance(transform.position, player.transform.position);
+
+            if (distance < minDistance)
             {
-                _currentTarget = _player.transform;
-                return;
+                minDistance = distance;
+                closest = player;
             }
         }
 
-        _currentTarget = _coreTarget;
+        return closest;
     }
 
     private void MoveTowardsTarget()
@@ -88,7 +171,19 @@ public class Enemy : Entity
         }
 
         direction.Normalize();
-        _rigidbody.linearVelocity = direction * _moveSpeed;
+
+        _rigidbody.linearVelocity = direction * MoveSpeed;
+
+        if (IsServer)
+        {
+            bool isLeft = direction.x < 0;
+            // 값이 다를 때만 변경 (네트워크 트래픽 최적화)
+            if (_netIsFacingLeft.Value != isLeft)
+            {
+                _netIsFacingLeft.Value = isLeft;
+            }
+        }
+
         UpdateAnimator(true);
     }
 
@@ -114,21 +209,23 @@ public class Enemy : Entity
 
     public override void Attack()
     {
-        if (_currentTarget == null)
+        if (_currentTarget == null || _isDead)
             return;
 
         Entity targetEntity = _currentTarget.GetComponent<Entity>();
-        targetEntity?.TakeDamage(_attackPower);
+        targetEntity?.TakeDamage(AttackPower);
     }
 
     public override void TakeDamage(int damage)
     {
-        if (IsDead())
+        // 서버에서만 데미지 처리
+        if (!IsServer || _isDead)
             return;
 
-        _hp = Mathf.Max(0, _hp - damage);
+        // NetworkVariable 프로퍼티 사용 -> 값 변경 시 자동 동기화 및 UI 갱신
+        Hp = Mathf.Max(0, Hp - damage);
+
         _animator?.SetTrigger("Hit");
-        UpdateHealthBar();
 
         if (IsDead())
         {
@@ -138,24 +235,36 @@ public class Enemy : Entity
 
     private void Die()
     {
-        if (_isDead)
-            return;
-
+        if (_isDead) return;
         _isDead = true;
+
         Debug.Log("[Enemy] 적이 사망했습니다.");
+
         _rigidbody.linearVelocity = Vector2.zero;
         UpdateAnimator(false);
         _animator?.SetTrigger("Die");
 
-        if (TryGetComponent(out Poolable poolable) && Managers.Pool != null)
+        // 서버에서 Despawn을 호출하면, 
+        // 등록된 NetworkObjectPool 핸들러를 통해 로컬 PoolManager.Despawn이 실행됩니다.
+        if (IsServer && IsSpawned)
         {
-            Managers.Pool.Despawn(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
+            NetworkObject.Despawn();
         }
     }
-}
 
+    private void OnDrawGizmosSelected()
+    {
+        // 공격 범위 (빨간색)
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, _attackRange);
+
+        // 감지 범위 (노란색)
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, _detectionRange);
+
+        // 정지 거리 (파란색)
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, _stopDistance);
+    }
+}
 
