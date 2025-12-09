@@ -15,11 +15,6 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: b83f4e9bea753a7478dfa187e570fdb0
   m_SerializeEntries:
-  - m_GUID: 05005f5ca62d17946ba68182eef987df
-    m_Address: UI/Popup/UI_PopupHello
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0bd09d950edcbe043be3b9b5cf4a4da8
     m_Address: Player
     m_ReadOnly: 0
@@ -30,23 +25,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1d43cab4b1953fe469e7d0c8a16eff96
-    m_Address: NikkeGameData.json
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2841c9eb472ca994ca3c238e17e6a37b
-    m_Address: UI/View/UI_SpeechBubble
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 30a45a77f6466dc45b143153d98fc149
     m_Address: UI/View/UI_LobbyView
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3c007bc872aa4604c8d78ab5c047fece
-    m_Address: ItemGameData.json
+  - m_GUID: 5f2056d638986e1499376f2c06f1e463
+    m_Address: UI/View/UI_CombatHUD
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4fc614b0ee0ab1d479899c84eff5b024
+    m_Address: UI/Popup/UI_PopupCombatResult
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -60,6 +50,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f4f95ce011154d4091935cbbe825cd0
+    m_Address: WaveGameData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 64e1e1a8a7e6e4b469e7f0b3b3b12a75
     m_Address: UI/Popup/UI_SettingPopup
     m_ReadOnly: 0
@@ -70,8 +65,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c787165b2aa44d49a14b08126735f6d
+    m_Address: RewardGameData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7cf71c3e232254e4aab00c6079954f08
     m_Address: UI/Popup/UI_PlayPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d70e0662acffe044be4dfef9edac948
+    m_Address: CombatGameManager
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81b0deaba68c7694bafa2750f16c11b1
+    m_Address: UI/View/UI_MainLobby
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -85,18 +95,48 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b19472c8e7ba39e4b9cac51326c9efa0
+    m_Address: MonsterGameData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b410568108b95be49bbd787718045e4d
     m_Address: UI/View/UI_LoginView
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b74f450e5cc21ae4a81f923b8851a38c
-    m_Address: MissionGameData.json
+  - m_GUID: b9faab4d1ceaef1449076993f716fd49
+    m_Address: Bullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bfa1bda163972354db701c998de72a6d
+    m_Address: UI/View/UI_RewardItem
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3a53fc45d17d514eb77e0d88d8d6327
+    m_Address: Enemy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c43ef07d2c3c2544ba37576bce4fd8ab
+    m_Address: UI/Popup/UI_RewardPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df9db96f5447a704f9f1320299b11023
+    m_Address: NetworkManager
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3716ee735925cd4aae4dcb6661d3c6e
     m_Address: UI/Popup/UI_DialogueWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2cc4b9ce3e5b724191223069e8b9185
+    m_Address: Core
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

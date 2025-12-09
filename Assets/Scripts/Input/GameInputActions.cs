@@ -143,6 +143,15 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Fire"",
+                    ""type"": ""Button"",
+                    ""id"": ""6f283cc9-7ce4-4012-a8fd-9737ccca6669"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -211,6 +220,17 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Player_Interaction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""094a663d-a8c5-4d2a-965d-e3908e7051d2"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Fire"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -254,6 +274,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         m_Lobby = asset.FindActionMap("Lobby", throwIfNotFound: true);
         m_Lobby_Player = m_Lobby.FindAction("Player", throwIfNotFound: true);
         m_Lobby_Player_Interaction = m_Lobby.FindAction("Player_Interaction", throwIfNotFound: true);
+        m_Lobby_Fire = m_Lobby.FindAction("Fire", throwIfNotFound: true);
         // UI_DialogueWindow
         m_UI_DialogueWindow = asset.FindActionMap("UI_DialogueWindow", throwIfNotFound: true);
         m_UI_DialogueWindow_Next = m_UI_DialogueWindow.FindAction("Next", throwIfNotFound: true);
@@ -523,6 +544,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
     private List<ILobbyActions> m_LobbyActionsCallbackInterfaces = new List<ILobbyActions>();
     private readonly InputAction m_Lobby_Player;
     private readonly InputAction m_Lobby_Player_Interaction;
+    private readonly InputAction m_Lobby_Fire;
     /// <summary>
     /// Provides access to input actions defined in input action map "Lobby".
     /// </summary>
@@ -542,6 +564,10 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Lobby/Player_Interaction".
         /// </summary>
         public InputAction @Player_Interaction => m_Wrapper.m_Lobby_Player_Interaction;
+        /// <summary>
+        /// Provides access to the underlying input action "Lobby/Fire".
+        /// </summary>
+        public InputAction @Fire => m_Wrapper.m_Lobby_Fire;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -574,6 +600,9 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
             @Player_Interaction.started += instance.OnPlayer_Interaction;
             @Player_Interaction.performed += instance.OnPlayer_Interaction;
             @Player_Interaction.canceled += instance.OnPlayer_Interaction;
+            @Fire.started += instance.OnFire;
+            @Fire.performed += instance.OnFire;
+            @Fire.canceled += instance.OnFire;
         }
 
         /// <summary>
@@ -591,6 +620,9 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
             @Player_Interaction.started -= instance.OnPlayer_Interaction;
             @Player_Interaction.performed -= instance.OnPlayer_Interaction;
             @Player_Interaction.canceled -= instance.OnPlayer_Interaction;
+            @Fire.started -= instance.OnFire;
+            @Fire.performed -= instance.OnFire;
+            @Fire.canceled -= instance.OnFire;
         }
 
         /// <summary>
@@ -764,6 +796,13 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPlayer_Interaction(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Fire" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnFire(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI_DialogueWindow" which allows adding and removing callbacks.

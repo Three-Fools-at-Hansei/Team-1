@@ -231,10 +231,10 @@ public class UIManager : IManagerBase
                     var nextPopup = _popupStack.Peek();
                     Managers.Input.SwitchActionMap(nextPopup.ActionMapKey);
                 }
-                // 스택이 빈 경우 기본 세팅("None")
+                // 스택이 빈 경우 기본 세팅
                 else
                 {
-                    Managers.Input.SwitchActionMap("None");
+                    Managers.Input.SwitchActionMap(Managers.Input.DefaultActionMapKey);
                 }
             }
         }
@@ -279,7 +279,8 @@ public class UIManager : IManagerBase
                 rootGo = new GameObject { name = "@UI_Root_Scene" };
 
                 Canvas canvas = rootGo.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                //canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.worldCamera = Camera.main; // 나중에 CameraManager에게서 가져오도록 바꿔야겠죠??
                 CanvasScaler scaler = rootGo.AddComponent<CanvasScaler>();
                 scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

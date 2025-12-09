@@ -12,119 +12,56 @@ public class UI_PlayPopup : UI_Popup
     [SerializeField] private Button _createGameButton;  // 게임 생성 버튼
     [SerializeField] private Button _joinGameButton;    // 게임 참가 버튼
 
+    private PlayPopupViewModel _viewModel;
+
+    public override void SetViewModel(IViewModel viewModel)
+    {
+        // 기존 구독 해제
+        if (_viewModel != null)
+        {
+            _viewModel.OnCreateGamePopupRequested -= OnCreateGamePopupRequested;
+        }
+
+        _viewModel = viewModel as PlayPopupViewModel;
+        base.SetViewModel(viewModel);
+
+        // 새 구독 연결
+        if (_viewModel != null)
+        {
+            _viewModel.OnCreateGamePopupRequested += OnCreateGamePopupRequested;
+        }
+    }
+
     protected override void Awake()
     {
         base.Awake();
 
-        // 닫기 버튼은 Awake에서 등록 (원래 방식)
         if (_closeButton != null)
             _closeButton.onClick.AddListener(OnClickClose);
     }
 
     private void OnEnable()
     {
-        // Object Pool에서 재사용될 때 Serialize된 필드가 손실될 수 있으므로
-        // 버튼 참조를 다시 찾아서 설정합니다. (게임 생성/참가 버튼만)
-        RefreshButtonReferences();
-        
-        // 버튼 GameObject들을 명시적으로 활성화합니다.
-        // Object Pool에서 재사용될 때 자식 GameObject들이 비활성화될 수 있습니다.
-        EnsureButtonsActive();
-        
-        // 게임 생성/참가 버튼 리스너를 등록합니다.
-        RegisterGameButtonsListeners();
-    }
-    
-    /// <summary>
-    /// 버튼 참조를 다시 찾아서 설정합니다.
-    /// Object Pool에서 재사용될 때 Serialize된 필드가 손실될 수 있으므로 필요합니다.
-    /// 게임 생성/참가 버튼만 처리합니다.
-    /// </summary>
-    private void RefreshButtonReferences()
-    {
-        if (_createGameButton == null)
-        {
-            Transform createButtonTransform = transform.Find("ButtonContainer/CreateGameButton");
-            if (createButtonTransform != null)
-            {
-                _createGameButton = createButtonTransform.GetComponent<Button>();
-            }
-        }
-        
-        if (_joinGameButton == null)
-        {
-            Transform joinButtonTransform = transform.Find("ButtonContainer/JoinGameButton");
-            if (joinButtonTransform != null)
-            {
-                _joinGameButton = joinButtonTransform.GetComponent<Button>();
-            }
-        }
-        
-        // 디버그 로그 (문제 진단용)
-        if (_createGameButton == null || _joinGameButton == null)
-        {
-            Debug.LogWarning($"[UI_PlayPopup] 버튼 참조가 null입니다. CreateGameButton: {_createGameButton != null}, JoinGameButton: {_joinGameButton != null}");
-        }
-    }
-    
-    /// <summary>
-    /// 게임 생성/참가 버튼 GameObject를 명시적으로 활성화합니다.
-    /// Object Pool에서 재사용될 때 자식 GameObject들이 비활성화될 수 있습니다.
-    /// </summary>
-    private void EnsureButtonsActive()
-    {
-        // CreateGameButton 활성화
-        if (_createGameButton != null && !_createGameButton.gameObject.activeSelf)
-        {
-            _createGameButton.gameObject.SetActive(true);
-        }
-        else if (_createGameButton == null)
-        {
-            Transform createButtonTransform = transform.Find("ButtonContainer/CreateGameButton");
-            if (createButtonTransform != null)
-            {
-                createButtonTransform.gameObject.SetActive(true);
-            }
-        }
-        
-        // JoinGameButton 활성화
-        if (_joinGameButton != null && !_joinGameButton.gameObject.activeSelf)
-        {
-            _joinGameButton.gameObject.SetActive(true);
-        }
-        else if (_joinGameButton == null)
-        {
-            Transform joinButtonTransform = transform.Find("ButtonContainer/JoinGameButton");
-            if (joinButtonTransform != null)
-            {
-                joinButtonTransform.gameObject.SetActive(true);
-            }
-        }
-        
-        // ButtonContainer도 활성화
-        Transform buttonContainer = transform.Find("ButtonContainer");
-        if (buttonContainer != null && !buttonContainer.gameObject.activeSelf)
-        {
-            buttonContainer.gameObject.SetActive(true);
-        }
+        if (_createGameButton != null) _createGameButton.onClick.AddListener(OnClickCreateGame);
+        if (_joinGameButton != null) _joinGameButton.onClick.AddListener(OnClickJoinGame);
     }
 
     private void OnDisable()
     {
-        // Object Pool로 반환될 때 게임 생성/참가 버튼 리스너를 제거합니다.
-        UnregisterGameButtonsListeners();
+        if (_createGameButton != null) _createGameButton.onClick.RemoveListener(OnClickCreateGame);
+        if (_joinGameButton != null) _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
     }
 
-    /// <summary>
-    /// 게임 생성/참가 버튼 리스너를 등록합니다.
-    /// </summary>
-    private void RegisterGameButtonsListeners()
-    {
-        if (_createGameButton != null)
-            _createGameButton.onClick.AddListener(OnClickCreateGame);
+    private void OnClickClose() => Managers.UI.Close(this);
+    private void OnClickCreateGame() => _viewModel?.ShowCreateGamePopup();
+    private void OnClickJoinGame() => _viewModel?.JoinGame();
 
-        if (_joinGameButton != null)
-            _joinGameButton.onClick.AddListener(OnClickJoinGame);
+    /// <summary>
+    /// ViewModel의 요청에 의해 실제 팝업 UI를 띄우는 로직 (View의 역할)
+    /// </summary>
+    private async void OnCreateGamePopupRequested(GameStartConfirmPopupViewModel vm)
+    {
+        await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(vm);
     }
 
     /// <summary>
@@ -170,6 +107,4 @@ public class UI_PlayPopup : UI_Popup
         // 예: 버튼 활성화/비활성화, 버튼 텍스트 변경 등
     }
 }
-
-
 

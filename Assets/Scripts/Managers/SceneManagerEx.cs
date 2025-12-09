@@ -22,6 +22,8 @@ public class SceneManagerEx : IManagerBase
     {
         CurrentScene = scene;
 
+        Managers.Input.SwitchActionMap(Managers.Input.DefaultActionMapKey);
+
         // 씬 초기화 동작
         CurrentSceneInitTask = InitSceneAsync(scene);
     }

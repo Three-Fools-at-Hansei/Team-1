@@ -1,0 +1,32 @@
+{
+  "1": {
+    "id": 1,
+    "events": [
+      {
+        "time": 1.0,
+        "spawnerIdx": 0,
+        "monsterId": 101
+      },
+      {
+        "time": 2.0,
+        "spawnerIdx": 1,
+        "monsterId": 101
+      },
+      {
+        "time": 3.0,
+        "spawnerIdx": 2,
+        "monsterId": 101
+      },
+      {
+        "time": 4.0,
+        "spawnerIdx": 3,
+        "monsterId": 101
+      },
+      {
+        "time": 5.0,
+        "spawnerIdx": 0,
+        "monsterId": 101
+      }
+    ]
+  }
+}

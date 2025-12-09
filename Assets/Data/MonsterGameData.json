@@ -1,0 +1,12 @@
+{
+  "101": {
+    "id": 101,
+    "name": "Basic Enemy",
+    "prefabPath": "Enemy",
+    "hp": 50,
+    "attack": 5,
+    "moveSpeed": 3.0,
+    "attackRange": 1.0,
+    "attackSpeed": 1.0
+  }
+}
