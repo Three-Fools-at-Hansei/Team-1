@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Unity.Netcode;
 
 public class CombatScene : MonoBehaviour, IScene
@@ -10,104 +9,89 @@ public class CombatScene : MonoBehaviour, IScene
 
     public List<string> RequiredDataFiles => new()
     {
-        "NikkeGameData.json",
-        "ItemGameData.json",
-        "MissionGameData.json",
+        "MonsterGameData.json",
+        "WaveGameData.json",
+        "RewardGameData.json"
     };
+
+    // 해제 시 사용하기 위해 등록된 프리팹 원본을 보관
+    private List<GameObject> _pooledPrefabs = new List<GameObject>();
 
     void Awake()
     {
-        Managers.Input.DefaultActionMapKey = "Lobby";
-
+        Managers.Input.DefaultActionMapKey = "Lobby"; // or "Player"
         Managers.Scene.SetCurrentScene(this);
     }
 
-    void IScene.Init()
+    async void IScene.Init()
     {
-        Debug.Log("Combat Scene Init() - 전투 시작!");
+        Debug.Log("Combat Scene Init() - 전투 준비");
 
-        // NGO에서는 NetworkManager가 플레이어를 자동 스폰합니다.
-        // 따라서 별도로 InstantiateAsync("Player")를 호출할 필요가 없습니다.
-        // 다만, 카메라 세팅이나 UI 초기화 등은 여기서 수행해야 합니다.
-        ShowTestUI();
+        // 매니저를 통한 네트워크 풀 등록
+        await InitNetworkObjectPools();
+
+        // 1. Core 생성 (호스트가 네트워크 오브젝트로 스폰하지 않았다면 로컬 생성)
+        if (NetworkManager.Singleton.IsServer)
+        {
+            GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
+            if (coreGo != null)
+            {
+                coreGo.transform.position = Vector3.zero;
+                var netObj = coreGo.GetComponent<NetworkObject>();
+                if (netObj != null && !netObj.IsSpawned) netObj.Spawn();
+            }
+        }
+
+        // 2. HUD 표시
+        await Managers.UI.ShowAsync<UI_CombatHUD>(new CombatHUDViewModel());
     }
 
-    void Update()
+    private async Task InitNetworkObjectPools()
     {
-        // Update() 호출 확인용 로그 (처음 한 번만)
-        if (Time.frameCount % 300 == 0)
+        _pooledPrefabs.Clear();
+
+        // 1. Bullet 프리팹 로드 및 등록
+        GameObject bulletPrefab = await Managers.Resource.LoadAsync<GameObject>("Bullet");
+        if (bulletPrefab != null)
         {
-            Debug.Log($"[CombatScene] Update() 호출 중... (Frame: {Time.frameCount})");
+            Managers.Pool.RegisterNetworkPrefab(bulletPrefab);
+            _pooledPrefabs.Add(bulletPrefab);
         }
 
-        // 테스트용: q키 = 승리 팝업, e키 = 패배 팝업
-        // 새로운 Input System 사용
-        if (Keyboard.current != null)
+        // 2. 몬스터 프리팹 일괄 로드 및 등록
+        var monsterTable = Managers.Data.GetTable<MonsterGameData>();
+        if (monsterTable != null)
         {
-            if (Keyboard.current.qKey.wasPressedThisFrame)
+            HashSet<string> uniquePaths = new HashSet<string>();
+            foreach (var data in monsterTable.Values)
             {
-                Debug.Log("[CombatScene] Q 키 입력 감지 - 승리 팝업 표시 시도");
-                ShowCombatResultPopup(eCombatResult.Victory);
+                if (!string.IsNullOrEmpty(data.prefabPath))
+                    uniquePaths.Add(data.prefabPath);
             }
-            else if (Keyboard.current.eKey.wasPressedThisFrame)
+
+            foreach (string path in uniquePaths)
             {
-                Debug.Log("[CombatScene] E 키 입력 감지 - 패배 팝업 표시 시도");
-                ShowCombatResultPopup(eCombatResult.Defeat);
+                GameObject enemyPrefab = await Managers.Resource.LoadAsync<GameObject>(path);
+                if (enemyPrefab != null)
+                {
+                    Managers.Pool.RegisterNetworkPrefab(enemyPrefab);
+                    _pooledPrefabs.Add(enemyPrefab);
+                }
             }
         }
-    }
 
-    private async void ShowCombatResultPopup(eCombatResult result)
-    {
-        try
-        {
-            Debug.Log($"[CombatScene] ShowCombatResultPopup 호출됨 - Result: {result}");
-            
-            if (Managers.UI == null)
-            {
-                Debug.LogError("[CombatScene] Managers.UI가 null입니다!");
-                return;
-            }
-
-            CombatResultViewModel viewModel = new CombatResultViewModel();
-            viewModel.SetResult(result);
-            Debug.Log($"[CombatScene] ViewModel 생성 완료 - Title: {viewModel.TitleText}, Button: {viewModel.ButtonText}");
-
-            UI_PopupCombatResult popup = await Managers.UI.ShowAsync<UI_PopupCombatResult>(viewModel);
-            
-            if (popup == null)
-            {
-                Debug.LogError("[CombatScene] 팝업 생성 실패! Addressable 주소 'UI/Popup/UI_PopupCombatResult'를 확인하세요.");
-            }
-            else
-            {
-                Debug.Log("[CombatScene] 팝업 생성 성공!");
-            }
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"[CombatScene] 팝업 생성 중 오류 발생: {e.Message}\n{e.StackTrace}");
-        }
-    }
-
-    private async void ShowTestUI()
-    {
-        Debug.Log("Test Scene Init() - Player와 NPC를 생성합니다.");
-
-
-        // 1. Core 프리팹 생성
-        GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
-        if (coreGo != null)
-        {
-            coreGo.transform.position = Vector3.zero; // 생성 후 위치를 (0,0,0)으로 설정
-            Debug.Log("[TestScene] Core 생성 완료");
-        }
-        else
-            Debug.LogError("[TestScene] Core 생성 실패 - Addressable 주소 'Core'를 확인하세요");
+        Debug.Log($"[CombatScene] 총 {_pooledPrefabs.Count}개의 네트워크 프리팹 풀링 등록 완료.");
     }
 
     void IScene.Clear()
     {
         Debug.Log("Combat Scene Clear()");
+
+        // 등록했던 네트워크 풀 핸들러 해제
+        foreach (var prefab in _pooledPrefabs)
+        {
+            Managers.Pool.UnregisterNetworkPrefab(prefab);
+        }
+        _pooledPrefabs.Clear();
     }
 }

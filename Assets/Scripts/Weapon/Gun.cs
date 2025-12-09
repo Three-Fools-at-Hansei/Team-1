@@ -1,17 +1,18 @@
 using UnityEngine;
+using Unity.Netcode;
 
 /// <summary>
-/// 총 클래스
+/// 서버 권한으로 총알을 발사하는 무기 클래스입니다.
 /// </summary>
 public class Gun : Weapon
 {
     [Header("총 설정")]
-    [SerializeField] private GameObject _bulletPrefab;
+    [SerializeField] private GameObject _bulletPrefab; // 반드시 NetworkObject가 달린 프리팹이어야 함
     [SerializeField] private Transform _firePoint;
     [SerializeField] private float _bulletSpeed = 10.0f;
-    [SerializeField] private float _fireRate = 1.0f; // 1초에 1발
+    [SerializeField] private float _fireRate = 0.5f; // 연사 속도 (초 단위)
 
-    private float _lastFireTime = 0f;
+    private float _lastFireTime;
 
     private void Awake()
     {
@@ -23,82 +24,77 @@ public class Gun : Weapon
     }
 
     /// <summary>
-    /// 공격 메서드 오버라이드
-    /// 총알을 공격 방향으로 생성하여 지속적으로 이동하게 함
+    /// 서버에서 호출되어 총알을 생성하고 네트워크에 스폰합니다.
     /// </summary>
-    /// <param name="attackPower">공격력</param>
-    public override void Attack(int attackPower)
+    public void Attack(Vector2 spawnPosition, int attackPower)
     {
-        // 공격 속도 제한 (가장 먼저 체크 - 디버그 로그보다 먼저!)
+        // 서버 권한 체크 (서버만 스폰 가능)
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            return;
+
+        // 쿨타임 체크 (서버 시간 기준)
         if (Time.time - _lastFireTime < _fireRate)
         {
-            return; // 아직 발사 시간이 안 됨
+            return;
         }
 
         if (_bulletPrefab == null)
         {
+            Debug.LogWarning("[Gun] Bullet Prefab이 할당되지 않았습니다.");
             return;
         }
 
-        if (Managers.Pool == null)
-        {
-            return;
-        }
-
-        // FirePoint 확인
-        if (_firePoint == null)
-        {
-            Debug.LogWarning("[Gun] FirePoint가 설정되지 않았습니다!");
-            return;
-        }
-
-        // 총알 생성 전에 시간 업데이트 (중복 호출 방지)
         _lastFireTime = Time.time;
 
-        Debug.Log($"[Gun] 총알 생성: prefab={_bulletPrefab.name}, position={_firePoint.position}, time={Time.time:F3}");
+        // 1. 회전 계산
+        float angle = Mathf.Atan2(_aimDirection.y, _aimDirection.x) * Mathf.Rad2Deg;
+        Quaternion rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
 
-        // 총알 생성 (parent를 null로 전달하여 씬 루트에 생성)
-        GameObject bulletObj = Managers.Pool.Spawn(
-            _bulletPrefab,
-            _firePoint.position,
-            Quaternion.identity,
-            null  // parent를 명시적으로 null로 설정
-        );
+        // 2. 전달받은 spawnPosition(클라이언트가 요청한 위치)에서 생성
+        GameObject bulletGo = Managers.Pool.Spawn(_bulletPrefab, spawnPosition, rotation);
 
-        if (bulletObj == null)
+        var netObj = bulletGo.GetComponent<NetworkObject>();
+        if (netObj != null)
         {
-            Debug.LogError("[Gun] 총알 생성 실패!");
-            return;
-        }
-
-        Bullet bullet = bulletObj.GetComponent<Bullet>();
-        if (bullet != null)
-        {
-            // 총알 초기화
-            bullet.Initialize(attackPower, _aimDirection, _bulletSpeed);
+            // 이미 풀에서 가져온 객체이므로 활성화된 상태입니다.
+            // NetworkObject.Spawn()을 호출하여 네트워크 ID를 할당하고 클라이언트들에게 전파합니다.
+            netObj.Spawn();
         }
         else
         {
-            Debug.LogWarning("[Gun] 총알 오브젝트에 Bullet 컴포넌트가 없습니다.");
+            Debug.LogError("[Gun] Bullet Prefab에 NetworkObject 컴포넌트가 없습니다!");
+            Managers.Pool.Despawn(bulletGo); // 동기화 불가능하므로 즉시 반환
+            return;
+        }
+
+        // 3. 총알 초기화 (속도 및 데미지 설정)
+        Bullet bullet = bulletGo.GetComponent<Bullet>();
+        if (bullet != null)
+        {
+            // 회전은 이미 적용되었으므로 공격력과 속도만 설정
+            bullet.Initialize(attackPower, _aimDirection, _bulletSpeed);
         }
     }
 
+    // 기존 추상 메서드 구현 유지를 위한 오버로딩 (필요하다면 유지, 안 쓰면 삭제 가능)
+    public override void Attack(int attackPower)
+    {
+        Attack(_firePoint.position, attackPower);
+    }
+
     /// <summary>
-    /// 총알 프리팹 설정
+    /// (옵션) 총알 프리팹 동적 변경 시 사용
     /// </summary>
-    /// <param name="prefab">총알 프리팹</param>
     public void SetBulletPrefab(GameObject prefab)
     {
         _bulletPrefab = prefab;
     }
 
     /// <summary>
-    /// 발사 위치 설정
+    /// (옵션) 발사 위치 동적 변경 시 사용
     /// </summary>
-    /// <param name="firePoint">발사 위치 Transform</param>
     public void SetFirePoint(Transform firePoint)
     {
         _firePoint = firePoint;
     }
 }
-

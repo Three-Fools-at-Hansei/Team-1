@@ -17,8 +17,10 @@ GameObject:
   - component: {fileID: 1234567890123456789}
   - component: {fileID: 612345678901234567}
   - component: {fileID: 5123456789012345678}
-  - component: {fileID: 7549844700736971677}
-  - component: {fileID: 3733453546391896365}
+  - component: {fileID: 5107164769006343921}
+  - component: {fileID: 792162063245109504}
+  - component: {fileID: 2275671403816584770}
+  - component: {fileID: 2417607461013166148}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -35,7 +37,7 @@ Transform:
   m_GameObject: {fileID: 4311675286977602641}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.96699, y: 1.42397, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -164,8 +166,8 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
+  m_CollisionDetection: 1
+  m_Constraints: 4
 --- !u!70 &7570519793851676606
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -201,7 +203,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.8, y: 0.8}
   m_Direction: 0
 --- !u!95 &1234567890123456789
 Animator:
@@ -255,17 +257,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3ec5b9874f0b75469cd3df14a0cf5be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hp: 100
-  _attackPower: 10
-  _attackSpeed: 1
-  _moveSpeed: 5
+  ShowTopMostFoldoutHeaderGroup: 1
+  _defaultHp: 100
+  _defaultAttackPower: 10
+  _defaultAttackSpeed: 1
+  _defaultMoveSpeed: 5
   _attackRange: 2
   _detectionRange: 10
   _healthBar: {fileID: 612345678901234567}
-  _gun: {fileID: 0}
+  _gun: {fileID: 5107164769006343921}
   _bulletPrefab: {fileID: 4679516059571763972, guid: b9faab4d1ceaef1449076993f716fd49, type: 3}
-  _firePoint: {fileID: 0}
---- !u!114 &7549844700736971677
+  _firePoint: {fileID: 3326281540445355402}
+--- !u!114 &5107164769006343921
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -274,17 +277,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 4311675286977602641}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: a57437e05f8a5934f99034532ef5ff70, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  m_EditorClassIdentifier: Assembly-CSharp::Gun
+  _aimDirection: {x: 1, y: 0}
+  _bulletPrefab: {fileID: 4679516059571763972, guid: b9faab4d1ceaef1449076993f716fd49, type: 3}
+  _firePoint: {fileID: 3326281540445355402}
+  _bulletSpeed: 10
+  _fireRate: 1
+--- !u!114 &792162063245109504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da52bf8bbc1de48cfb221a6ff30f7972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Multiplayer.Center.NetcodeForGameObjectsExample::Unity.Multiplayer.Center.NetcodeForGameObjectsExample.ClientNetworkTransform
   ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 0
+  NetworkTransformExpanded: 1
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
-  RotationInterpolationType: 0
-  ScaleInterpolationType: 0
+  PositionInterpolationType: 1
+  RotationInterpolationType: 1
+  ScaleInterpolationType: 1
   PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
+  PositionMaxInterpolationTime: 0.02
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
@@ -295,10 +315,10 @@ MonoBehaviour:
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 0
-  SyncRotAngleX: 0
-  SyncRotAngleY: 0
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
   SyncRotAngleZ: 1
-  SyncScaleX: 0
+  SyncScaleX: 1
   SyncScaleY: 0
   SyncScaleZ: 0
   PositionThreshold: 0.001
@@ -311,7 +331,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &3733453546391896365
+--- !u!114 &2275671403816584770
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -328,3 +348,18 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
+--- !u!114 &2417607461013166148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9c26e64dc6c1104284148f1a4fcad5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClientNetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 1234567890123456789}

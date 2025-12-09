@@ -1,0 +1,23 @@
+{
+  "1": {
+    "id": 1,
+    "targetType": "Individual",
+    "effectType": "Atk",
+    "value": 5,
+    "description": "공격력 +5 증가"
+  },
+  "2": {
+    "id": 2,
+    "targetType": "Individual",
+    "effectType": "MaxHp",
+    "value": 20,
+    "description": "최대 체력 +20 증가"
+  },
+  "3": {
+    "id": 3,
+    "targetType": "Team",
+    "effectType": "Heal",
+    "value": 30,
+    "description": "팀 전체 체력 30% 회복"
+  }
+}

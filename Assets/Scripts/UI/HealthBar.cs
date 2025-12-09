@@ -77,11 +77,11 @@ public class HealthBar : MonoBehaviour
 
         if (_fillRenderer == null)
         {
-            _fillRenderer = CreateRenderer("Fill", _fillColor, _width);
+            _fillRenderer = CreateRenderer("Fill", _fillColor, _width, 1);
         }
     }
 
-    private SpriteRenderer CreateRenderer(string name, Color color, float width)
+    private SpriteRenderer CreateRenderer(string name, Color color, float width, int orderModifier = 0)
     {
         Transform child = _barRoot.Find(name);
         if (child == null)
@@ -104,12 +104,12 @@ public class HealthBar : MonoBehaviour
         if (ownerRenderer != null)
         {
             renderer.sortingLayerID = ownerRenderer.sortingLayerID;
-            renderer.sortingOrder = ownerRenderer.sortingOrder + _sortingOrderOffset;
+            renderer.sortingOrder = ownerRenderer.sortingOrder + _sortingOrderOffset + orderModifier;
         }
         else
         {
             renderer.sortingLayerID = 0;
-            renderer.sortingOrder = _sortingOrderOffset;
+            renderer.sortingOrder = _sortingOrderOffset + orderModifier;
         }
 
         child.localScale = new Vector3(width, _height, 1f);

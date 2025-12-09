@@ -15,21 +15,27 @@ public class UI_GameStartConfirmPopup : UI_Popup
 
     private GameStartConfirmPopupViewModel _viewModel;
 
+    public override void SetViewModel(IViewModel viewModel)
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.OnCloseRequested -= OnCloseRequested;
+        }
+
+        _viewModel = viewModel as GameStartConfirmPopupViewModel;
+        base.SetViewModel(viewModel);
+
+        if (_viewModel != null)
+        {
+            _viewModel.OnCloseRequested += OnCloseRequested;
+        }
+    }
+
     protected override void Awake()
     {
         base.Awake();
-
-        if (_confirmButton != null)
-            _confirmButton.onClick.AddListener(OnClickConfirm);
-
-        if (_cancelButton != null)
-            _cancelButton.onClick.AddListener(OnClickCancel);
-    }
-
-    public override void SetViewModel(IViewModel viewModel)
-    {
-        _viewModel = viewModel as GameStartConfirmPopupViewModel;
-        base.SetViewModel(viewModel);
+        if (_confirmButton != null) _confirmButton.onClick.AddListener(OnClickConfirm);
+        if (_cancelButton != null) _cancelButton.onClick.AddListener(OnClickCancel);
     }
 
     protected override void OnStateChanged()
@@ -42,11 +48,21 @@ public class UI_GameStartConfirmPopup : UI_Popup
 
     private void OnClickConfirm()
     {
-        // TODO: 게임 시작 로직 구현 예정
-        Managers.UI.Close(this);
+        // 로직 처리는 ViewModel에게 위임
+        _viewModel?.ConfirmGameStart();
     }
 
     private void OnClickCancel()
+    {
+        // 취소 처리도 ViewModel을 거쳐서 흐름을 통일 (필요 시)
+        // 혹은 단순 닫기라면 여기서 닫아도 되지만, VM 상태 관리를 위해 위임 권장
+        _viewModel?.Cancel();
+    }
+
+    /// <summary>
+    /// ViewModel이 닫기를 요청했을 때 실행
+    /// </summary>
+    private void OnCloseRequested()
     {
         Managers.UI.Close(this);
     }

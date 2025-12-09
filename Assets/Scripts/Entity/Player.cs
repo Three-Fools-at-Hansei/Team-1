@@ -1,8 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-/// <summary>
-/// 플레이어 캐릭터 구현
-/// </summary>
 [RequireComponent(typeof(PlayerMove))]
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : Entity
@@ -13,21 +12,16 @@ public class Player : Entity
     [SerializeField] private Transform _firePoint;
 
     private PlayerMove _playerMove;
+    private Camera _mainCamera;
 
     protected override void Awake()
     {
         base.Awake();
         _playerMove = GetComponent<PlayerMove>();
+        _mainCamera = Camera.main;
 
-        if (_gun == null)
-        {
-            _gun = GetComponent<Gun>();
-        }
-
-        if (_gun == null)
-        {
-            _gun = gameObject.AddComponent<Gun>();
-        }
+        if (_gun == null) _gun = GetComponent<Gun>();
+        if (_gun == null) _gun = gameObject.AddComponent<Gun>();
     }
 
     private void Start()
@@ -35,59 +29,126 @@ public class Player : Entity
         ConfigureWeapon();
     }
 
-    /// <summary>
-    /// 무기 프리팹 / 발사 위치 설정
-    /// </summary>
     private void ConfigureWeapon()
     {
-        if (_gun == null)
-        {
-            Debug.LogWarning("[Player] Gun 컴포넌트가 없습니다.");
-            return;
-        }
-
-        if (_bulletPrefab != null)
-        {
-            _gun.SetBulletPrefab(_bulletPrefab);
-        }
-
+        if (_gun == null) return;
+        if (_bulletPrefab != null) _gun.SetBulletPrefab(_bulletPrefab);
         _gun.SetFirePoint(_firePoint != null ? _firePoint : transform);
     }
 
     /// <summary>
-    /// 조준 방향 업데이트 (PlayerMove에서 호출)
+    /// 네트워크 스폰 시 입력 이벤트 바인딩
     /// </summary>
-    public void UpdateAimDirection(Vector2 direction)
+    public override void OnNetworkSpawn()
     {
-        _gun?.UpdateAimDirection(direction);
+        base.OnNetworkSpawn(); // [필수] Entity의 NetworkVariable 초기화
+
+        if (IsOwner)
+        {
+            // Managers.Input을 통해 "Fire" 액션 바인딩
+            // 주의: GameInputActions의 "Lobby" 맵에 "Fire" 액션이 추가되어 있어야 함
+            Managers.Input.BindAction("Fire", HandleFire, InputActionPhase.Performed);
+        }
     }
+
+    /// <summary>
+    /// 네트워크 디스폰 시 입력 이벤트 해제
+    /// </summary>
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+
+        if (IsOwner && Managers.Inst != null)
+        {
+            Managers.Input.UnbindAction("Fire", HandleFire, InputActionPhase.Performed);
+        }
+    }
+
+    /// <summary>
+    /// 발사 입력 처리 핸들러
+    /// </summary>
+    private void HandleFire(InputAction.CallbackContext context)
+    {
+        if (!IsOwner) return;
+
+        // 마우스 위치 가져오기 (New Input System 방식)
+        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+        if (_mainCamera == null) _mainCamera = Camera.main;
+        Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
+
+        // 발사 요청 시, 현재 클라이언트 기준의 총구 위치(_firePoint.position)를 함께 보냅니다.
+        // 서버 위치는 미세하게 다를 수 있기 때문입니다.
+        FireServerRpc(mouseWorldPos, _firePoint.position);
+    }
+
+    /// <summary>
+    /// 클라이언트 -> 서버: 발사 요청
+    /// </summary>
+    /// <param name="targetPos">조준 목표 지점</param>
+    /// <param name="clientFirePos">클라이언트가 계산한 발사 원점</param>
+    [ServerRpc]
+    private void FireServerRpc(Vector2 targetPos, Vector2 clientFirePos)
+    {
+        // 1. 조준 방향 업데이트
+        Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
+        UpdateAimDirection(dir);
+
+        // 2. 보안 검사 (Anti-Cheat)
+        // 클라이언트가 보낸 위치가 서버상의 실제 위치와 너무 차이나면 해킹으로 간주하고 무시하거나 서버 위치 사용
+        // 여기서는 허용 오차를 2.0f 정도로 둡니다. (핑이 튈 때를 대비해 넉넉하게)
+        float distance = Vector2.Distance(clientFirePos, _firePoint.position);
+        Vector2 spawnPos = (distance > 2.0f) ? _firePoint.position : clientFirePos;
+
+        // 3. 보정된 위치로 발사
+        _gun?.Attack(spawnPos, AttackPower);
+    }
+
+    /// <summary>
+    /// 조준 방향 업데이트 (Entity/Weapon 기능)
+    /// </summary>
+    public void UpdateAimDirection(Vector2 direction) => _gun?.UpdateAimDirection(direction);
 
     public override void Attack()
     {
-        _gun?.Attack(_attackPower);
+        // Entity 추상 메서드 구현체
+        // 실제 로직은 FireServerRpc -> _gun.Attack()으로 처리됨
     }
 
     public override void TakeDamage(int damage)
     {
-        if (IsDead())
-            return;
+        // [중요] 데미지 판정 및 HP 감소는 오직 서버에서만 수행
+        if (!IsServer) return;
 
-        _hp = Mathf.Max(0, _hp - damage);
+        if (IsDead()) return;
+
+        Hp = Mathf.Max(0, Hp - damage); // 값만 바꾸면 자동 동기화
 
         if (IsDead())
         {
             Die();
         }
-
-        UpdateHealthBar();
     }
 
     private void Die()
     {
-        Debug.Log("[Player] 플레이어가 사망했습니다.");
+        // 서버 로직: 매니저에게 알리고 Rpc 호출
+        if (IsServer)
+        {
+            Debug.Log($"[Player] 플레이어 사망 처리 (Server). OwnerID: {OwnerClientId}");
+            CombatGameManager.Instance?.OnPlayerDied(OwnerClientId);
+
+            // 모든 클라이언트에게 사망 알림 전송
+            DieClientRpc();
+        }
+    }
+
+    /// <summary>
+    /// 서버에서 호출하여 모든 클라이언트에서 플레이어 오브젝트를 비활성화합니다.
+    /// </summary>
+    [ClientRpc]
+    private void DieClientRpc()
+    {
+        Debug.Log($"[Player] 플레이어 비활성화 (Client). OwnerID: {OwnerClientId}");
         gameObject.SetActive(false);
-        // TODO: 다른 플레이어로 시점 전환 등 추가 연출
     }
 }
-
-
