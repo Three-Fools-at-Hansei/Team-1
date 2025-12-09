@@ -35,6 +35,21 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4fc614b0ee0ab1d479899c84eff5b024
+    m_Address: UI/Popup/UI_PopupCombatResult
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62971803ff942bb4fbeeef5a45c67663
+    m_Address: BeginnerNPC
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6337c7980aa26e3479291c6aec0cc13e
+    m_Address: Prefabs/UI/Popup/UI_PopupTest
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5f4f95ce011154d4091935cbbe825cd0
     m_Address: WaveGameData.json
     m_ReadOnly: 0
