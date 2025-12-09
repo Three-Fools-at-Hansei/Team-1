@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Cinemachine;
 
 public class CombatScene : MonoBehaviour, IScene
 {
@@ -27,7 +28,20 @@ public class CombatScene : MonoBehaviour, IScene
     {
         Debug.Log("Combat Scene Init() - 전투 준비");
 
-        // 매니저를 통한 네트워크 풀 등록
+        // 플레이어 시네머신 카메라 찾아서 활성화
+        var followCam = FindFirstObjectByType<CinemachineCamera>();
+        if (followCam != null)
+        {
+            Managers.Camera.RegisterCamera("PlayerFollowCam", followCam);
+            Managers.Camera.Activate("PlayerFollowCam");
+            Debug.Log("[CombatScene] PlayerFollowCam 등록 및 활성화 완료");
+        }
+        else
+        {
+            Debug.LogWarning("[CombatScene] 씬에 CinemachineCamera가 없습니다.");
+        }
+
+        // 네트워크 풀 등록
         await InitNetworkObjectPools();
 
         // 1. Core 생성 (호스트가 네트워크 오브젝트로 스폰하지 않았다면 로컬 생성)

@@ -7,7 +7,8 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : Entity
 {
-    // [추가] 로컬 플레이어의 사망 상태 변경 알림 이벤트 (UI 등에서 구독)
+    // 로컬 플레이어의 생사 여부 변경 알림
+    // PlayerCameraAgent와 UI가 이 이벤트를 구독합니다.
     public static event Action<bool> OnLocalPlayerDeadStateChanged;
 
     [Header("무기 설정")]
@@ -16,16 +17,14 @@ public class Player : Entity
     [SerializeField] private Transform _firePoint;
 
     private PlayerMove _playerMove;
-    private Camera _mainCamera;
 
     protected override void Awake()
     {
         base.Awake();
         _playerMove = GetComponent<PlayerMove>();
-        _mainCamera = Camera.main;
 
-        if (_gun == null) _gun = GetComponent<Gun>();
-        if (_gun == null) _gun = gameObject.AddComponent<Gun>();
+        if (_gun == null) 
+            _gun = gameObject.GetOrAddComponent<Gun>();
     }
 
     private void Start()
@@ -80,8 +79,7 @@ public class Player : Entity
 
         // 마우스 위치 가져오기 (New Input System 방식)
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
-        if (_mainCamera == null) _mainCamera = Camera.main;
-        Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
+        Vector2 mouseWorldPos = Managers.Camera.ScreenToWorldPoint(mouseScreenPos);
 
         // 발사 요청 시, 현재 클라이언트 기준의 총구 위치(_firePoint.position)를 함께 보냅니다.
         // 서버 위치는 미세하게 다를 수 있기 때문입니다.
@@ -156,12 +154,14 @@ public class Player : Entity
     private void DieClientRpc()
     {
         Debug.Log($"[Player] 플레이어 비활성화 (Client). OwnerID: {OwnerClientId}");
-        gameObject.SetActive(false);
 
         // [추가] 로컬 플레이어라면 UI에 사망 알림
         if (IsOwner)
         {
+            // 이벤트를 발생시켜 PlayerCameraAgent가 관전 모드로 전환하게 함
             OnLocalPlayerDeadStateChanged?.Invoke(true);
         }
+
+        gameObject.SetActive(false);
     }
 }
