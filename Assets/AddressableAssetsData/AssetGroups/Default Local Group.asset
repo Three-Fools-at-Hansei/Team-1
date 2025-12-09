@@ -60,6 +60,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65e170e82edfe1f42831e5631718a591
+    m_Address: UI/Popup/UI_GameJoinPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6c787165b2aa44d49a14b08126735f6d
     m_Address: RewardGameData.json
     m_ReadOnly: 0
