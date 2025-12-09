@@ -23,10 +23,23 @@ public class CombatHUDViewModel : ViewModelBase
             UpdateState(CombatGameManager.Instance.GameState.Value);
             UpdateWave(CombatGameManager.Instance.CurrentWave.Value);
         }
+
+        // [추가] 로컬 플레이어 사망 이벤트 구독
+        Player.OnLocalPlayerDeadStateChanged += OnLocalPlayerDead;
     }
 
     private void OnGameStateChanged(eGameState prev, eGameState curr) => UpdateState(curr);
     private void OnWaveChanged(int prev, int curr) => UpdateWave(curr);
+
+    // [추가] 사망 상태 변경 핸들러
+    private void OnLocalPlayerDead(bool isDead)
+    {
+        if (isDead)
+        {
+            StatusText = "사망했습니다.";
+            OnStateChanged?.Invoke();
+        }
+    }
 
     private void UpdateState(eGameState state)
     {
@@ -42,8 +55,13 @@ public class CombatHUDViewModel : ViewModelBase
             case eGameState.Waiting: StatusText = "참가자 대기 중..."; break;
             case eGameState.WaveInProgress: StatusText = "전투 중!"; break;
             case eGameState.RewardSelection: StatusText = "보상 선택 중..."; break;
-            case eGameState.Victory: StatusText = "승리!"; break;
-            case eGameState.Defeat: StatusText = "패배..."; break;
+            // [수정] 승리/패배 시에는 HUD 텍스트를 업데이트하지 않음 (요구사항 1)
+            case eGameState.Victory:
+                // StatusText = "승리!"; 
+                break;
+            case eGameState.Defeat:
+                // StatusText = "패배..."; 
+                break;
         }
 
         OnStateChanged?.Invoke();
@@ -75,5 +93,7 @@ public class CombatHUDViewModel : ViewModelBase
             CombatGameManager.Instance.GameState.OnValueChanged -= OnGameStateChanged;
             CombatGameManager.Instance.CurrentWave.OnValueChanged -= OnWaveChanged;
         }
+
+        Player.OnLocalPlayerDeadStateChanged -= OnLocalPlayerDead;
     }
 }

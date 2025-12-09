@@ -8,7 +8,6 @@ public class UI_CombatHUD : UI_View
     [SerializeField] private TMP_Text _waveText;
     [SerializeField] private TMP_Text _statusText;
     [SerializeField] private Button _startGameButton;
-    [SerializeField] private Button _lobbyButton;
 
     private CombatHUDViewModel _viewModel;
 
@@ -17,9 +16,6 @@ public class UI_CombatHUD : UI_View
         base.Awake();
         if (_startGameButton != null)
             _startGameButton.onClick.AddListener(() => _viewModel?.OnClickStartGame());
-
-        if (_lobbyButton != null)
-            _lobbyButton.onClick.AddListener(() => _viewModel?.OnClickGoLobby());
     }
 
     public override void SetViewModel(IViewModel viewModel)
@@ -37,8 +33,5 @@ public class UI_CombatHUD : UI_View
 
         if (_startGameButton != null)
             _startGameButton.gameObject.SetActive(_viewModel.IsStartButtonVisible);
-
-        if (_lobbyButton != null)
-            _lobbyButton.gameObject.SetActive(_viewModel.IsLobbyButtonVisible);
     }
 }

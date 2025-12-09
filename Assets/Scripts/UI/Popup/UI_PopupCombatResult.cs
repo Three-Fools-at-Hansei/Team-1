@@ -67,9 +67,8 @@ public class UI_PopupCombatResult : UI_Popup
 
     private void OnActionButtonClicked()
     {
-        // 버튼 클릭 시 팝업 닫기 (실제 게임에서는 여기서 다음 라운드나 재시작 로직 호출)
-        Debug.Log($"[CombatResult] {_viewModel.ButtonText} 버튼 클릭됨");
-        Managers.UI.Close(this);
+        Debug.Log($"[CombatResult] {_viewModel.ButtonText} 버튼 클릭됨 -> 로비로 이동");
+        _viewModel?.GoToLobby();
     }
 
     protected override void OnDestroy()

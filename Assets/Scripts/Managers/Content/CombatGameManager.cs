@@ -367,11 +367,15 @@ public class CombatGameManager : NetworkBehaviour
         }
         else if (current == eGameState.Victory)
         {
-            // 铰府 矫 贸府
+            var vm = new CombatResultViewModel();
+            vm.SetResult(eCombatResult.Victory);
+            await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
         }
         else if (current == eGameState.Defeat)
         {
-            // 菩硅 矫 贸府
+            var vm = new CombatResultViewModel();
+            vm.SetResult(eCombatResult.Defeat);
+            await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
         }
     }
 }

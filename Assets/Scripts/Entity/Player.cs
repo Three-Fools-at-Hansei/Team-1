@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,6 +7,9 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : Entity
 {
+    // [추가] 로컬 플레이어의 사망 상태 변경 알림 이벤트 (UI 등에서 구독)
+    public static event Action<bool> OnLocalPlayerDeadStateChanged;
+
     [Header("무기 설정")]
     [SerializeField] private Gun _gun;
     [SerializeField] private GameObject _bulletPrefab;
@@ -48,6 +52,9 @@ public class Player : Entity
             // Managers.Input을 통해 "Fire" 액션 바인딩
             // 주의: GameInputActions의 "Lobby" 맵에 "Fire" 액션이 추가되어 있어야 함
             Managers.Input.BindAction("Fire", HandleFire, InputActionPhase.Performed);
+
+            // [추가] 스폰 시 생존 상태 알림 (부활 등 고려)
+            OnLocalPlayerDeadStateChanged?.Invoke(false);
         }
     }
 
@@ -150,5 +157,11 @@ public class Player : Entity
     {
         Debug.Log($"[Player] 플레이어 비활성화 (Client). OwnerID: {OwnerClientId}");
         gameObject.SetActive(false);
+
+        // [추가] 로컬 플레이어라면 UI에 사망 알림
+        if (IsOwner)
+        {
+            OnLocalPlayerDeadStateChanged?.Invoke(true);
+        }
     }
 }
