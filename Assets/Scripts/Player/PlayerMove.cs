@@ -23,8 +23,31 @@ public class PlayerMove : NetworkBehaviour
         NetworkVariableWritePermission.Owner
     );
 
+    // 마우스 조준 방향을 네트워크 변수로 동기화 (Owner가 쓰기 권한 가짐)
+    private readonly NetworkVariable<Vector2> _netMouseAimDirection = new NetworkVariable<Vector2>(
+        Vector2.right,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Owner
+    );
+
     // 로컬에서 계산된 또는 네트워크에서 받은 최종 방향
     private Vector2 _currentAimDirection = Vector2.right;
+
+    /// <summary>
+    /// 동기화된 마우스 조준 방향을 반환합니다.
+    /// </summary>
+    public Vector2 CurrentMouseAimDirection => _netMouseAimDirection.Value;
+
+    /// <summary>
+    /// 마우스 조준 방향을 업데이트합니다 (Owner만 호출 가능).
+    /// </summary>
+    public void UpdateMouseAimDirection(Vector2 direction)
+    {
+        if (IsOwner)
+        {
+            _netMouseAimDirection.Value = direction;
+        }
+    }
 
     void Awake()
     {
