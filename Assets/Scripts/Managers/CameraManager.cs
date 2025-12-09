@@ -28,10 +28,6 @@ public class CameraManager : IManagerBase
 
     public void Init()
     {
-        // MainCamera, CinemachineBrain 초기화
-        if (MainCamera != null)
-            _brain = _mainCamera.gameObject.GetOrAddComponent<CinemachineBrain>();
-
         Debug.Log($"{ManagerType} Manager Init 완료.");
     }
 
@@ -39,6 +35,7 @@ public class CameraManager : IManagerBase
 
     public void Clear()
     {
+        // 씬 전환 시 데이터 정리
         _registeredCameras.Clear();
         _activeCamera = null;
         _previousCamera = null;
@@ -49,32 +46,64 @@ public class CameraManager : IManagerBase
     }
 
     // ========================================================================
-    // Camera Registration & Activation
+    // Scene Setup & Registration
     // ========================================================================
 
     /// <summary>
-    /// 씬에 배치된 CinemachineCamera를 매니저에 등록합니다.
+    /// 현재 씬에 있는 메인 카메라와 시네머신 카메라들을 찾아 설정합니다.
+    /// SceneManagerEx.SetCurrentScene()에서 호출됩니다.
     /// </summary>
-    /// <param name="key">식별 키</param>
-    /// <param name="cam">등록할 카메라</param>
+    public void RegisterCamerasInScene()
+    {
+        // 1. Main Camera & Brain 갱신
+        if (MainCamera != null)
+            _brain = _mainCamera.gameObject.GetOrAddComponent<CinemachineBrain>();
+
+        // 2. 씬에 배치된 CinemachineCamera 자동 검색 및 등록
+        var cams = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+
+        foreach (var cam in cams)
+        {
+            // 오브젝트 이름을 키로 사용하여 등록
+            RegisterCamera(cam.name, cam);
+
+            // 활성 카메라가 없다면 발견된 첫 번째 카메라를 활성화
+            if (_activeCamera == null)
+            {
+                Activate(cam.name);
+                Debug.Log($"[CameraManager] {cam.name} 자동 활성화");
+            }
+        }
+
+        Debug.Log($"[CameraManager] 씬 카메라 스캔 완료. 발견된 카메라: {cams.Length}개");
+    }
+
+    /// <summary>
+    /// 특정 카메라를 매니저에 수동으로 등록합니다.
+    /// </summary>
     public void RegisterCamera(string key, CinemachineCamera cam)
     {
         if (string.IsNullOrEmpty(key) || cam == null) return;
 
-        if (_registeredCameras.ContainsKey(key))
+        if (!_registeredCameras.ContainsKey(key))
         {
-            Debug.LogWarning($"[CameraManager] 이미 등록된 카메라 키입니다: {key}");
-            return;
+            _registeredCameras[key] = cam;
+
+            // 씬 초기 상태에서 이미 켜져 있는 카메라를 우선 활성 카메라로 간주
+            if (cam.gameObject.activeSelf && _activeCamera == null)
+            {
+                _activeCamera = cam;
+            }
+            else
+            {
+                // 나머지는 비활성화하여 Brain 제어권 정리
+                cam.gameObject.SetActive(false);
+            }
         }
-
-        _registeredCameras[key] = cam;
-
-        // 초기 상태는 비활성화 (필요 시 Activate 호출)
-        cam.gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// 카메라 등록을 해제합니다. (오브젝트 파괴 시 호출 권장)
+    /// 카메라 등록을 해제합니다.
     /// </summary>
     public void UnregisterCamera(string key)
     {
@@ -84,8 +113,12 @@ public class CameraManager : IManagerBase
         }
     }
 
+    // ========================================================================
+    // Activation & Control
+    // ========================================================================
+
     /// <summary>
-    /// 지정된 키의 카메라를 활성화하고, 현재 카메라는 비활성화합니다.
+    /// 지정된 키의 카메라를 활성화합니다.
     /// </summary>
     public void Activate(string key)
     {
@@ -94,12 +127,11 @@ public class CameraManager : IManagerBase
             Debug.LogError($"[CameraManager] 카메라 키를 찾을 수 없습니다: {key}");
             return;
         }
-
         ChangeCamera(cam);
     }
 
     /// <summary>
-    /// 이전 카메라로 되돌립니다.
+    /// 이전 카메라로 복귀합니다.
     /// </summary>
     public void RestorePreviousCamera()
     {
@@ -110,11 +142,16 @@ public class CameraManager : IManagerBase
         }
     }
 
+    /// <summary>
+    /// 현재 활성화된 카메라를 반환합니다.
+    /// </summary>
+    public CinemachineCamera GetActiveCamera() => _activeCamera;
+
     private void ChangeCamera(CinemachineCamera nextCam)
     {
         if (_activeCamera == nextCam) return;
 
-        // 기존 카메라 비활성화 전 기록
+        // 이전 카메라 기록 및 비활성화
         if (_activeCamera != null)
         {
             _previousCamera = _activeCamera;
@@ -126,44 +163,39 @@ public class CameraManager : IManagerBase
         if (_activeCamera != null)
         {
             _activeCamera.gameObject.SetActive(true);
-
-            // 컷 전환을 원할 경우 Brain의 설정을 잠시 건드릴 수 있음 (옵션)
-            Debug.Log($"[CameraManager] 카메라 전환: {nextCam.name}");
         }
     }
 
     // ========================================================================
-    // Targeting & Utility
+    // Utility (Targeting & Coordinates)
     // ========================================================================
 
     /// <summary>
-    /// 특정 카메라의 Follow/LookAt 타겟을 설정합니다.
-    /// </summary>
-    public void SetTarget(string key, Transform target)
-    {
-        if (_registeredCameras.TryGetValue(key, out var cam))
-        {
-            cam.Follow = target;
-            cam.LookAt = target; // 필요에 따라 null 처리 가능
-        }
-    }
-
-    /// <summary>
-    /// 현재 활성화된 카메라의 타겟을 설정합니다.
+    /// 현재 활성 카메라의 추적 타겟(Follow)을 설정합니다.
     /// </summary>
     public void SetCurrentCameraTarget(Transform target)
     {
         if (_activeCamera != null)
         {
             _activeCamera.Follow = target;
-            // 2D 게임의 경우 LookAt은 보통 사용하지 않거나, 특정 로직이 필요할 수 있음
-            _activeCamera.LookAt = target;
+            // 2D 게임에서는 LookAt을 보통 사용하지 않으므로 주석 처리하거나 필요 시 사용
+            // _activeCamera.LookAt = target; 
         }
     }
 
     /// <summary>
-    /// 스크린 좌표(마우스 위치 등)를 월드 좌표로 변환합니다.
-    /// (Player 및 Weapon 클래스에서 Camera.main 대신 사용 권장)
+    /// 특정 카메라의 타겟을 설정합니다.
+    /// </summary>
+    public void SetTarget(string key, Transform target)
+    {
+        if (_registeredCameras.TryGetValue(key, out var cam))
+        {
+            cam.Follow = target;
+        }
+    }
+
+    /// <summary>
+    /// 스크린 좌표를 월드 좌표로 변환합니다. (Player 등에서 사용)
     /// </summary>
     public Vector2 ScreenToWorldPoint(Vector2 screenPos)
     {
