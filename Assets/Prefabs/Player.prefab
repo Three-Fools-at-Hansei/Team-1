@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 792162063245109504}
   - component: {fileID: 2275671403816584770}
   - component: {fileID: 2417607461013166148}
+  - component: {fileID: 1672212931036797753}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -268,6 +269,7 @@ MonoBehaviour:
   _gun: {fileID: 5107164769006343921}
   _bulletPrefab: {fileID: 4679516059571763972, guid: b9faab4d1ceaef1449076993f716fd49, type: 3}
   _firePoint: {fileID: 3326281540445355402}
+  _weaponUI: {fileID: 0}
 --- !u!114 &5107164769006343921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -363,3 +365,23 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   TransitionStateInfoList: []
   m_Animator: {fileID: 1234567890123456789}
+--- !u!114 &1672212931036797753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08093b3c1da94549abb1640f1b08be0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponUI
+  _weaponSprite: {fileID: -353751291, guid: 0d5e657ee5a074e4baa53d5b248a01d2, type: 3}
+  _baseOffset: {x: 0.3, y: -0.2, z: 0}
+  _scale: 0.9
+  _sortingOrderOffset: 5
+  _aimLineLength: 3.5
+  _aimLineWidth: 0.05
+  _aimLineStartColor: {r: 1, g: 1, b: 1, a: 0.47058824}
+  _aimLineEndColor: {r: 1, g: 1, b: 1, a: 0}
