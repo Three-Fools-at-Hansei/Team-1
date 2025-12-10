@@ -64,5 +64,22 @@ public class UI_PlayPopup : UI_Popup
         await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(vm);
     }
 
-    protected override void OnStateChanged() { }
+    /// <summary>
+    /// 게임 생성/참가 버튼 리스너를 제거합니다.
+    /// </summary>
+    private void UnregisterGameButtonsListeners()
+    {
+        if (_createGameButton != null)
+            _createGameButton.onClick.RemoveListener(OnClickCreateGame);
+
+        if (_joinGameButton != null)
+            _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
+    }
+
+    protected override void OnStateChanged()
+    {
+        // ViewModel에서 데이터를 받아 UI를 업데이트하는 로직이 필요할 경우 여기에 구현
+        // 예: 버튼 활성화/비활성화, 버튼 텍스트 변경 등
+    }
 }
+

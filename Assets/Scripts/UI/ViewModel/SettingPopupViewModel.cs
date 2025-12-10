@@ -1,16 +1,55 @@
 using System;
 using UI;
+using UnityEngine;
 
 /// <summary>
 /// Setting 팝업의 ViewModel입니다.
-/// 현재는 기본 구조만 구현되어 있으며, 추후 설정 관련 로직이 추가될 예정입니다.
+/// 사운드 볼륨 조절 기능을 제공합니다.
 /// </summary>
 public class SettingPopupViewModel : IViewModel
 {
     public event Action OnStateChanged;
 
-    // TODO: Setting 팝업에 필요한 데이터 및 로직 추가 예정
-    // 예: 사운드 볼륨, 그래픽 설정, 키 바인딩 등
+    /// <summary>
+    /// 사운드 볼륨 (0.0 ~ 1.0)
+    /// </summary>
+    /// 
+
+    //사운드 매니저 디스카드해서 오류난거 주석
+    //public float SoundVolume
+    //{
+    //    get => Managers.Sound?.Volume ?? 1f;
+    //    set
+    //    {
+    //        if (Managers.Sound != null)
+    //        {
+    //            Managers.Sound.Volume = value;
+    //            OnStateChanged?.Invoke();
+    //        }
+    //    }
+    //}
+
+    /// <summary>
+    /// 볼륨을 퍼센트로 반환 (0 ~ 100)
+    /// </summary>
+    //public int SoundVolumePercent => Mathf.RoundToInt(SoundVolume * 100f);  <- 이ㅣ것 또한 사운드 매니저 디스카드해서 오류난거
+
+    public SettingPopupViewModel()
+    {
+        // 초기 볼륨 로드
+        if (Managers.Sound != null)
+        {
+            OnStateChanged?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// 슬라이더에서 호출되는 볼륨 변경 메서드
+    /// </summary>
+    public void OnSoundVolumeChanged(float value)
+    {
+        // SoundVolume = value;  <- 이ㅣ것 또한 사운드 매니저 디스카드해서 오류난거
+    }
 }
 
 
