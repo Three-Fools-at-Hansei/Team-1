@@ -119,6 +119,9 @@ public class CombatGameManager : NetworkBehaviour
         _deadPlayers.Clear();
         CurrentWave.Value = 1;
 
+        // 배경음 재생
+        Managers.Sound.PlayBGM("BGM");
+
         while (true)
         {
             // 1. 현재 웨이브 데이터 가져오기
@@ -390,7 +393,6 @@ public class CombatGameManager : NetworkBehaviour
         {
             case eGameState.WaveInProgress:
             {
-                Managers.Sound.PlayBGM("BGM");
                 break;
             }
             case eGameState.RewardSelection:
