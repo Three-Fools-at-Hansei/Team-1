@@ -389,7 +389,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Amazingozing
+  m_text: ThisIsTestName
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d5233d9aa5f73fb4e8a961b8d8e5bb5c, type: 2}
   m_sharedMaterial: {fileID: 2756175040493086410, guid: d5233d9aa5f73fb4e8a961b8d8e5bb5c, type: 2}
