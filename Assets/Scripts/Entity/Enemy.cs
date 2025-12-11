@@ -33,6 +33,11 @@ public class Enemy : Entity
     {
         base.OnNetworkSpawn();
 
+        if (IsServer)
+        {
+            ApplyGlobalDebuffs();
+        }
+
         // [추가] 네트워크 변수 변경 시 호출될 콜백 연결
         _netIsFacingLeft.OnValueChanged += OnFacingChanged;
 
@@ -44,6 +49,28 @@ public class Enemy : Entity
     {
         base.OnNetworkDespawn();
         _netIsFacingLeft.OnValueChanged -= OnFacingChanged;
+    }
+
+    /// <summary>
+    /// 데이터 테이블 정보를 바탕으로 몬스터 스탯을 초기화합니다.
+    /// 서버에서 스폰 직후 호출해야 합니다. (EnemySpawner에서 호출)
+    /// </summary>
+    public void Init(MonsterGameData data)
+    {
+        if (!IsServer) return; // 데이터 초기화는 서버 권한
+
+        // Entity의 NetworkVariable 프로퍼티에 값 할당 -> 자동 동기화
+        MaxHp = data.hp;
+        Hp = data.hp;
+        AttackPower = data.attack;
+        MoveSpeed = data.moveSpeed;
+        AttackSpeed = data.attackSpeed;
+
+        // 사거리 설정 (Entity protected 필드)
+        _attackRange = data.attackRange;
+
+        // 초기화된 스탯에 전역 디버프(약화 효과) 다시 적용
+        ApplyGlobalDebuffs();
     }
 
     private void UpdateSpriteFlip(bool isLeft)
@@ -151,6 +178,37 @@ public class Enemy : Entity
         }
 
         return closest;
+    }
+
+    private void ApplyGlobalDebuffs()
+    {
+        if (CombatGameManager.Instance == null)
+            return;
+
+        // 1. 최대 체력 보정
+        float hpMult = CombatGameManager.Instance.EnemyHpMultiplier.Value;
+        if (hpMult < 1.0f)
+        {
+            int newMaxHp = Mathf.FloorToInt(MaxHp * hpMult);
+            // Entity의 프로퍼티를 통해 설정 (NetworkVariable 자동 동기화)
+            MaxHp = newMaxHp;
+            Hp = newMaxHp; // 체력도 함께 조정
+        }
+
+        // 2. 공격력 보정
+        float atkMult = CombatGameManager.Instance.EnemyAtkMultiplier.Value;
+        if (atkMult < 1.0f)
+        {
+            int newAtk = Mathf.FloorToInt(AttackPower * atkMult);
+            AttackPower = Mathf.Max(1, newAtk);
+        }
+
+        // 3. 이동속도 보정
+        float speedMult = CombatGameManager.Instance.EnemySpeedMultiplier.Value;
+        if (speedMult < 1.0f)
+        {
+            MoveSpeed *= speedMult;
+        }
     }
 
     private void MoveTowardsTarget()
@@ -267,4 +325,3 @@ public class Enemy : Entity
         Gizmos.DrawWireSphere(transform.position, _stopDistance);
     }
 }
-

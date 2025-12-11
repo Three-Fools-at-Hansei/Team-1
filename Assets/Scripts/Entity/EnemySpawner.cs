@@ -66,7 +66,7 @@ public class EnemySpawner : NetworkBehaviour
 
             // 적 스탯 초기화 (Entity.Init 같은 메서드가 있다면 호출)
             var enemy = go.GetComponent<Enemy>();
-            // 예: enemy.Init(data); 
+            enemy.Init(data); 
 
             _activeEnemies.Add(go);
 
