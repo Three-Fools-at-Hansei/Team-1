@@ -42,16 +42,19 @@ public class UI_LobbyView : UI_View
 
     private void OnClickPlay()
     {
+        Managers.Sound.PlaySFX("Select");
         _viewModel?.OnClickPlay();
     }
 
     private void OnClickSetting()
     {
+        Managers.Sound.PlaySFX("Select");
         _viewModel?.OnClickSetting();
     }
 
     private void OnClickExit()
     {
+        Managers.Sound.PlaySFX("Select");
         _viewModel?.OnClickExit();
     }
 

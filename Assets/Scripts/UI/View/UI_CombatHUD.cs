@@ -15,7 +15,11 @@ public class UI_CombatHUD : UI_View
     {
         base.Awake();
         if (_startGameButton != null)
-            _startGameButton.onClick.AddListener(() => _viewModel?.OnClickStartGame());
+            _startGameButton.onClick.AddListener(() =>
+            {
+                _viewModel?.OnClickStartGame();
+                Managers.Sound.PlaySFX("Select");
+            });
     }
 
     public override void SetViewModel(IViewModel viewModel)

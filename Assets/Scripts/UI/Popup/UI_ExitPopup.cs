@@ -26,6 +26,7 @@ public class UI_ExitPopup : UI_Popup
 
     private void OnClickYes()
     {
+        Managers.Sound.PlaySFX("Select");
         // TODO: 게임 종료 로직 구현 예정
         // Application.Quit(); 또는 게임 종료 처리
         Debug.Log("[UI_ExitPopup] 게임 종료 요청 (구현 예정)");
@@ -35,6 +36,7 @@ public class UI_ExitPopup : UI_Popup
 
     private void OnClickNo()
     {
+        Managers.Sound.PlaySFX("Select");
         Managers.UI.Close(this);
     }
 

@@ -48,18 +48,48 @@ public class UI_LoginView : UI_View, ILoginView
 
     private void BindEvents()
     {
+        // Input Fields
         _loginIdInput.onValueChanged.AddListener(value => _viewModel.OnChangeLoginId(value));
         _loginPasswordInput.onValueChanged.AddListener(value => _viewModel.OnChangeLoginPassword(value));
-        _loginPasswordInput.onSubmit.AddListener(_ => _viewModel.OnPressEnter());
-        _loginSubmitButton.onClick.AddListener(async () => await _viewModel.OnClickSubmit());
-        _openSignupButton.onClick.AddListener(OnTogglePanel);
 
+        // 엔터키 입력
+        _loginPasswordInput.onSubmit.AddListener(_ =>
+        {
+            Managers.Sound.PlaySFX("Select"); 
+            _viewModel.OnPressEnter();
+        });
+
+        // Login Buttons
+        _loginSubmitButton.onClick.AddListener(async () =>
+        {
+            Managers.Sound.PlaySFX("Select");
+            await _viewModel.OnClickSubmit();
+        });
+
+        _openSignupButton.onClick.AddListener(() =>
+        {
+            Managers.Sound.PlaySFX("Select");
+            OnTogglePanel();
+        });
+
+        // Signup Input Fields
         _signupNicknameInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupNickname(value));
         _signupIdInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupId(value));
         _signupPasswordInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupPassword(value));
         _signupPasswordConfirmInput.onValueChanged.AddListener(value => _viewModel.OnChangeSignupPasswordConfirm(value));
-        _signupSubmitButton.onClick.AddListener(async () => await _viewModel.OnClickSubmit());
-        _backToLoginButton.onClick.AddListener(OnTogglePanel);
+
+        // Signup Buttons
+        _signupSubmitButton.onClick.AddListener(async () =>
+        {
+            Managers.Sound.PlaySFX("Select");
+            await _viewModel.OnClickSubmit();
+        });
+
+        _backToLoginButton.onClick.AddListener(() =>
+        {
+            Managers.Sound.PlaySFX("Select");
+            OnTogglePanel();
+        });
     }
 
     private void OnTogglePanel()

@@ -48,14 +48,13 @@ public class UI_GameStartConfirmPopup : UI_Popup
 
     private void OnClickConfirm()
     {
-        // 로직 처리는 ViewModel에게 위임
+        Managers.Sound.PlaySFX("Select");
         _viewModel?.ConfirmGameStart();
     }
 
     private void OnClickCancel()
     {
-        // 취소 처리도 ViewModel을 거쳐서 흐름을 통일 (필요 시)
-        // 혹은 단순 닫기라면 여기서 닫아도 되지만, VM 상태 관리를 위해 위임 권장
+        Managers.Sound.PlaySFX("Select");
         _viewModel?.Cancel();
     }
 

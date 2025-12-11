@@ -272,6 +272,16 @@ public class Enemy : Entity
 
         Entity targetEntity = _currentTarget.GetComponent<Entity>();
         targetEntity?.TakeDamage(AttackPower);
+
+        // 공격 사운드 재생
+        PlayAttackSoundClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayAttackSoundClientRpc()
+    {
+        string soundKey = Random.Range(0, 2) == 0 ? "Melee0" : "Melee1";
+        Managers.Sound.PlaySFX(soundKey);
     }
 
     public override void TakeDamage(int damage)
@@ -285,10 +295,19 @@ public class Enemy : Entity
 
         _animator?.SetTrigger("Hit");
 
+        // 피격 사운드 재생
+        PlayHitSoundClientRpc();
+
         if (IsDead())
         {
             Die();
         }
+    }
+
+    [ClientRpc]
+    private void PlayHitSoundClientRpc()
+    {
+        Managers.Sound.PlaySFX(Random.Range(0, 2) == 0 ? "Hit0" : "Hit1");
     }
 
     private void Die()

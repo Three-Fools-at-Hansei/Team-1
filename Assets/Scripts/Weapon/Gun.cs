@@ -46,6 +46,8 @@ public class Gun : Weapon
 
         _lastFireTime = Time.time;
 
+        PlayFireSoundClientRpc();
+
         // 1. 회전 계산
         float angle = Mathf.Atan2(_aimDirection.y, _aimDirection.x) * Mathf.Rad2Deg;
         Quaternion rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
@@ -96,5 +98,11 @@ public class Gun : Weapon
     public void SetFirePoint(Transform firePoint)
     {
         _firePoint = firePoint;
+    }
+
+    [ClientRpc]
+    private void PlayFireSoundClientRpc()
+    {
+        Managers.Sound.PlaySFX("Range");
     }
 }

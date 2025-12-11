@@ -201,6 +201,9 @@ public class Player : Entity
     {
         Debug.Log($"[Player] 플레이어 비활성화 (Client). OwnerID: {OwnerClientId}");
 
+        // 사망 사운드 재생
+        Managers.Sound.PlaySFX("Dead");
+
         // [Main Logic Adoption] 
         // 오브젝트를 끄기 전에 이벤트를 먼저 호출합니다.
         // 이유: 구독자(CameraAgent 등)가 Player 오브젝트의 마지막 위치나 상태를 참조해야 할 수 있기 때문입니다.
