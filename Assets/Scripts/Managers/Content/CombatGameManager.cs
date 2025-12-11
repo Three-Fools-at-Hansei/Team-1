@@ -23,6 +23,11 @@ public class CombatGameManager : NetworkBehaviour
     public NetworkVariable<eGameState> GameState = new NetworkVariable<eGameState>(eGameState.Waiting);
     public NetworkVariable<int> CurrentWave = new NetworkVariable<int>(1);
 
+    // 적군 스탯 보정치 (기본값 1.0f, 보상으로 감소)
+    public NetworkVariable<float> EnemyAtkMultiplier = new NetworkVariable<float>(1.0f);
+    public NetworkVariable<float> EnemySpeedMultiplier = new NetworkVariable<float>(1.0f);
+    public NetworkVariable<float> EnemyHpMultiplier = new NetworkVariable<float>(1.0f);
+
     // 내부 관리 변수
     private EnemySpawner _spawner;
     private HashSet<ulong> _selectedRewardClients = new HashSet<ulong>();
@@ -281,7 +286,29 @@ public class CombatGameManager : NetworkBehaviour
             return;
         }
 
-        // 1. 효과 적용 대상 찾기
+        // 적군 디버프 타입 처리
+        if (reward.targetType == "Team")
+        {
+            switch (reward.effectType)
+            {
+                case "EnemyAtkDown":
+                    EnemyAtkMultiplier.Value = Mathf.Max(0.1f, EnemyAtkMultiplier.Value - reward.value);
+                    Debug.Log($"[Reward] 적 공격력 감소 적용. 현재 비율: {EnemyAtkMultiplier.Value}");
+                    return; // 처리 완료
+
+                case "EnemySpeedDown":
+                    EnemySpeedMultiplier.Value = Mathf.Max(0.1f, EnemySpeedMultiplier.Value - reward.value);
+                    Debug.Log($"[Reward] 적 이동속도 감소 적용. 현재 비율: {EnemySpeedMultiplier.Value}");
+                    return;
+
+                case "EnemyHpDown":
+                    EnemyHpMultiplier.Value = Mathf.Max(0.1f, EnemyHpMultiplier.Value - reward.value);
+                    Debug.Log($"[Reward] 적 최대체력 감소 적용. 현재 비율: {EnemyHpMultiplier.Value}");
+                    return;
+            }
+        }
+
+        // 1. 효과 적용 대상 찾기 (플레이어 및 코어)
         List<Entity> targets = new List<Entity>();
 
         if (reward.targetType == "Team")

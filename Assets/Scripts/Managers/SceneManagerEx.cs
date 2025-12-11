@@ -34,22 +34,27 @@ public class SceneManagerEx : IManagerBase
     /// </summary>
     private async Task InitSceneAsync(IScene scene)
     {
-        if (scene == null)
-            return;
+        if (scene == null) return;
 
-        // 유저 데이터 로드
-        await Managers.Data.LoadUserData();
+        try
+        {
+            Debug.Log("[SceneManager] 유저 데이터 로드 시작");
+            await Managers.Data.LoadUserData();
 
-        // 씬에서 사용하는 게임 데이터 로드
-        var requiredFiles = scene.RequiredDataFiles;
-        if (requiredFiles != null && requiredFiles.Count > 0)
-            await Managers.Data.LoadDataForSceneAsync(requiredFiles);
+            Debug.Log("[SceneManager] 씬 데이터 로드 시작");
+            var requiredFiles = scene.RequiredDataFiles;
+            if (requiredFiles != null && requiredFiles.Count > 0)
+                await Managers.Data.LoadDataForSceneAsync(requiredFiles);
 
-        // 게임 데이터 로드 후 게임 시스템 설정
-        Managers.GameSystem.OnDataLoaded();
+            Debug.Log("[SceneManager] 데이터 로드 완료. Init 호출");
+            Managers.GameSystem.OnDataLoaded();
 
-        // 현재 씬 스크립트 초기화
-        scene.Init();
+            scene.Init();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[SceneManager] 초기화 중 오류 발생: {e}");
+        }
     }
 
     public void Init()

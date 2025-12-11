@@ -85,6 +85,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9e141a7f0b579d04a98c1570d7e3af1e
+    m_Address: Enemy_Tank
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b19472c8e7ba39e4b9cac51326c9efa0
     m_Address: MonsterGameData.json
     m_ReadOnly: 0
@@ -97,6 +102,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b9faab4d1ceaef1449076993f716fd49
     m_Address: Bullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bdf567bc93d5a6444a0d50b60f90c4ca
+    m_Address: Enemy_Fast
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
