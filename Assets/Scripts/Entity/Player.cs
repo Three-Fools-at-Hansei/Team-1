@@ -11,6 +11,10 @@ public class Player : Entity
     // UI(HEAD)와 PlayerCameraAgent(Main) 모두에서 구독합니다.
     public static event Action<bool> OnLocalPlayerDeadStateChanged;
 
+    // 플레이어 스폰, 디스폰 이벤트
+    public static event Action<Player> OnPlayerSpawned;
+    public static event Action<Player> OnPlayerDespawned;
+
     [Header("무기 설정")]
     [SerializeField] private Gun _gun;
     [SerializeField] private GameObject _bulletPrefab;
@@ -93,10 +97,14 @@ public class Player : Entity
             // [Merge] 스폰 시 생존 상태 알림 (false = 살아있음)
             OnLocalPlayerDeadStateChanged?.Invoke(false);
         }
+
+        OnPlayerSpawned?.Invoke(this);
     }
 
     public override void OnNetworkDespawn()
     {
+        OnPlayerDespawned?.Invoke(this);
+
         base.OnNetworkDespawn();
 
         if (IsOwner && Managers.Inst != null)
