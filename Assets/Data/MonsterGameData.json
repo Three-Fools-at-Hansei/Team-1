@@ -1,12 +1,32 @@
 {
-  "101": {
-    "id": 101,
+  "1001": {
+    "id": 1001,
     "name": "Basic Enemy",
     "prefabPath": "Enemy",
-    "hp": 50,
-    "attack": 5,
+    "hp": 75,
+    "attack": 10,
     "moveSpeed": 3.0,
     "attackRange": 1.0,
     "attackSpeed": 1.0
+  },
+  "1002": {
+    "id": 1002,
+    "name": "Fast Enemy",
+    "prefabPath": "Enemy_Fast",
+    "hp": 40,
+    "attack": 8,
+    "moveSpeed": 6.0,
+    "attackRange": 1.0,
+    "attackSpeed": 1.5
+  },
+  "1003": {
+    "id": 1003,
+    "name": "Tank Enemy",
+    "prefabPath": "Enemy_Tank",
+    "hp": 300,
+    "attack": 25,
+    "moveSpeed": 1.5,
+    "attackRange": 1.5,
+    "attackSpeed": 0.8
   }
 }

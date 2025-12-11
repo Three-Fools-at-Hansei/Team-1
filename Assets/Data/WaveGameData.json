@@ -1,32 +1,302 @@
-{
-  "1": {
+[
+  {
     "id": 1,
     "events": [
       {
-        "time": 1.0,
+        "time": 0.0,
         "spawnerIdx": 0,
-        "monsterId": 101
+        "monsterId": 1001
       },
       {
         "time": 2.0,
         "spawnerIdx": 1,
-        "monsterId": 101
-      },
-      {
-        "time": 3.0,
-        "spawnerIdx": 2,
-        "monsterId": 101
+        "monsterId": 1001
       },
       {
         "time": 4.0,
-        "spawnerIdx": 3,
-        "monsterId": 101
+        "spawnerIdx": 0,
+        "monsterId": 1001
+      },
+      {
+        "time": 6.0,
+        "spawnerIdx": 1,
+        "monsterId": 1001
+      },
+      {
+        "time": 8.0,
+        "spawnerIdx": 2,
+        "monsterId": 1001
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "events": [
+      {
+        "time": 0.0,
+        "spawnerIdx": 0,
+        "monsterId": 1001
+      },
+      {
+        "time": 0.0,
+        "spawnerIdx": 8,
+        "monsterId": 1001
+      },
+      {
+        "time": 3.0,
+        "spawnerIdx": 1,
+        "monsterId": 1001
+      },
+      {
+        "time": 3.0,
+        "spawnerIdx": 9,
+        "monsterId": 1001
+      },
+      {
+        "time": 6.0,
+        "spawnerIdx": 2,
+        "monsterId": 1001
+      },
+      {
+        "time": 6.0,
+        "spawnerIdx": 10,
+        "monsterId": 1001
+      },
+      {
+        "time": 10.0,
+        "spawnerIdx": 0,
+        "monsterId": 1002
+      },
+      {
+        "time": 10.0,
+        "spawnerIdx": 8,
+        "monsterId": 1002
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "events": [
+      {
+        "time": 0.0,
+        "spawnerIdx": 4,
+        "monsterId": 1001
+      },
+      {
+        "time": 0.5,
+        "spawnerIdx": 5,
+        "monsterId": 1001
+      },
+      {
+        "time": 1.0,
+        "spawnerIdx": 6,
+        "monsterId": 1001
       },
       {
         "time": 5.0,
+        "spawnerIdx": 12,
+        "monsterId": 1001
+      },
+      {
+        "time": 5.5,
+        "spawnerIdx": 13,
+        "monsterId": 1001
+      },
+      {
+        "time": 6.0,
+        "spawnerIdx": 14,
+        "monsterId": 1001
+      },
+      {
+        "time": 10.0,
+        "spawnerIdx": 4,
+        "monsterId": 1002
+      },
+      {
+        "time": 10.0,
+        "spawnerIdx": 12,
+        "monsterId": 1002
+      },
+      {
+        "time": 12.0,
+        "spawnerIdx": 5,
+        "monsterId": 1003
+      },
+      {
+        "time": 12.0,
+        "spawnerIdx": 13,
+        "monsterId": 1003
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "events": [
+      {
+        "time": 0.0,
         "spawnerIdx": 0,
-        "monsterId": 101
+        "monsterId": 1002
+      },
+      {
+        "time": 0.0,
+        "spawnerIdx": 4,
+        "monsterId": 1002
+      },
+      {
+        "time": 0.0,
+        "spawnerIdx": 8,
+        "monsterId": 1002
+      },
+      {
+        "time": 0.0,
+        "spawnerIdx": 12,
+        "monsterId": 1002
+      },
+      {
+        "time": 5.0,
+        "spawnerIdx": 2,
+        "monsterId": 1001
+      },
+      {
+        "time": 5.0,
+        "spawnerIdx": 6,
+        "monsterId": 1001
+      },
+      {
+        "time": 5.0,
+        "spawnerIdx": 10,
+        "monsterId": 1001
+      },
+      {
+        "time": 5.0,
+        "spawnerIdx": 14,
+        "monsterId": 1001
+      },
+      {
+        "time": 10.0,
+        "spawnerIdx": 0,
+        "monsterId": 1003
+      },
+      {
+        "time": 10.0,
+        "spawnerIdx": 8,
+        "monsterId": 1003
+      },
+      {
+        "time": 15.0,
+        "spawnerIdx": 4,
+        "monsterId": 1003
+      },
+      {
+        "time": 15.0,
+        "spawnerIdx": 12,
+        "monsterId": 1003
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "events": [
+      {
+        "time": 0.0,
+        "spawnerIdx": 0,
+        "monsterId": 1001
+      },
+      {
+        "time": 0.5,
+        "spawnerIdx": 1,
+        "monsterId": 1001
+      },
+      {
+        "time": 1.0,
+        "spawnerIdx": 2,
+        "monsterId": 1001
+      },
+      {
+        "time": 1.5,
+        "spawnerIdx": 3,
+        "monsterId": 1001
+      },
+      {
+        "time": 2.0,
+        "spawnerIdx": 4,
+        "monsterId": 1001
+      },
+      {
+        "time": 2.5,
+        "spawnerIdx": 5,
+        "monsterId": 1001
+      },
+      {
+        "time": 3.0,
+        "spawnerIdx": 6,
+        "monsterId": 1001
+      },
+      {
+        "time": 3.5,
+        "spawnerIdx": 7,
+        "monsterId": 1001
+      },
+      {
+        "time": 4.0,
+        "spawnerIdx": 8,
+        "monsterId": 1001
+      },
+      {
+        "time": 4.5,
+        "spawnerIdx": 9,
+        "monsterId": 1001
+      },
+      {
+        "time": 5.0,
+        "spawnerIdx": 10,
+        "monsterId": 1001
+      },
+      {
+        "time": 5.5,
+        "spawnerIdx": 11,
+        "monsterId": 1001
+      },
+      {
+        "time": 6.0,
+        "spawnerIdx": 12,
+        "monsterId": 1001
+      },
+      {
+        "time": 6.5,
+        "spawnerIdx": 13,
+        "monsterId": 1001
+      },
+      {
+        "time": 7.0,
+        "spawnerIdx": 14,
+        "monsterId": 1001
+      },
+      {
+        "time": 7.5,
+        "spawnerIdx": 15,
+        "monsterId": 1001
+      },
+      {
+        "time": 15.0,
+        "spawnerIdx": 0,
+        "monsterId": 1003
+      },
+      {
+        "time": 15.0,
+        "spawnerIdx": 4,
+        "monsterId": 1003
+      },
+      {
+        "time": 15.0,
+        "spawnerIdx": 8,
+        "monsterId": 1003
+      },
+      {
+        "time": 15.0,
+        "spawnerIdx": 12,
+        "monsterId": 1003
       }
     ]
   }
-}
+]
