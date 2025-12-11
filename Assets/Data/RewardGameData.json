@@ -60,7 +60,7 @@
     "targetType": "Team",
     "effectType": "MaxHp",
     "value": 100,
-    "description": "[팀] 코어 최대 체력 +100 증가 (구현 필요 시)"
+    "description": "[팀] 코어 최대 체력 +100 증가"
   },
   "3001": {
     "id": 3001,

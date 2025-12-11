@@ -58,6 +58,8 @@ public class UI_GameJoinPopup : UI_Popup
         if (_viewModel == null)
             return;
 
+        Managers.Sound.PlaySFX("Select");
+
         // InputField에서 게임 코드 읽기
         string gameCode = _codeInputField != null ? _codeInputField.text : string.Empty;
 

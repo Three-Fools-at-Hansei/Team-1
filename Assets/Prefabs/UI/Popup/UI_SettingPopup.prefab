@@ -568,7 +568,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI_SettingPopup
   _closeButton: {fileID: 5988965413046518932}
   _soundLabelText: {fileID: 0}
-  _soundVolumeSlider: {fileID: 0}
+  _soundVolumeSlider: {fileID: 6704421989521678398}
 --- !u!1 &5618086556879444208
 GameObject:
   m_ObjectHideFlags: 0

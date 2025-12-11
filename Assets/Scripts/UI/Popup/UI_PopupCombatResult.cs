@@ -195,6 +195,7 @@ public class UI_PopupCombatResult : UI_Popup
     private void OnActionButtonClicked()
     {
         Debug.Log($"[CombatResult] {_viewModel.ButtonText} 버튼 클릭됨 -> 로비로 이동");
+        Managers.Sound.PlaySFX("Select");
         _viewModel?.GoToLobby();
     }
 

@@ -13,34 +13,34 @@ public class SettingPopupViewModel : IViewModel
     /// <summary>
     /// 사운드 볼륨 (0.0 ~ 1.0)
     /// </summary>
-    /// 
-
-    //사운드 매니저 디스카드해서 오류난거 주석
-    //public float SoundVolume
-    //{
-    //    get => Managers.Sound?.Volume ?? 1f;
-    //    set
-    //    {
-    //        if (Managers.Sound != null)
-    //        {
-    //            Managers.Sound.Volume = value;
-    //            OnStateChanged?.Invoke();
-    //        }
-    //    }
-    //}
+    public float SoundVolume
+    {
+        get => Managers.Sound?.Volume ?? 1f;
+        set
+        {
+            if (Managers.Sound != null)
+            {
+                Debug.Log($"[ViewModel] SoundVolume Property Set: {value}");
+                Managers.Sound.Volume = value;
+                OnStateChanged?.Invoke();
+            }
+            else
+            {
+                Debug.LogError("[ViewModel] Managers.Sound is NULL!");
+            }
+        }
+    }
 
     /// <summary>
     /// 볼륨을 퍼센트로 반환 (0 ~ 100)
     /// </summary>
-    //public int SoundVolumePercent => Mathf.RoundToInt(SoundVolume * 100f);  <- 이ㅣ것 또한 사운드 매니저 디스카드해서 오류난거
+    public int SoundVolumePercent => Mathf.RoundToInt(SoundVolume * 100f);
 
     public SettingPopupViewModel()
     {
         // 초기 볼륨 로드
         if (Managers.Sound != null)
-        {
             OnStateChanged?.Invoke();
-        }
     }
 
     /// <summary>
@@ -48,9 +48,6 @@ public class SettingPopupViewModel : IViewModel
     /// </summary>
     public void OnSoundVolumeChanged(float value)
     {
-        // SoundVolume = value;  <- 이ㅣ것 또한 사운드 매니저 디스카드해서 오류난거
+        SoundVolume = value;
     }
 }
-
-
-

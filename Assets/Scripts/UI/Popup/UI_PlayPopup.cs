@@ -52,9 +52,23 @@ public class UI_PlayPopup : UI_Popup
         if (_joinGameButton != null) _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
     }
 
-    private void OnClickClose() => Managers.UI.Close(this);
-    private void OnClickCreateGame() => _viewModel?.ShowCreateGamePopup();
-    private void OnClickJoinGame() => _viewModel?.JoinGame();
+    private void OnClickClose()
+    {
+        Managers.Sound.PlaySFX("Select");
+        Managers.UI.Close(this);
+    }
+
+    private void OnClickCreateGame()
+    {
+        Managers.Sound.PlaySFX("Select");
+        _viewModel?.ShowCreateGamePopup();
+    }
+
+    private void OnClickJoinGame()
+    {
+        Managers.Sound.PlaySFX("Select");
+        _viewModel?.JoinGame();
+    }
 
     /// <summary>
     /// ViewModel의 요청에 의해 실제 팝업 UI를 띄우는 로직 (View의 역할)

@@ -119,6 +119,9 @@ public class CombatGameManager : NetworkBehaviour
         _deadPlayers.Clear();
         CurrentWave.Value = 1;
 
+        // 배경음 재생
+        Managers.Sound.PlayBGM("BGM");
+
         while (true)
         {
             // 1. 현재 웨이브 데이터 가져오기
@@ -386,23 +389,38 @@ public class CombatGameManager : NetworkBehaviour
     {
         Debug.Log($"[CombatGameManager] GameState 변경: {previous} -> {current}");
 
-        // 상태 변경에 따른 UI 자동 팝업 처리
-        if (current == eGameState.RewardSelection)
+        switch (current)
         {
-            // 보상 선택 팝업 표시 (로컬)
-            await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
-        }
-        else if (current == eGameState.Victory)
-        {
-            var vm = new CombatResultViewModel();
-            vm.SetResult(eCombatResult.Victory);
-            await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
-        }
-        else if (current == eGameState.Defeat)
-        {
-            var vm = new CombatResultViewModel();
-            vm.SetResult(eCombatResult.Defeat);
-            await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
+            case eGameState.WaveInProgress:
+            {
+                break;
+            }
+            case eGameState.RewardSelection:
+            {
+                Managers.Sound.PlaySFX("LevelUp");
+                await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+                break;
+            }
+            case eGameState.Victory:
+            {       
+                Managers.Sound.StopBGM();
+                Managers.Sound.PlaySFX("Win");
+
+                var vm = new CombatResultViewModel();
+                vm.SetResult(eCombatResult.Victory);
+                await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
+                break;
+            }
+            case eGameState.Defeat:
+            {
+                Managers.Sound.StopBGM();
+                Managers.Sound.PlaySFX("Lose");
+
+                var vm = new CombatResultViewModel();
+                vm.SetResult(eCombatResult.Defeat);
+                await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
+                break;
+            }
         }
     }
 }

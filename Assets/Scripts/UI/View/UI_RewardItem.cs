@@ -38,6 +38,8 @@ public class UI_RewardItem : UI_View
 
     private void OnClickSelect()
     {
+        Managers.Sound.PlaySFX("Select");
+
         _viewModel?.Select();
 
         // ºÎ¸ð ÆË¾÷ ´Ý±â
