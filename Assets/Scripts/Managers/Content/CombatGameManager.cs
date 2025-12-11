@@ -35,6 +35,9 @@ public class CombatGameManager : NetworkBehaviour
     // 사망한 플레이어 목록 (ID)
     private HashSet<ulong> _deadPlayers = new HashSet<ulong>();
 
+    // [UI Reference] 상태창 HUD
+    private UI_GameStatusHUD _statusHUD;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -382,7 +385,7 @@ public class CombatGameManager : NetworkBehaviour
 
 
     // ========================================================================
-    // State Change Handler (UI Trigger)
+    // State Change Handler (UI Trigger & Sound)
     // ========================================================================
 
     private async void OnGameStateChanged(eGameState previous, eGameState current)
@@ -392,35 +395,62 @@ public class CombatGameManager : NetworkBehaviour
         switch (current)
         {
             case eGameState.WaveInProgress:
-            {
-                break;
-            }
+                {
+                    // [UI] 전투 시작 시 상태창(HUD) 표시 (Waiting에서 넘어왔을 때)
+                    if (previous == eGameState.Waiting)
+                    {
+                        if (_statusHUD == null)
+                        {
+                            _statusHUD = await Managers.UI.ShowAsync<UI_GameStatusHUD>(new GameStatusViewModel());
+                        }
+                    }
+                    break;
+                }
             case eGameState.RewardSelection:
-            {
-                Managers.Sound.PlaySFX("LevelUp");
-                await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
-                break;
-            }
+                {
+                    // [Sound] 레벨업/보상 효과음 (BGM 끄기)
+                    Managers.Sound.StopBGM();
+                    Managers.Sound.PlaySFX("LevelUp");
+
+                    await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+                    break;
+                }
             case eGameState.Victory:
-            {       
-                Managers.Sound.StopBGM();
-                Managers.Sound.PlaySFX("Win");
+                {
+                    // [Sound] 승리 효과음 (BGM 끄기)
+                    Managers.Sound.StopBGM();
+                    Managers.Sound.PlaySFX("Win");
 
-                var vm = new CombatResultViewModel();
-                vm.SetResult(eCombatResult.Victory);
-                await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
-                break;
-            }
+                    // [UI] 상태창 숨김
+                    if (_statusHUD != null)
+                    {
+                        Managers.UI.Close(_statusHUD);
+                        _statusHUD = null;
+                    }
+
+                    var vm = new CombatResultViewModel();
+                    vm.SetResult(eCombatResult.Victory);
+                    await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
+                    break;
+                }
             case eGameState.Defeat:
-            {
-                Managers.Sound.StopBGM();
-                Managers.Sound.PlaySFX("Lose");
+                {
+                    // [Sound] 패배 효과음 (BGM 끄기)
+                    Managers.Sound.StopBGM();
+                    Managers.Sound.PlaySFX("Lose");
 
-                var vm = new CombatResultViewModel();
-                vm.SetResult(eCombatResult.Defeat);
-                await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
-                break;
-            }
+                    // [UI] 상태창 숨김
+                    if (_statusHUD != null)
+                    {
+                        Managers.UI.Close(_statusHUD);
+                        _statusHUD = null;
+                    }
+
+                    var vm = new CombatResultViewModel();
+                    vm.SetResult(eCombatResult.Defeat);
+                    await Managers.UI.ShowAsync<UI_PopupCombatResult>(vm);
+                    break;
+                }
         }
     }
 }

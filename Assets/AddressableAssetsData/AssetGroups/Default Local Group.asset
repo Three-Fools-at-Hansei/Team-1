@@ -65,6 +65,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 567fc2ded9216a44ca5e12b0faf4b59e
+    m_Address: UI/View/UI_EntityHp
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5f2056d638986e1499376f2c06f1e463
     m_Address: UI/View/UI_CombatHUD
     m_ReadOnly: 0
@@ -157,6 +162,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfa1bda163972354db701c998de72a6d
     m_Address: UI/View/UI_RewardItem
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2f3371c97e538441aede3905e3d8869
+    m_Address: UI/View/UI_GameStatusHUD
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
