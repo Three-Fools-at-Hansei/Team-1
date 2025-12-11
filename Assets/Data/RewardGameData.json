@@ -1,88 +1,86 @@
-[
-  {
+{
+  "1001": {
     "id": 1001,
     "targetType": "Individual",
     "effectType": "Atk",
     "value": 5,
     "description": "[개인] 공격력 +5 강화"
   },
-  {
+  "1002": {
     "id": 1002,
     "targetType": "Individual",
     "effectType": "AtkSpeed",
     "value": 0.1,
     "description": "[개인] 공격 속도 +10% 증가"
   },
-  {
+  "1003": {
     "id": 1003,
     "targetType": "Individual",
     "effectType": "MoveSpeed",
     "value": 1.0,
     "description": "[개인] 이동 속도 +1 증가"
   },
-  {
+  "1004": {
     "id": 1004,
     "targetType": "Individual",
     "effectType": "MaxHp",
     "value": 20,
     "description": "[개인] 최대 체력 +20 증가"
   },
-  {
+  "1005": {
     "id": 1005,
     "targetType": "Individual",
     "effectType": "Heal",
     "value": 30,
     "description": "[개인] 체력 30% 회복"
   },
-
-  {
+  "2001": {
     "id": 2001,
     "targetType": "Team",
     "effectType": "Atk",
     "value": 3,
     "description": "[팀] 전체 공격력 +3 강화"
   },
-  {
+  "2002": {
     "id": 2002,
     "targetType": "Team",
     "effectType": "AtkSpeed",
     "value": 0.05,
     "description": "[팀] 전체 공격 속도 +5% 증가"
   },
-  {
+  "2003": {
     "id": 2003,
     "targetType": "Team",
     "effectType": "CoreHeal",
     "value": 50,
     "description": "[팀] 코어 체력 +50 회복"
   },
-  {
+  "2004": {
     "id": 2004,
     "targetType": "Team",
     "effectType": "MaxHp",
     "value": 100,
     "description": "[팀] 코어 최대 체력 +100 증가 (구현 필요 시)"
   },
-
-  {
+  "3001": {
     "id": 3001,
     "targetType": "Team",
     "effectType": "EnemyAtkDown",
     "value": 0.1,
     "description": "[전술] 적 공격력 10% 영구 감소"
   },
-  {
+  "3002": {
     "id": 3002,
     "targetType": "Team",
     "effectType": "EnemySpeedDown",
     "value": 0.1,
     "description": "[전술] 적 이동 속도 10% 영구 감소"
   },
-  {
+  "3003": {
     "id": 3003,
     "targetType": "Team",
     "effectType": "EnemyHpDown",
     "value": 0.1,
     "description": "[전술] 적 최대 체력 10% 감소"
   }
-]
+}
