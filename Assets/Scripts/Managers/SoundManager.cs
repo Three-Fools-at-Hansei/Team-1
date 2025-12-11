@@ -14,7 +14,7 @@ public class SoundManager : IManagerBase
 
     // [추가] 저장 키 및 BGM 밸런스 비율
     private const string PLAYER_PREFS_VOLUME_KEY = "MasterVolume";
-    private const float BGM_VOLUME_RATIO = 0.6f; // BGM은 마스터 볼륨의 60%로 재생
+    private const float BGM_VOLUME_RATIO = 0.4f;
 
     private float _volume = 1.0f;
 
