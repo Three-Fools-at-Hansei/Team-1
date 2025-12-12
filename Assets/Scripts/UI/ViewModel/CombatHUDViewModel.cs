@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks; // Task 사용을 위해 추가
+using System.Threading.Tasks;
 using UI;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,8 +13,11 @@ public class CombatHUDViewModel : ViewModelBase
     public string RoomCodeText { get; private set; } = string.Empty;
 
     public bool IsStartButtonVisible { get; private set; } = false;
-    public bool IsLobbyButtonVisible { get; private set; } = false; // 결과 화면용 (기존)
-    public bool IsReturnButtonVisible { get; private set; } = false; // [New] 대기실 퇴장용
+    public bool IsLobbyButtonVisible { get; private set; } = false;
+    public bool IsReturnButtonVisible { get; private set; } = false;
+
+    // 사망 필터 표시 여부
+    public bool IsDeadFilterVisible { get; private set; } = false;
 
     public CombatHUDViewModel()
     {
@@ -28,23 +31,16 @@ public class CombatHUDViewModel : ViewModelBase
             UpdateWave(CombatGameManager.Instance.CurrentWave.Value);
         }
 
-        // [New] 네트워크 연결 끊김(호스트 종료 등) 감지
+        // 네트워크 연결 끊김(호스트 종료 등) 감지
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
 
-        string code = Managers.Network.CurrentLobbyCode;
-        if (!string.IsNullOrEmpty(code))
-        {
-            RoomCodeText = $"CODE: {code}";
-        }
-        else
-        {
-            RoomCodeText = "";
-        }
-
         Player.OnLocalPlayerDeadStateChanged += OnLocalPlayerDead;
+
+        // 초기 룸코드 설정 (Waiting 상태일 때만 보이도록 UpdateState에서 처리하므로 여기선 기본 설정만)
+        UpdateRoomCodeVisibility(eGameState.Waiting);
     }
 
     private void OnGameStateChanged(eGameState prev, eGameState curr) => UpdateState(curr);
@@ -54,7 +50,10 @@ public class CombatHUDViewModel : ViewModelBase
     {
         if (isDead)
         {
-            StatusText = "사망했습니다.";
+            // 사망 텍스트 변경
+            StatusText = "관전 중...";
+            // 그레이 필터 활성화
+            IsDeadFilterVisible = true;
             OnStateChanged?.Invoke();
         }
     }
@@ -67,9 +66,10 @@ public class CombatHUDViewModel : ViewModelBase
 
         // 게임 종료 상태일 때 결과창 로비 버튼 활성화 (기존 유지)
         IsLobbyButtonVisible = (state == eGameState.Victory || state == eGameState.Defeat);
-
-        // [New] 대기 상태(Waiting)일 때만 '돌아가기' 버튼 활성화
         IsReturnButtonVisible = (state == eGameState.Waiting);
+
+        // 로비 코드 가시성 업데이트
+        UpdateRoomCodeVisibility(state);
 
         switch (state)
         {
@@ -81,6 +81,24 @@ public class CombatHUDViewModel : ViewModelBase
         }
 
         OnStateChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 상태에 따른 로비 코드 표시/숨김
+    /// </summary>
+    /// <param name="state"></param>
+    private void UpdateRoomCodeVisibility(eGameState state)
+    {
+        if (state == eGameState.Waiting)
+        {
+            string code = Managers.Network.CurrentLobbyCode;
+            RoomCodeText = !string.IsNullOrEmpty(code) ? $"CODE: {code}" : "";
+        }
+        else
+        {
+            // 게임 시작 후에는 코드 숨김
+            RoomCodeText = string.Empty;
+        }
     }
 
     private void UpdateWave(int wave)
@@ -96,7 +114,7 @@ public class CombatHUDViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// [New] 대기실에서 로비로 돌아가기 버튼 클릭 시
+    /// 대기실에서 로비로 돌아가기 버튼 클릭 시
     /// </summary>
     public void OnClickReturnToLobby()
     {
@@ -104,7 +122,7 @@ public class CombatHUDViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// [New] 클라이언트 연결 종료 시 호출 (호스트가 방을 나갔을 때 등)
+    /// 클라이언트 연결 종료 시 호출 (호스트가 방을 나갔을 때 등)
     /// </summary>
     private void OnClientDisconnected(ulong clientId)
     {
@@ -117,7 +135,7 @@ public class CombatHUDViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// [New] 로비 이동 로직 (CombatResultPopup과 동일한 로직)
+    /// 로비 이동 로직 (CombatResultPopup과 동일한 로직)
     /// </summary>
     private async Task GoToLobbyAsync()
     {
@@ -129,12 +147,6 @@ public class CombatHUDViewModel : ViewModelBase
 
         // 메인(로비) 씬으로 이동
         await Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
-    }
-
-    // (기존 메서드 유지 - 필요 시 사용)
-    public async void OnClickGoLobby()
-    {
-        await GoToLobbyAsync();
     }
 
     protected override void OnDispose()
