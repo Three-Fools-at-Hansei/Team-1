@@ -31,8 +31,17 @@ public class Bullet : NetworkBehaviour
         // 서버에서만 수명 관리 (일정 시간 후 파괴)
         if (IsServer)
         {
+            CancelInvoke(nameof(DestroyBullet));
             Invoke(nameof(DestroyBullet), _lifeTime);
         }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer)
+            CancelInvoke(nameof(DestroyBullet));
+
+        base.OnNetworkDespawn();
     }
 
     /// <summary>
