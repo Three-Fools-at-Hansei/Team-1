@@ -10,6 +10,7 @@ public class UI_CombatHUD : UI_View
     [SerializeField] private TMP_Text _roomCodeText;
     [SerializeField] private Button _startGameButton;
     [SerializeField] private Button _returnButton;
+    [SerializeField] private GameObject _deadFilterObject;
 
     private CombatHUDViewModel _viewModel;
 
@@ -26,7 +27,7 @@ public class UI_CombatHUD : UI_View
             });
         }
 
-        // [New] 로비 복귀 버튼 이벤트 연결
+        // 로비 복귀 버튼 이벤트 연결
         if (_returnButton != null)
         {
             _returnButton.onClick.AddListener(() =>
@@ -35,6 +36,9 @@ public class UI_CombatHUD : UI_View
                 _viewModel?.OnClickReturnToLobby();
             });
         }
+
+        if (_deadFilterObject != null)
+            _deadFilterObject.SetActive(false);
     }
 
     public override void SetViewModel(IViewModel viewModel)
@@ -55,5 +59,8 @@ public class UI_CombatHUD : UI_View
             _startGameButton.gameObject.SetActive(_viewModel.IsStartButtonVisible);
         if (_returnButton != null)
             _returnButton.gameObject.SetActive(_viewModel.IsReturnButtonVisible);
+
+        if (_deadFilterObject != null)
+            _deadFilterObject.SetActive(_viewModel.IsDeadFilterVisible);
     }
 }

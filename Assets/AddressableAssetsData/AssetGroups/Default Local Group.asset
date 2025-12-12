@@ -30,6 +30,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 147f1df0fb79c0b47acbe225b6960513
+    m_Address: Tombstone
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 14f24de2a9a70154e96297de25e2184c
     m_Address: Melee0
     m_ReadOnly: 0
