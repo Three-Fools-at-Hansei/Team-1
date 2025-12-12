@@ -48,7 +48,7 @@ public class UI_GameJoinPopup : UI_Popup
             _viewModel.OnCloseRequested -= OnCloseRequested;
         }
 
-        // 2. ViewModel 캐스팅 및 base 호출 (OnStateChanged 연결 등)
+        // 2. ViewModel 캐스팅 및 base 호출
         _viewModel = viewModel as GameJoinPopupViewModel;
         base.SetViewModel(viewModel);
 
@@ -63,7 +63,7 @@ public class UI_GameJoinPopup : UI_Popup
     {
         if (_viewModel == null) return;
 
-        // 메시지 갱신 (예: "접속 중...", "실패 사유")
+        // 메시지 갱신
         if (_messageText != null)
             _messageText.text = _viewModel.MessageText;
 
@@ -86,10 +86,18 @@ public class UI_GameJoinPopup : UI_Popup
 
         Managers.Sound.PlaySFX("Select");
 
-        // InputField에서 게임 코드 읽기
-        string gameCode = _codeInputField != null ? _codeInputField.text : string.Empty;
+        // [Fix] 입력값 공백 제거 및 대문자 변환 처리
+        // 복사/붙여넣기 시 발생하는 공백 오류를 방지합니다.
+        string rawCode = _codeInputField != null ? _codeInputField.text : string.Empty;
+        string gameCode = rawCode.Trim().ToUpper();
 
-        // ViewModel에 데이터 전달 및 접속 시도
+        if (string.IsNullOrEmpty(gameCode))
+        {
+            // ViewModel이 처리하도록 빈 값이라도 전달하거나, 여기서 차단
+            return;
+        }
+
+        // ViewModel에 정제된 게임 코드 전달 및 접속 시도
         _viewModel.SetGameCode(gameCode);
         _viewModel.TryJoinGame();
     }
@@ -105,7 +113,6 @@ public class UI_GameJoinPopup : UI_Popup
 
     protected override void OnDestroy()
     {
-        // 파괴 시 이벤트 구독 해제 보장
         if (_viewModel != null)
         {
             _viewModel.OnCloseRequested -= OnCloseRequested;
