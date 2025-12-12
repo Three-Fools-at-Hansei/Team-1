@@ -7,6 +7,7 @@ public class UI_CombatHUD : UI_View
 {
     [SerializeField] private TMP_Text _waveText;
     [SerializeField] private TMP_Text _statusText;
+    [SerializeField] private TMP_Text _roomCodeText;
     [SerializeField] private Button _startGameButton;
 
     private CombatHUDViewModel _viewModel;
@@ -34,6 +35,7 @@ public class UI_CombatHUD : UI_View
 
         if (_waveText != null) _waveText.text = _viewModel.WaveText;
         if (_statusText != null) _statusText.text = _viewModel.StatusText;
+        if (_roomCodeText != null) _roomCodeText.text = _viewModel.RoomCodeText;
 
         if (_startGameButton != null)
             _startGameButton.gameObject.SetActive(_viewModel.IsStartButtonVisible);
