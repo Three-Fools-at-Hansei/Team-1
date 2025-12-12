@@ -9,6 +9,7 @@ public class CombatHUDViewModel : ViewModelBase
 
     public string WaveText { get; private set; } = "Wave -";
     public string StatusText { get; private set; } = "대기 중...";
+    public string RoomCodeText { get; private set; } = string.Empty;
     public bool IsStartButtonVisible { get; private set; } = false;
     public bool IsLobbyButtonVisible { get; private set; } = false;
 
@@ -22,6 +23,16 @@ public class CombatHUDViewModel : ViewModelBase
             // 초기 상태 반영
             UpdateState(CombatGameManager.Instance.GameState.Value);
             UpdateWave(CombatGameManager.Instance.CurrentWave.Value);
+        }
+
+        string code = Managers.Network.CurrentLobbyCode;
+        if (!string.IsNullOrEmpty(code))
+        {
+            RoomCodeText = $"CODE: {code}";
+        }
+        else
+        {
+            RoomCodeText = "";
         }
 
         // [추가] 로컬 플레이어 사망 이벤트 구독
