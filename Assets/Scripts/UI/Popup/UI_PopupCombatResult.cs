@@ -10,11 +10,15 @@ public class UI_PopupCombatResult : UI_Popup
 
     [Header("UI References")]
     [SerializeField] private Image _backgroundPanel;
-    [SerializeField] private TMP_Text _titleText;
     [SerializeField] private Button _actionButton;
     [SerializeField] private TMP_Text _buttonText;
     [SerializeField] private GameObject _survivedObject;
     [SerializeField] private GameObject _deadObject;
+
+    // [추가] 승리/패배 이미지 오브젝트
+    [Header("Result Images")]
+    [SerializeField] private GameObject _victoryImageObj;
+    [SerializeField] private GameObject _defeatImageObj;
 
     private CombatResultViewModel _viewModel;
 
@@ -79,6 +83,10 @@ public class UI_PopupCombatResult : UI_Popup
             _deadObject.SetActive(false);
         }
 
+        // [추가] 이미지 오브젝트 초기화
+        if (_victoryImageObj != null) _victoryImageObj.SetActive(false);
+        if (_defeatImageObj != null) _defeatImageObj.SetActive(false);
+
         // 버튼 이벤트 바인딩
         if (_actionButton != null)
         {
@@ -129,44 +137,11 @@ public class UI_PopupCombatResult : UI_Popup
 
         Debug.Log($"[UI_PopupCombatResult] OnStateChanged 호출됨. Result: {_viewModel.Result}");
 
-        // 제목 텍스트 숨기기 (오브젝트로 대체)
-        if (_titleText != null)
-        {
-            RectTransform titleRect = _titleText.GetComponent<RectTransform>();
-            if (titleRect != null)
-            {
-                // TitleText의 부모와 월드 위치 가져오기
-                // Survived 오브젝트를 Title 위치로 이동
-                if (_survivedObject != null)
-                {
-                    RectTransform survivedRect = _survivedObject.GetComponent<RectTransform>();
-                    if (survivedRect != null)
-                    {
-                        // TitleText의 anchoredPosition 복사
-                        survivedRect.anchoredPosition = titleRect.anchoredPosition;
-                    }
-                }
-
-                // Dead 오브젝트를 Title 위치로 이동
-                if (_deadObject != null)
-                {
-                    RectTransform deadRect = _deadObject.GetComponent<RectTransform>();
-                    if (deadRect != null)
-                    {
-                        // TitleText의 anchoredPosition 복사
-                        deadRect.anchoredPosition = titleRect.anchoredPosition;
-                    }
-                }
-            }
-
-            // TitleText 숨기기
-            _titleText.gameObject.SetActive(false);
-        }
-
-        // 승리/패배 오브젝트 표시
+        // 승리/패배 여부 확인
         bool isVictory = _viewModel.Result == eCombatResult.Victory;
         Debug.Log($"[UI_PopupCombatResult] isVictory: {isVictory}, Survived: {_survivedObject != null}, Dead: {_deadObject != null}");
 
+        // 캐릭터 연출 오브젝트 갱신
         if (_survivedObject != null)
         {
             _survivedObject.SetActive(isVictory);
@@ -186,6 +161,10 @@ public class UI_PopupCombatResult : UI_Popup
         {
             Debug.LogWarning("[UI_PopupCombatResult] Dead 오브젝트가 null입니다.");
         }
+
+        // [추가] 승리/패배 이미지 갱신
+        if (_victoryImageObj != null) _victoryImageObj.SetActive(isVictory);
+        if (_defeatImageObj != null) _defeatImageObj.SetActive(!isVictory);
 
         // 버튼 텍스트 업데이트
         if (_buttonText != null)
