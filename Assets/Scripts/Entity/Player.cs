@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks; // [New] 비동기 처리를 위해 추가
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -105,7 +105,6 @@ public class Player : Entity
 
     public override void OnNetworkDespawn()
     {
-        OnPlayerSpawned?.Invoke(this); // [수정] 기존 코드에서 Invoke(this) 호출 위치가 OnPlayerDespawned여야 하나 변수명이 혼동되어 있을 수 있음. 문맥상 OnPlayerDespawned?.Invoke(this)가 맞음.
         OnPlayerDespawned?.Invoke(this);
 
         base.OnNetworkDespawn();
@@ -180,21 +179,28 @@ public class Player : Entity
     }
 
     /// <summary>
-    /// 사망 처리 클라이언트 RPC (비동기)
+    /// 사망 처리 클라이언트 RPC (동기 메서드)
     /// </summary>
     [ClientRpc]
-    private async void DieClientRpc()
+    private void DieClientRpc()
     {
         Debug.Log($"[Player] 플레이어 비활성화 (Client). OwnerID: {OwnerClientId}");
 
-        // 사망 사운드 재생
+        // 1. 사망 사운드 즉시 재생
         Managers.Sound.PlaySFX("Dead");
 
-        // [New] 묘비 동적 생성 (Addressable Key 사용)
-        // 리소스 로드가 완료될 때까지 기다린 후 플레이어를 비활성화합니다.
+        // 2. 비동기 연출 로직 분리 호출 (Fire-and-Forget)
+        SpawnTombstoneAndDeactivate();
+    }
+
+    /// <summary>
+    /// 비동기 묘비 생성 및 오브젝트 비활성화 로직
+    /// </summary>
+    private async void SpawnTombstoneAndDeactivate()
+    {
         try
         {
-            // 위치와 회전은 현재 플레이어 기준
+            // 묘비 생성 대기
             await Managers.Resource.InstantiateAsync(TOMBSTONE_KEY, transform.position, Quaternion.identity);
         }
         catch (System.Exception e)
@@ -208,7 +214,7 @@ public class Player : Entity
             OnLocalPlayerDeadStateChanged?.Invoke(true);
         }
 
-        // 즉시 비활성화
+        // 최종 비활성화
         gameObject.SetActive(false);
     }
 }
