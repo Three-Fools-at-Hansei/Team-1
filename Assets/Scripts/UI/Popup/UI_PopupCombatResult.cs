@@ -2,6 +2,7 @@ using TMPro;
 using UI;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening; // DOTween 추가
 
 public class UI_PopupCombatResult : UI_Popup
 {
@@ -17,6 +18,10 @@ public class UI_PopupCombatResult : UI_Popup
 
     private CombatResultViewModel _viewModel;
 
+    // [연출] 애니메이션 객체
+    private IUIAnimation _fadeIn;
+    private IUIAnimation _fadeOut;
+
     public override void SetViewModel(IViewModel viewModel)
     {
         _viewModel = viewModel as CombatResultViewModel;
@@ -27,10 +32,14 @@ public class UI_PopupCombatResult : UI_Popup
     {
         base.Awake();
 
-        // 반투명 효과를 위한 CanvasGroup 설정
+        // [연출] 초기화 (등장은 조금 강조되게, 퇴장은 빠르게)
+        _fadeIn = new FadeInUIAnimation(0.5f, Ease.OutBack);
+        _fadeOut = new FadeOutUIAnimation(0.2f, Ease.InQuad);
+
+        // 반투명 효과를 위한 CanvasGroup 설정 및 초기 Alpha 0
         if (_canvasGroup != null)
         {
-            _canvasGroup.alpha = 0.9f; // 약간 반투명
+            _canvasGroup.alpha = 0f;
         }
 
         // 오브젝트 참조가 없으면 자동으로 찾기
@@ -46,7 +55,7 @@ public class UI_PopupCombatResult : UI_Popup
                 Debug.LogWarning("[UI_PopupCombatResult] Survived 오브젝트를 찾을 수 없습니다.");
             }
         }
-        
+
         if (_deadObject == null)
         {
             _deadObject = FindChildByName("Dead");
@@ -59,7 +68,6 @@ public class UI_PopupCombatResult : UI_Popup
                 Debug.LogWarning("[UI_PopupCombatResult] Dead 오브젝트를 찾을 수 없습니다.");
             }
         }
-
 
         // 초기 상태: 오브젝트 모두 비활성화
         if (_survivedObject != null)
@@ -78,6 +86,12 @@ public class UI_PopupCombatResult : UI_Popup
         }
     }
 
+    // [연출] 팝업 활성화 시 FadeIn 실행
+    private void OnEnable()
+    {
+        _fadeIn?.ExecuteAsync(_canvasGroup);
+    }
+
     /// <summary>
     /// 자식 오브젝트 중에서 이름으로 찾기 (재귀적으로 검색)
     /// </summary>
@@ -94,7 +108,7 @@ public class UI_PopupCombatResult : UI_Popup
             {
                 return child.gameObject;
             }
-            
+
             GameObject found = FindChildByNameRecursive(child, name);
             if (found != null)
             {
@@ -122,9 +136,6 @@ public class UI_PopupCombatResult : UI_Popup
             if (titleRect != null)
             {
                 // TitleText의 부모와 월드 위치 가져오기
-                Transform titleParent = titleRect.parent;
-                Vector3 titleWorldPosition = titleRect.position;
-                
                 // Survived 오브젝트를 Title 위치로 이동
                 if (_survivedObject != null)
                 {
@@ -135,7 +146,7 @@ public class UI_PopupCombatResult : UI_Popup
                         survivedRect.anchoredPosition = titleRect.anchoredPosition;
                     }
                 }
-                
+
                 // Dead 오브젝트를 Title 위치로 이동
                 if (_deadObject != null)
                 {
@@ -147,7 +158,7 @@ public class UI_PopupCombatResult : UI_Popup
                     }
                 }
             }
-            
+
             // TitleText 숨기기
             _titleText.gameObject.SetActive(false);
         }
@@ -155,7 +166,7 @@ public class UI_PopupCombatResult : UI_Popup
         // 승리/패배 오브젝트 표시
         bool isVictory = _viewModel.Result == eCombatResult.Victory;
         Debug.Log($"[UI_PopupCombatResult] isVictory: {isVictory}, Survived: {_survivedObject != null}, Dead: {_deadObject != null}");
-        
+
         if (_survivedObject != null)
         {
             _survivedObject.SetActive(isVictory);
@@ -165,7 +176,7 @@ public class UI_PopupCombatResult : UI_Popup
         {
             Debug.LogWarning("[UI_PopupCombatResult] Survived 오브젝트가 null입니다.");
         }
-        
+
         if (_deadObject != null)
         {
             _deadObject.SetActive(!isVictory);
@@ -192,10 +203,17 @@ public class UI_PopupCombatResult : UI_Popup
         }
     }
 
-    private void OnActionButtonClicked()
+    // [연출] 버튼 클릭 시 FadeOut 실행 후 ViewModel 로직 수행
+    private async void OnActionButtonClicked()
     {
         Debug.Log($"[CombatResult] {_viewModel.ButtonText} 버튼 클릭됨 -> 로비로 이동");
         Managers.Sound.PlaySFX("Select");
+
+        if (_fadeOut != null)
+        {
+            await _fadeOut.ExecuteAsync(_canvasGroup);
+        }
+
         _viewModel?.GoToLobby();
     }
 
@@ -208,4 +226,3 @@ public class UI_PopupCombatResult : UI_Popup
         base.OnDestroy();
     }
 }
-

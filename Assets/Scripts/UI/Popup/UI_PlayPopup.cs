@@ -1,6 +1,7 @@
 using UI;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening; // DOTween 추가
 
 /// <summary>
 /// Play 버튼 클릭 시 표시되는 팝업입니다.
@@ -13,6 +14,10 @@ public class UI_PlayPopup : UI_Popup
     [SerializeField] private Button _joinGameButton;    // 게임 참가 버튼
 
     private PlayPopupViewModel _viewModel;
+
+    // [연출] 애니메이션 객체
+    private IUIAnimation _fadeIn;
+    private IUIAnimation _fadeOut;
 
     public override void SetViewModel(IViewModel viewModel)
     {
@@ -38,6 +43,11 @@ public class UI_PlayPopup : UI_Popup
     {
         base.Awake();
 
+        // [연출] 초기화
+        _fadeIn = new FadeInUIAnimation(0.3f, Ease.OutQuad);
+        _fadeOut = new FadeOutUIAnimation(0.2f, Ease.InQuad);
+        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+
         if (_closeButton != null)
             _closeButton.onClick.AddListener(OnClickClose);
     }
@@ -46,6 +56,9 @@ public class UI_PlayPopup : UI_Popup
     {
         if (_createGameButton != null) _createGameButton.onClick.AddListener(OnClickCreateGame);
         if (_joinGameButton != null) _joinGameButton.onClick.AddListener(OnClickJoinGame);
+
+        // [연출] 등장 애니메이션
+        _fadeIn?.ExecuteAsync(_canvasGroup);
     }
 
     private void OnDisable()
@@ -54,9 +67,16 @@ public class UI_PlayPopup : UI_Popup
         if (_joinGameButton != null) _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
     }
 
-    private void OnClickClose()
+    // [연출] 퇴장 애니메이션 적용
+    private async void OnClickClose()
     {
         Managers.Sound.PlaySFX("Select");
+
+        if (_fadeOut != null)
+        {
+            await _fadeOut.ExecuteAsync(_canvasGroup);
+        }
+
         Managers.UI.Close(this);
     }
 
@@ -83,5 +103,4 @@ public class UI_PlayPopup : UI_Popup
     }
 
     protected override void OnStateChanged() { }
-
 }

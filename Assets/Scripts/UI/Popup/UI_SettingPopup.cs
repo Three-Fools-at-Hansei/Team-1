@@ -2,6 +2,7 @@ using TMPro;
 using UI;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening; // DOTween 추가
 
 public class UI_SettingPopup : UI_Popup
 {
@@ -14,9 +15,18 @@ public class UI_SettingPopup : UI_Popup
 
     private SettingPopupViewModel _viewModel;
 
+    // [연출] 애니메이션 객체
+    private IUIAnimation _fadeIn;
+    private IUIAnimation _fadeOut;
+
     protected override void Awake()
     {
         base.Awake();
+
+        // [연출] 초기화
+        _fadeIn = new FadeInUIAnimation(0.3f, Ease.OutQuad);
+        _fadeOut = new FadeOutUIAnimation(0.2f, Ease.InQuad);
+        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
 
         if (_closeButton != null)
             _closeButton.onClick.AddListener(OnClickClose);
@@ -29,15 +39,28 @@ public class UI_SettingPopup : UI_Popup
         }
     }
 
+    // [연출] 등장 애니메이션
+    private void OnEnable()
+    {
+        _fadeIn?.ExecuteAsync(_canvasGroup);
+    }
+
     public override void SetViewModel(IViewModel viewModel)
     {
         _viewModel = (SettingPopupViewModel)viewModel;
         base.SetViewModel(viewModel);
     }
 
-    private void OnClickClose()
+    // [연출] 닫기 애니메이션 대기 후 Close
+    private async void OnClickClose()
     {
         Managers.Sound.PlaySFX("Select");
+
+        if (_fadeOut != null)
+        {
+            await _fadeOut.ExecuteAsync(_canvasGroup);
+        }
+
         Managers.UI.Close(this);
     }
 

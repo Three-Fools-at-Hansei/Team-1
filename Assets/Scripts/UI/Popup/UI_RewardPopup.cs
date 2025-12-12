@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UI;
 using UnityEngine;
+using DG.Tweening; // DOTween 추가
 
 public class UI_RewardPopup : UI_Popup
 {
@@ -9,12 +10,37 @@ public class UI_RewardPopup : UI_Popup
 
     private RewardPopupViewModel _viewModel;
 
+    // [연출] 애니메이션 객체
+    private IUIAnimation _fadeIn;
+    private IUIAnimation _fadeOut;
+
     public override void SetViewModel(IViewModel viewModel)
     {
         _viewModel = viewModel as RewardPopupViewModel;
         base.SetViewModel(viewModel);
 
         GenerateItems();
+    }
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        // [연출] 초기화
+        _fadeIn = new FadeInUIAnimation(0.3f, Ease.OutQuad);
+        _fadeOut = new FadeOutUIAnimation(0.2f, Ease.InQuad);
+
+        // 초기 Alpha 0
+        if (_canvasGroup != null)
+        {
+            _canvasGroup.alpha = 0f;
+        }
+    }
+
+    // [연출] 등장 애니메이션
+    private void OnEnable()
+    {
+        _fadeIn?.ExecuteAsync(_canvasGroup);
     }
 
     private void GenerateItems()
