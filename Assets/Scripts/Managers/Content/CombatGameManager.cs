@@ -171,12 +171,19 @@ public class CombatGameManager : NetworkBehaviour
     /// </summary>
     private bool CheckAllRewardsSelected()
     {
-        int connectedCount = NetworkManager.Singleton.ConnectedClientsIds.Count;
-        int selectedCount = _selectedRewardClients.Count;
+        // 접속 중인 모든 클라이언트 순회
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            // 사망한 플레이어는 보상 선택 대상에서 제외
+            if (_deadPlayers.Contains(client.ClientId))
+                continue;
 
-        if (connectedCount == 0) return true; // 아무도 없으면 진행 (혹은 종료)
+            // 생존해 있는데 아직 선택하지 않았다면 false
+            if (!_selectedRewardClients.Contains(client.ClientId))
+                return false;
+        }
 
-        return selectedCount >= connectedCount;
+        return true;
     }
 
     /// <summary>
@@ -264,6 +271,8 @@ public class CombatGameManager : NetworkBehaviour
     public void SelectRewardServerRpc(int rewardId, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
+
+        if (_deadPlayers.Contains(clientId)) return;
 
         // 중복 선택 방지
         if (_selectedRewardClients.Contains(clientId))
@@ -418,7 +427,22 @@ public class CombatGameManager : NetworkBehaviour
                     Managers.Sound.StopBGM();
                     Managers.Sound.PlaySFX("LevelUp");
 
-                    await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+                    bool isLocalPlayerDead = false;
+                    if (NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null)
+                    {
+                        var player = NetworkManager.Singleton.LocalClient.PlayerObject?.GetComponent<Player>();
+                        if (player != null && player.Hp <= 0)
+                            isLocalPlayerDead = true;
+                    }
+
+                    if (!isLocalPlayerDead)
+                    {
+                        await Managers.UI.ShowAsync<UI_RewardPopup>(new RewardPopupViewModel());
+                    }
+                    else
+                    {
+                        Debug.Log("[Reward] 사망 상태이므로 보상 선택을 건너뜁니다.");
+                    }
                     break;
                 }
             case eGameState.Victory:
