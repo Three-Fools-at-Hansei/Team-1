@@ -27,6 +27,13 @@ public class NetworkManagerEx : IManagerBase
     public void Init()
     {
         _ = EnsureNetworkManagerExistsAsync();
+
+        // [New] Transport 레벨의 치명적 오류 감지 이벤트 구독
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnTransportFailure += OnTransportFailure;
+        }
+
         Debug.Log($"{ManagerType} Manager Init.");
     }
 
@@ -38,7 +45,11 @@ public class NetworkManagerEx : IManagerBase
     public void Clear()
     {
         if (NetworkManager.Singleton != null)
+        {
+            // 이벤트 해제
+            NetworkManager.Singleton.OnTransportFailure -= OnTransportFailure;
             NetworkManager.Singleton.Shutdown();
+        }
 
         _currentLobby = null;
         CurrentLobbyCode = string.Empty; // 초기화
@@ -200,10 +211,9 @@ public class NetworkManagerEx : IManagerBase
         }
     }
 
-    // 기존 QuickJoin은 유지하되 사용 빈도가 줄어들 것임
+    // 기존 QuickJoin은 유지
     public async Task<bool> QuickJoinAsync()
     {
-        // (기존 코드 유지)
         if (!AuthenticationService.Instance.IsSignedIn) return false;
 
         try
@@ -216,7 +226,6 @@ public class NetworkManagerEx : IManagerBase
             // B. Relay 접속 설정
             var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            // [중요] 생성자 대신 확장 메서드 사용
             transport.SetRelayServerData(joinAllocation.ToRelayServerData("dtls"));
 
             // C. Client 시작
@@ -235,15 +244,16 @@ public class NetworkManagerEx : IManagerBase
     {
         if (NetworkManager.Singleton == null)
         {
-            // 1. 리소스 매니저를 통해 프리팹 원본만 로드 (풀링 사용 X)
             GameObject prefab = await Managers.Resource.LoadAsync<GameObject>("NetworkManager");
 
             if (prefab != null)
             {
-                // 2. 부모 없이 최상위에 직접 생성
                 GameObject go = UnityEngine.Object.Instantiate(prefab);
                 go.name = "NetworkManager";
                 UnityEngine.Object.DontDestroyOnLoad(go);
+
+                // 생성 직후 이벤트 구독
+                go.GetComponent<NetworkManager>().OnTransportFailure += OnTransportFailure;
             }
             else
             {
@@ -258,7 +268,9 @@ public class NetworkManagerEx : IManagerBase
     }
 
     private float _heartbeatTimer;
-    private void HandleLobbyHeartbeat()
+
+    // [Mod] 예외 처리 추가 및 async void 적용
+    private async void HandleLobbyHeartbeat()
     {
         if (_currentLobby != null && NetworkManager.Singleton.IsHost)
         {
@@ -266,9 +278,37 @@ public class NetworkManagerEx : IManagerBase
             if (_heartbeatTimer <= 0f)
             {
                 _heartbeatTimer = 15f;
-                LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
+                try
+                {
+                    await LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
+                }
+                catch (LobbyServiceException e)
+                {
+                    Debug.LogWarning($"[Network] 하트비트 실패 (Lobby Error): {e.Message}");
+                    // 로비가 삭제되었거나 더 이상 유효하지 않다면 _currentLobby = null 처리 등을 고려
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[Network] 하트비트 오류: {e.Message}");
+                }
             }
         }
+    }
+
+    // [New] Transport 실패 핸들러
+    private void OnTransportFailure()
+    {
+        Debug.LogError("[Network] 전송 계층 오류 발생 (연결 끊김). 로비로 이동합니다.");
+
+        // 네트워크 상태 정리 (이벤트 해제 및 Shutdown)
+        Clear();
+
+        // 이미 로비 씬이라면 씬 전환 불필요
+        if (Managers.Scene.CurrentScene != null && Managers.Scene.CurrentScene.SceneType == eSceneType.MainScene)
+            return;
+
+        // 로비(MainScene)로 비동기 이동
+        _ = Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
     }
 
     private string MapErrorMessage(RequestFailedException ex)
