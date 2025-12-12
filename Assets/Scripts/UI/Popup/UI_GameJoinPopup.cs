@@ -2,6 +2,7 @@ using TMPro;
 using UI;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening; // DOTween 추가
 
 /// <summary>
 /// 게임 참가 버튼 클릭 시 표시되는 팝업입니다.
@@ -16,9 +17,18 @@ public class UI_GameJoinPopup : UI_Popup
 
     private GameJoinPopupViewModel _viewModel;
 
+    // [연출] 애니메이션 객체
+    private IUIAnimation _fadeIn;
+    private IUIAnimation _fadeOut;
+
     protected override void Awake()
     {
         base.Awake();
+
+        // [연출] 초기화
+        _fadeIn = new FadeInUIAnimation(0.3f, Ease.OutBack);
+        _fadeOut = new FadeOutUIAnimation(0.2f, Ease.InQuad);
+        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
 
         if (_enterButton != null)
             _enterButton.onClick.AddListener(OnClickEnter);
@@ -38,6 +48,9 @@ public class UI_GameJoinPopup : UI_Popup
 
         if (_enterButton != null)
             _enterButton.interactable = true;
+
+        // [연출] 등장 애니메이션
+        _fadeIn?.ExecuteAsync(_canvasGroup);
     }
 
     public override void SetViewModel(IViewModel viewModel)
@@ -105,9 +118,16 @@ public class UI_GameJoinPopup : UI_Popup
     /// <summary>
     /// ViewModel에서 닫기 요청이 오거나, 닫기 버튼을 눌렀을 때 호출
     /// </summary>
-    private void OnCloseRequested()
+    // [연출] 퇴장 애니메이션 적용
+    private async void OnCloseRequested()
     {
         Managers.Sound.PlaySFX("Select");
+
+        if (_fadeOut != null)
+        {
+            await _fadeOut.ExecuteAsync(_canvasGroup);
+        }
+
         Managers.UI.Close(this);
     }
 

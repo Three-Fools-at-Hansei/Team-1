@@ -3,6 +3,7 @@ using UI;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening; // DOTween 추가
 
 public class UI_DialogueWindow : UI_Popup
 {
@@ -13,6 +14,10 @@ public class UI_DialogueWindow : UI_Popup
 
     private DialogueWindowViewModel _viewModel;
     public override string ActionMapKey => "UI_DialogueWindow";
+
+    // [연출] 애니메이션 객체
+    private IUIAnimation _fadeIn;
+    private IUIAnimation _fadeOut;
 
     public override void SetViewModel(IViewModel viewModel)
     {
@@ -35,8 +40,20 @@ public class UI_DialogueWindow : UI_Popup
     protected override void Awake()
     {
         base.Awake();
+
+        // [연출] 초기화
+        _fadeIn = new FadeInUIAnimation(0.3f, Ease.OutQuad);
+        _fadeOut = new FadeOutUIAnimation(0.2f, Ease.InQuad);
+        if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+
         if (_nextButton != null) _nextButton.onClick.AddListener(OnClickNext);
         if (_closeButton != null) _closeButton.onClick.AddListener(OnClickClose);
+    }
+
+    // [연출] 등장 애니메이션
+    private void OnEnable()
+    {
+        _fadeIn?.ExecuteAsync(_canvasGroup);
     }
 
     private void OnClickNext() => _viewModel?.Next();
@@ -49,5 +66,14 @@ public class UI_DialogueWindow : UI_Popup
         if (_bodyText != null) _bodyText.text = _viewModel.CurrentLine;
     }
 
-    private void OnCloseRequested() => Managers.UI.Close(this);
+    // [연출] 퇴장 애니메이션 적용
+    private async void OnCloseRequested()
+    {
+        if (_fadeOut != null)
+        {
+            await _fadeOut.ExecuteAsync(_canvasGroup);
+        }
+
+        Managers.UI.Close(this);
+    }
 }
