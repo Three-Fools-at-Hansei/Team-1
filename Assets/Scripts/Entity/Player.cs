@@ -7,8 +7,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : Entity
 {
-    // [Merge] 로컬 플레이어의 사망 상태 변경 알림 이벤트
-    // UI(HEAD)와 PlayerCameraAgent(Main) 모두에서 구독합니다.
+    // 로컬 플레이어의 사망 상태 변경 알림 이벤트
     public static event Action<bool> OnLocalPlayerDeadStateChanged;
 
     // 플레이어 스폰, 디스폰 이벤트
@@ -19,8 +18,8 @@ public class Player : Entity
     [SerializeField] private Gun _gun;
     [SerializeField] private GameObject _bulletPrefab;
     [SerializeField] private Transform _firePoint;
-    
-    // [HEAD] WeaponUI 참조 추가
+
+    // WeaponUI 참조
     [SerializeField] private WeaponUI _weaponUI;
 
     private PlayerMove _playerMove;
@@ -31,9 +30,9 @@ public class Player : Entity
     {
         base.Awake();
         _playerMove = GetComponent<PlayerMove>();
-        _mainCamera = Camera.main; // [Optim] 카메라 참조 캐싱
+        _mainCamera = Camera.main;
 
-        // [HEAD] 안전한 컴포넌트 할당 방식 사용
+        // 안전한 컴포넌트 할당 방식 사용
         if (_gun == null) _gun = GetComponent<Gun>();
         if (_gun == null) _gun = gameObject.AddComponent<Gun>();
 
@@ -47,16 +46,20 @@ public class Player : Entity
 
     private void Update()
     {
-        // [HEAD] Owner인 경우 마우스 조준 방향을 지속적으로 업데이트 (WeaponUI 및 스프라이트 회전)
+        // Owner인 경우 마우스 조준 방향을 지속적으로 업데이트 (WeaponUI 및 스프라이트 회전)
         if (IsOwner && _mainCamera != null && Mouse.current != null)
         {
+            // [Fix] 사망 시 조준 방향 업데이트도 중지할지 여부는 기획에 따름. 
+            // 현재는 발사만 막고 조준은 가능하게 두거나, 필요 시 여기서도 IsDead() 체크 가능.
+            if (IsDead()) return;
+
             Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
             Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
-            
+
             // 동적 총구 위치(WeaponUI 등)를 고려한 조준 방향 계산
             Vector2 firePos = GetCurrentFirePointPosition();
             Vector2 direction = (mouseWorldPos - firePos).normalized;
-            
+
             // 불필요한 연산 방지를 위해 방향이 유의미하게 변경되었을 때만 업데이트
             if (Vector2.Distance(direction, _lastMouseAimDirection) > 0.01f)
             {
@@ -73,7 +76,6 @@ public class Player : Entity
     {
         if (_gun == null) return;
         if (_bulletPrefab != null) _gun.SetBulletPrefab(_bulletPrefab);
-        // WeaponUI가 없다면 기본 Transform을 사용
         _gun.SetFirePoint(_firePoint != null ? _firePoint : transform);
     }
 
@@ -82,9 +84,9 @@ public class Player : Entity
     /// </summary>
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn(); 
+        base.OnNetworkSpawn();
 
-        // [HEAD] 무기 UI 초기화
+        // 무기 UI 초기화
         if (_weaponUI != null)
         {
             _weaponUI.Initialize(transform);
@@ -94,7 +96,7 @@ public class Player : Entity
         {
             Managers.Input.BindAction("Fire", HandleFire, InputActionPhase.Performed);
 
-            // [Merge] 스폰 시 생존 상태 알림 (false = 살아있음)
+            // 스폰 시 생존 상태 알림 (false = 살아있음)
             OnLocalPlayerDeadStateChanged?.Invoke(false);
         }
 
@@ -114,7 +116,7 @@ public class Player : Entity
     }
 
     /// <summary>
-    /// [HEAD] 현재 총구 위치를 반환합니다. (WeaponUI가 존재하면 해당 위치 우선)
+    /// 현재 총구 위치를 반환합니다. (WeaponUI가 존재하면 해당 위치 우선)
     /// </summary>
     private Vector2 GetCurrentFirePointPosition()
     {
@@ -122,12 +124,12 @@ public class Player : Entity
         {
             return _weaponUI.GetMuzzlePosition();
         }
-        
+
         if (_firePoint != null)
         {
             return _firePoint.position;
         }
-        
+
         return transform.position;
     }
 
@@ -138,11 +140,14 @@ public class Player : Entity
     {
         if (!IsOwner) return;
 
+        // [Fix] 클라이언트 측 사망 체크: 죽은 상태에서는 입력 무시
+        if (IsDead()) return;
+
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
         if (_mainCamera == null) _mainCamera = Camera.main;
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(mouseScreenPos);
 
-        // [HEAD] WeaponUI의 보정된 총구 위치 사용
+        // WeaponUI의 보정된 총구 위치 사용
         Vector2 firePos = GetCurrentFirePointPosition();
 
         // 발사 요청
@@ -155,6 +160,9 @@ public class Player : Entity
     [ServerRpc]
     private void FireServerRpc(Vector2 targetPos, Vector2 clientFirePos)
     {
+        // [Fix] 서버 측 사망 체크 (보안 검증): 죽은 플레이어의 요청은 무시
+        if (IsDead()) return;
+
         // 1. 조준 방향 업데이트 (서버에서도 동기화)
         Vector2 firePos = GetCurrentFirePointPosition();
         Vector2 dir = (targetPos - firePos).normalized;
@@ -163,7 +171,7 @@ public class Player : Entity
         // 2. 보안 검사 (Anti-Cheat): 거리 오차 검증
         Vector2 serverFirePos = GetCurrentFirePointPosition();
         float distance = Vector2.Distance(clientFirePos, serverFirePos);
-        
+
         // 오차가 크면 서버 위치, 작으면 클라이언트 위치(반응성) 사용
         Vector2 spawnPos = (distance > 2.0f) ? serverFirePos : clientFirePos;
 
