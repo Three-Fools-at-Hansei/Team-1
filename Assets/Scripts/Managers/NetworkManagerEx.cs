@@ -20,10 +20,20 @@ public class NetworkManagerEx : IManagerBase
     private Lobby _currentLobby;
     private bool _isServicesInitialized = false;
 
+    // [New] 현재 방의 로비 코드 (호스트/클라이언트 모두 참조 가능)
+    public string CurrentLobbyCode { get; private set; }
+
     // --- IManagerBase 구현 ---
     public void Init()
     {
         _ = EnsureNetworkManagerExistsAsync();
+
+        // [New] Transport 레벨의 치명적 오류 감지 이벤트 구독
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnTransportFailure += OnTransportFailure;
+        }
+
         Debug.Log($"{ManagerType} Manager Init.");
     }
 
@@ -35,9 +45,14 @@ public class NetworkManagerEx : IManagerBase
     public void Clear()
     {
         if (NetworkManager.Singleton != null)
+        {
+            // 이벤트 해제
+            NetworkManager.Singleton.OnTransportFailure -= OnTransportFailure;
             NetworkManager.Singleton.Shutdown();
+        }
 
         _currentLobby = null;
+        CurrentLobbyCode = string.Empty; // 초기화
     }
 
     // ========================================================================
@@ -100,19 +115,22 @@ public class NetworkManagerEx : IManagerBase
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxPlayers - 1);
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
-            // B. Transport 설정 (수정됨)
+            // B. Transport 설정
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            // [중요] 생성자 대신 확장 메서드 사용 (Unity Transport 2.0 대응)
-            // 만약 ToRelayServerData가 안 뜬다면 using Unity.Services.Relay; 확인
             transport.SetRelayServerData(allocation.ToRelayServerData("dtls"));
 
             // C. Lobby 생성
             var options = new CreateLobbyOptions
             {
-                Data = new Dictionary<string, DataObject> { { JOIN_CODE_KEY, new DataObject(DataObject.VisibilityOptions.Member, joinCode) } }
+                Data = new Dictionary<string, DataObject> { { JOIN_CODE_KEY, new DataObject(DataObject.VisibilityOptions.Member, joinCode) } },
+                IsLocked = false // 초기에는 잠금 해제
             };
 
             _currentLobby = await LobbyService.Instance.CreateLobbyAsync($"Room_{UnityEngine.Random.Range(1000, 9999)}", maxPlayers, options);
+
+            // [New] 로비 코드 저장
+            CurrentLobbyCode = _currentLobby.LobbyCode;
+            Debug.Log($"[Network] 방 생성 완료. Code: {CurrentLobbyCode}");
 
             // D. NGO Host 시작
             if (NetworkManager.Singleton.StartHost())
@@ -129,6 +147,71 @@ public class NetworkManagerEx : IManagerBase
         }
     }
 
+    // [New] 코드로 방 입장 (예외 처리 포함)
+    public async Task<(bool success, string message)> JoinByCodeAsync(string roomCode)
+    {
+        if (!AuthenticationService.Instance.IsSignedIn)
+            return (false, "로그인이 필요합니다.");
+
+        try
+        {
+            // A. 코드로 로비 검색 및 참가
+            _currentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(roomCode);
+
+            // [New] 입장한 방의 코드 저장
+            CurrentLobbyCode = _currentLobby.LobbyCode;
+
+            string joinCode = _currentLobby.Data[JOIN_CODE_KEY].Value;
+
+            // B. Relay 접속 설정
+            var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
+            var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            transport.SetRelayServerData(joinAllocation.ToRelayServerData("dtls"));
+
+            // C. Client 시작
+            bool started = NetworkManager.Singleton.StartClient();
+            return (started, started ? "입장 성공" : "클라이언트 시작 실패");
+        }
+        catch (LobbyServiceException e)
+        {
+            // UGS 에러 처리
+            if (e.Reason == LobbyExceptionReason.LobbyNotFound)
+                return (false, "방을 찾을 수 없습니다.");
+            if (e.Reason == LobbyExceptionReason.LobbyFull)
+                return (false, "방이 꽉 찼습니다.");
+            if (e.Reason == LobbyExceptionReason.LobbyConflict) // 잠긴 방 등
+                return (false, "게임이 진행 중이거나 입장할 수 없습니다.");
+
+            Debug.LogWarning($"[Network] 참가 실패 (Lobby Error): {e.Message}");
+            return (false, "입장 실패: 알 수 없는 오류");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Network] 참가 실패: {e.Message}");
+            return (false, "입장 중 오류 발생");
+        }
+    }
+
+    // [New] 로비 잠금 상태 설정 (Host Only)
+    public async Task SetLobbyLockStateAsync(bool isLocked)
+    {
+        if (_currentLobby == null || !NetworkManager.Singleton.IsHost) return;
+
+        try
+        {
+            await LobbyService.Instance.UpdateLobbyAsync(_currentLobby.Id, new UpdateLobbyOptions
+            {
+                IsLocked = isLocked
+            });
+            Debug.Log($"[Network] 로비 잠금 상태 변경: {isLocked}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Network] 로비 잠금 설정 실패: {e.Message}");
+        }
+    }
+
+    // 기존 QuickJoin은 유지
     public async Task<bool> QuickJoinAsync()
     {
         if (!AuthenticationService.Instance.IsSignedIn) return false;
@@ -137,12 +220,12 @@ public class NetworkManagerEx : IManagerBase
         {
             // A. Lobby 검색
             _currentLobby = await LobbyService.Instance.QuickJoinLobbyAsync();
+            CurrentLobbyCode = _currentLobby.LobbyCode; // 코드 저장
             string joinCode = _currentLobby.Data[JOIN_CODE_KEY].Value;
 
             // B. Relay 접속 설정
             var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            // [중요] 생성자 대신 확장 메서드 사용
             transport.SetRelayServerData(joinAllocation.ToRelayServerData("dtls"));
 
             // C. Client 시작
@@ -161,15 +244,16 @@ public class NetworkManagerEx : IManagerBase
     {
         if (NetworkManager.Singleton == null)
         {
-            // 1. 리소스 매니저를 통해 프리팹 원본만 로드 (풀링 사용 X)
             GameObject prefab = await Managers.Resource.LoadAsync<GameObject>("NetworkManager");
 
             if (prefab != null)
             {
-                // 2. 부모 없이 최상위에 직접 생성
                 GameObject go = UnityEngine.Object.Instantiate(prefab);
-                go.name = "NetworkManager"; // 이름 깔끔하게 정리
+                go.name = "NetworkManager";
                 UnityEngine.Object.DontDestroyOnLoad(go);
+
+                // 생성 직후 이벤트 구독
+                go.GetComponent<NetworkManager>().OnTransportFailure += OnTransportFailure;
             }
             else
             {
@@ -184,7 +268,9 @@ public class NetworkManagerEx : IManagerBase
     }
 
     private float _heartbeatTimer;
-    private void HandleLobbyHeartbeat()
+
+    // [Mod] 예외 처리 추가 및 async void 적용
+    private async void HandleLobbyHeartbeat()
     {
         if (_currentLobby != null && NetworkManager.Singleton.IsHost)
         {
@@ -192,9 +278,37 @@ public class NetworkManagerEx : IManagerBase
             if (_heartbeatTimer <= 0f)
             {
                 _heartbeatTimer = 15f;
-                LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
+                try
+                {
+                    await LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
+                }
+                catch (LobbyServiceException e)
+                {
+                    Debug.LogWarning($"[Network] 하트비트 실패 (Lobby Error): {e.Message}");
+                    // 로비가 삭제되었거나 더 이상 유효하지 않다면 _currentLobby = null 처리 등을 고려
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[Network] 하트비트 오류: {e.Message}");
+                }
             }
         }
+    }
+
+    // [New] Transport 실패 핸들러
+    private void OnTransportFailure()
+    {
+        Debug.LogError("[Network] 전송 계층 오류 발생 (연결 끊김). 로비로 이동합니다.");
+
+        // 네트워크 상태 정리 (이벤트 해제 및 Shutdown)
+        Clear();
+
+        // 이미 로비 씬이라면 씬 전환 불필요
+        if (Managers.Scene.CurrentScene != null && Managers.Scene.CurrentScene.SceneType == eSceneType.MainScene)
+            return;
+
+        // 로비(MainScene)로 비동기 이동
+        _ = Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
     }
 
     private string MapErrorMessage(RequestFailedException ex)

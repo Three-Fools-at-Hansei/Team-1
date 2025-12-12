@@ -20,6 +20,7 @@ public class UI_PlayPopup : UI_Popup
         if (_viewModel != null)
         {
             _viewModel.OnCreateGamePopupRequested -= OnCreateGamePopupRequested;
+            _viewModel.OnJoinGamePopupRequested -= OnJoinGamePopupRequested;
         }
 
         _viewModel = viewModel as PlayPopupViewModel;
@@ -29,6 +30,7 @@ public class UI_PlayPopup : UI_Popup
         if (_viewModel != null)
         {
             _viewModel.OnCreateGamePopupRequested += OnCreateGamePopupRequested;
+            _viewModel.OnJoinGamePopupRequested += OnJoinGamePopupRequested;
         }
     }
 
@@ -70,30 +72,16 @@ public class UI_PlayPopup : UI_Popup
         _viewModel?.JoinGame();
     }
 
-    /// <summary>
-    /// ViewModel의 요청에 의해 실제 팝업 UI를 띄우는 로직 (View의 역할)
-    /// </summary>
     private async void OnCreateGamePopupRequested(GameStartConfirmPopupViewModel vm)
     {
         await Managers.UI.ShowAsync<UI_GameStartConfirmPopup>(vm);
     }
 
-    /// <summary>
-    /// 게임 생성/참가 버튼 리스너를 제거합니다.
-    /// </summary>
-    private void UnregisterGameButtonsListeners()
+    private async void OnJoinGamePopupRequested(GameJoinPopupViewModel vm)
     {
-        if (_createGameButton != null)
-            _createGameButton.onClick.RemoveListener(OnClickCreateGame);
-
-        if (_joinGameButton != null)
-            _joinGameButton.onClick.RemoveListener(OnClickJoinGame);
+        await Managers.UI.ShowAsync<UI_GameJoinPopup>(vm);
     }
 
-    protected override void OnStateChanged()
-    {
-        // ViewModel에서 데이터를 받아 UI를 업데이트하는 로직이 필요할 경우 여기에 구현
-        // 예: 버튼 활성화/비활성화, 버튼 텍스트 변경 등
-    }
+    protected override void OnStateChanged() { }
+
 }
-
