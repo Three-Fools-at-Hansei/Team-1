@@ -392,6 +392,12 @@ public class CombatGameManager : NetworkBehaviour
     {
         Debug.Log($"[CombatGameManager] GameState 변경: {previous} -> {current}");
 
+        // 전투 시작 시 로비 잠금 (난입 방지) - 호스트만 실행
+        if (IsServer && current == eGameState.WaveInProgress)
+        {
+            _ = Managers.Network.SetLobbyLockStateAsync(true);
+        }
+
         switch (current)
         {
             case eGameState.WaveInProgress:
