@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -12,7 +13,12 @@ public class Enemy : Entity
     [SerializeField] private float _attackCooldown = 1f;
     [SerializeField] private float _stopDistance = 0.1f;
 
+    // [추가] 사망 애니메이션 대기 시간
+    [Header("사망 설정")]
+    [SerializeField] private float _deathDelay = 1.0f;
+
     private Rigidbody2D _rigidbody;
+    private Collider2D _collider; // [추가] 충돌체 캐싱
     private Transform _currentTarget;
     private float _lastAttackTime;
     private Animator _animator;
@@ -25,6 +31,7 @@ public class Enemy : Entity
     {
         base.Awake();
         _rigidbody = GetComponent<Rigidbody2D>();
+        _collider = GetComponent<Collider2D>(); // [추가] 컴포넌트 가져오기
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
     }
@@ -95,6 +102,13 @@ public class Enemy : Entity
     private void OnEnable()
     {
         _isDead = false;
+
+        // [추가] 재사용 시 충돌체 다시 활성화
+        if (_collider != null)
+        {
+            _collider.enabled = true;
+        }
+
         if (_rigidbody != null)
         {
             _rigidbody.linearVelocity = Vector2.zero;
@@ -293,7 +307,11 @@ public class Enemy : Entity
         // NetworkVariable 프로퍼티 사용 -> 값 변경 시 자동 동기화 및 UI 갱신
         Hp = Mathf.Max(0, Hp - damage);
 
-        _animator?.SetTrigger("Hit");
+        // 사망이 아닐 때만 피격 모션 (사망 시에는 Die 트리거가 우선)
+        if (!IsDead())
+        {
+            _animator?.SetTrigger("Hit");
+        }
 
         // 피격 사운드 재생
         PlayHitSoundClientRpc();
@@ -319,7 +337,29 @@ public class Enemy : Entity
 
         _rigidbody.linearVelocity = Vector2.zero;
         UpdateAnimator(false);
+
+        // [수정] 충돌체 비활성화 (추가 피격 및 길막 방지)
+        if (_collider != null)
+        {
+            _collider.enabled = false;
+        }
+
+        // [수정] 사망 애니메이션 코루틴 시작
+        if (IsServer)
+        {
+            StartCoroutine(CoDeathSequence());
+        }
+    }
+
+    // [추가] 사망 연출 코루틴 (서버)
+    private IEnumerator CoDeathSequence()
+    {
+        // NetworkAnimator를 통해 클라이언트들에게 트리거 동기화
+        // (ClientNetworkAnimator가 설정되어 있다면 자동 동기화됨)
         _animator?.SetTrigger("Die");
+
+        // 애니메이션 재생 시간만큼 대기
+        yield return new WaitForSeconds(_deathDelay);
 
         // 서버에서 Despawn을 호출하면, 
         // 등록된 NetworkObjectPool 핸들러를 통해 로컬 PoolManager.Despawn이 실행됩니다.
