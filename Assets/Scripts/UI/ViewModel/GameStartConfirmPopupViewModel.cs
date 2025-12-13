@@ -12,7 +12,7 @@ public class GameStartConfirmPopupViewModel : ViewModelBase
     // 팝업을 닫아야 할 때 발생하는 이벤트
     public event Action OnCloseRequested;
 
-    private string _messageText = "게임을 생성하시겠습니까?\n(Host Mode)";
+    private string _messageText = "게임을 생성하시겠습니까?";
     public string MessageText => _messageText;
 
     public void SetMessage(string message)
