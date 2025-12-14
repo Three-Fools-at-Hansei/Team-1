@@ -26,6 +26,8 @@ public class Player : Entity
     // [New] 묘비 생성을 위한 Addressable Key 상수
     private const string TOMBSTONE_KEY = "Tombstone";
 
+    protected override Color DamageTextColor => Color.red;
+
     private PlayerMove _playerMove;
     private Camera _mainCamera;
     private Vector2 _lastMouseAimDirection = Vector2.right;
@@ -155,20 +157,7 @@ public class Player : Entity
 
     public override void Attack() { }
 
-    public override void TakeDamage(int damage)
-    {
-        if (!IsServer) return;
-        if (IsDead()) return;
-
-        Hp = Mathf.Max(0, Hp - damage);
-
-        if (IsDead())
-        {
-            Die();
-        }
-    }
-
-    private void Die()
+    protected override void Die()
     {
         if (IsServer)
         {
