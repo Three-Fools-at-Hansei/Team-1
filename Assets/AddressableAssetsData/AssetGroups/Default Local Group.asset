@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1239a3fd78b92b848bc638e28e8dc0c5
+    m_Address: UI/View/UI_DamageText
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 138452f05ddd16b428cc18bb0c6096d0
     m_Address: UserData.json
     m_ReadOnly: 0
