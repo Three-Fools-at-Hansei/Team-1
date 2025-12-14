@@ -52,6 +52,9 @@ public abstract class Entity : NetworkBehaviour
         protected set { if (IsServer) NetMoveSpeed.Value = value; }
     }
 
+    // [New] 데미지 텍스트 색상 (자식 클래스에서 오버라이드 가능)
+    protected virtual Color DamageTextColor => Color.white;
+
     protected virtual void Awake()
     {
         // Awake 시점에는 네트워크 연결 전이므로 초기화하지 않음
@@ -89,7 +92,29 @@ public abstract class Entity : NetworkBehaviour
     private void OnMaxHpChanged(int prev, int curr) => InitializeHealthBar();
 
     public abstract void Attack();
-    public abstract void TakeDamage(int damage);
+
+    // [Mod] TakeDamage 통합 구현
+    public virtual void TakeDamage(int damage)
+    {
+        if (!IsServer) return;
+        if (IsDead()) return;
+
+        Hp = Mathf.Max(0, Hp - damage);
+
+        // 데미지 텍스트 요청 (머리 위)
+        Vector3 spawnPos = transform.position + Vector3.up * 1.0f;
+        ShowDamagePopupClientRpc(damage, spawnPos);
+
+        if (IsDead())
+        {
+            Die();
+        }
+    }
+
+    // [New] 자식 클래스에서 구현할 사망 로직
+    protected virtual void Die() { }
+
+    protected bool IsDead() => Hp <= 0;
 
     /// <summary>
     /// 체력 회복
@@ -114,8 +139,6 @@ public abstract class Entity : NetworkBehaviour
     public void IncreaseAttackSpeed(float amount) { if (IsServer) AttackSpeed += amount; }
     public void IncreaseMoveSpeed(float amount) { if (IsServer) MoveSpeed += amount; }
 
-    protected bool IsDead() => Hp <= 0;
-
     protected void InitializeHealthBar()
     {
         if (_healthBar != null) _healthBar.Initialize(transform, MaxHp);
@@ -124,5 +147,34 @@ public abstract class Entity : NetworkBehaviour
     protected void UpdateHealthBar()
     {
         _healthBar?.SetValue(Hp);
+    }
+
+    // ========================================================================
+    // Damage Text Logic
+    // ========================================================================
+
+    [ClientRpc]
+    private void ShowDamagePopupClientRpc(int damage, Vector3 position)
+    {
+        SpawnDamageText(damage, position);
+    }
+
+    private async void SpawnDamageText(int damage, Vector3 position)
+    {
+        // 1. 월드 좌표 -> 스크린 좌표 변환
+        if (Managers.Camera.MainCamera == null) 
+            return;
+
+        Vector3 screenPos = Managers.Camera.MainCamera.WorldToScreenPoint(position);
+
+        // 2. ViewModel 생성
+        var viewModel = new DamageTextViewModel(damage, DamageTextColor);
+
+        // 3. UI 생성 (SetViewModel 호출됨 -> 텍스트 세팅됨)
+        var view = await Managers.UI.ShowAsync<UI_DamageText>(viewModel);
+
+        // 4. 위치 설정과 애니메이션 재생을 동시에 요청
+        if (view != null)
+            view.Play(screenPos);
     }
 }

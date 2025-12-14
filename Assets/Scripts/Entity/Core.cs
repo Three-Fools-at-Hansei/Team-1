@@ -10,6 +10,8 @@ public class Core : Entity
     public static Core Instance { get; private set; }
 
     public event Action CoreDestroyed;
+    protected override Color DamageTextColor => Color.cyan;
+
 
     protected override void Awake()
     {
@@ -30,23 +32,13 @@ public class Core : Entity
         // 코어는 공격하지 않음
     }
 
-    public override void TakeDamage(int damage)
+    protected override void Die()
     {
-        if (!IsServer || IsDead())
-            return;
-
-        // [수정] NetworkVariable 프로퍼티 사용
-        Hp = Mathf.Max(0, Hp - damage);
-
-        // 서버에서만 사망 체크 및 게임 오버 트리거
-        if (IsDead())
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
         {
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-            {
-                CombatGameManager.Instance?.TriggerDefeat();
-            }
-            OnCoreDestroyed();
+            CombatGameManager.Instance?.TriggerDefeat();
         }
+        OnCoreDestroyed();
     }
 
     private void OnCoreDestroyed()

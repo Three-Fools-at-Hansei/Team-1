@@ -27,6 +27,8 @@ public class Enemy : Entity
 
     private readonly NetworkVariable<bool> _netIsFacingLeft = new NetworkVariable<bool>(false);
 
+    protected override Color DamageTextColor => Color.yellow;
+
     protected override void Awake()
     {
         base.Awake();
@@ -300,26 +302,18 @@ public class Enemy : Entity
 
     public override void TakeDamage(int damage)
     {
-        // 서버에서만 데미지 처리
-        if (!IsServer || _isDead)
-            return;
+        // 1. 서버 권한 및 사망 여부 체크 (Entity가 해주지만 안전을 위해 유지 가능, 혹은 생략 가능)
+        if (!IsServer || _isDead) return;
 
-        // NetworkVariable 프로퍼티 사용 -> 값 변경 시 자동 동기화 및 UI 갱신
-        Hp = Mathf.Max(0, Hp - damage);
+        // 2. 부모 메서드 호출 (HP 감소, 데미지 텍스트 출력, 사망 시 Die 호출)
+        base.TakeDamage(damage);
 
-        // 사망이 아닐 때만 피격 모션 (사망 시에는 Die 트리거가 우선)
+        // 3. 살아있다면 피격 모션 재생
         if (!IsDead())
-        {
             _animator?.SetTrigger("Hit");
-        }
 
-        // 피격 사운드 재생
+        // 4. 피격 사운드 (사망 여부와 관계없이 타격음 재생)
         PlayHitSoundClientRpc();
-
-        if (IsDead())
-        {
-            Die();
-        }
     }
 
     [ClientRpc]
@@ -328,23 +322,24 @@ public class Enemy : Entity
         Managers.Sound.PlaySFX(Random.Range(0, 2) == 0 ? "Hit0" : "Hit1");
     }
 
-    private void Die()
+    protected override void Die()
     {
+        // 중복 사망 방지 (_isDead 플래그는 Enemy 내에서 관리 중이므로 유지)
         if (_isDead) return;
         _isDead = true;
 
         Debug.Log("[Enemy] 적이 사망했습니다.");
 
         _rigidbody.linearVelocity = Vector2.zero;
-        UpdateAnimator(false);
 
-        // [수정] 충돌체 비활성화 (추가 피격 및 길막 방지)
+        // 애니메이터 이동 파라미터 끄기
+        if (_animator != null) _animator.SetBool("IsMoving", false);
+
         if (_collider != null)
         {
             _collider.enabled = false;
         }
 
-        // [수정] 사망 애니메이션 코루틴 시작
         if (IsServer)
         {
             StartCoroutine(CoDeathSequence());
