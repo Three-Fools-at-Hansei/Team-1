@@ -28,7 +28,7 @@ public class CombatScene : MonoBehaviour, IScene
     {
         Debug.Log("Combat Scene Init() - 전투 준비");
 
-        // [수정] 로딩 팝업 닫기 처리
+        // 로딩 팝업 닫기 처리
         var loadingPopup = FindAnyObjectByType<UI_LoadingPopup>();
         if (loadingPopup != null && loadingPopup.ViewModel is LoadingViewModel loadingVM)
         {
@@ -48,11 +48,8 @@ public class CombatScene : MonoBehaviour, IScene
             Debug.LogWarning("[CombatScene] 씬에 CinemachineCamera가 없습니다.");
         }
 
-        // 네트워크 풀 등록 (총알, 몬스터 등)
+        // 네트워크 풀 등록 (Core, 총알, 몬스터 등)
         await InitNetworkObjectPools();
-
-        // [변경] Core 생성 로직 제거 -> CombatGameManager.StartGame()으로 이동
-        // 기존 코어 생성 코드는 삭제되었습니다.
 
         // 2. HUD 표시
         await Managers.UI.ShowAsync<UI_CombatHUD>(new CombatHUDViewModel());
@@ -62,7 +59,21 @@ public class CombatScene : MonoBehaviour, IScene
     {
         _pooledPrefabs.Clear();
 
-        // 1. Bullet 프리팹 로드 및 등록
+        // [추가] 1. Core 프리팹 로드 및 등록 (필수)
+        // 클라이언트가 Core를 생성하려면 반드시 이 등록 과정이 필요합니다.
+        GameObject corePrefab = await Managers.Resource.LoadAsync<GameObject>("Core");
+        if (corePrefab != null)
+        {
+            Managers.Pool.RegisterNetworkPrefab(corePrefab);
+            _pooledPrefabs.Add(corePrefab);
+            Debug.Log("[CombatScene] Core 네트워크 프리팹 등록 완료");
+        }
+        else
+        {
+            Debug.LogError("[CombatScene] Core 프리팹 로드 실패! Addressable 설정을 확인하세요.");
+        }
+
+        // 2. Bullet 프리팹 로드 및 등록
         GameObject bulletPrefab = await Managers.Resource.LoadAsync<GameObject>("Bullet");
         if (bulletPrefab != null)
         {
@@ -70,7 +81,7 @@ public class CombatScene : MonoBehaviour, IScene
             _pooledPrefabs.Add(bulletPrefab);
         }
 
-        // 2. 몬스터 프리팹 일괄 로드 및 등록
+        // 3. 몬스터 프리팹 일괄 로드 및 등록
         var monsterTable = Managers.Data.GetTable<MonsterGameData>();
         if (monsterTable != null)
         {
