@@ -41,19 +41,13 @@ public class UI_ExitPopup : UI_Popup
     }
 
     // [연출] 퇴장 애니메이션 적용
-    private async void OnClickYes()
+    private void OnClickYes()
     {
-        Managers.Sound.PlaySFX("Select");
-        // TODO: 게임 종료 로직 구현 예정
-        // Application.Quit(); 또는 게임 종료 처리
-        Debug.Log("[UI_ExitPopup] 게임 종료 요청 (구현 예정)");
-
-        if (_fadeOut != null)
-        {
-            await _fadeOut.ExecuteAsync(_canvasGroup);
-        }
-
-        Managers.UI.Close(this);
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     // [연출] 퇴장 애니메이션 적용
