@@ -31,7 +31,7 @@ public class NetworkManagerEx : IManagerBase
         // [New] Transport 레벨의 치명적 오류 감지 이벤트 구독
         if (NetworkManager.Singleton != null)
         {
-            NetworkManager.Singleton.OnTransportFailure += OnTransportFailure;
+            NetworkManager.Singleton.OnTransportFailure += OnTransportFailureAsync;
         }
 
         Debug.Log($"{ManagerType} Manager Init.");
@@ -47,7 +47,7 @@ public class NetworkManagerEx : IManagerBase
         if (NetworkManager.Singleton != null)
         {
             // 이벤트 해제
-            NetworkManager.Singleton.OnTransportFailure -= OnTransportFailure;
+            NetworkManager.Singleton.OnTransportFailure -= OnTransportFailureAsync;
             NetworkManager.Singleton.Shutdown();
         }
 
@@ -253,7 +253,7 @@ public class NetworkManagerEx : IManagerBase
                 UnityEngine.Object.DontDestroyOnLoad(go);
 
                 // 생성 직후 이벤트 구독
-                go.GetComponent<NetworkManager>().OnTransportFailure += OnTransportFailure;
+                go.GetComponent<NetworkManager>().OnTransportFailure += OnTransportFailureAsync;
             }
             else
             {
@@ -296,7 +296,7 @@ public class NetworkManagerEx : IManagerBase
     }
 
     // [New] Transport 실패 핸들러
-    private void OnTransportFailure()
+    private async void OnTransportFailureAsync()
     {
         Debug.LogError("[Network] 전송 계층 오류 발생 (연결 끊김). 로비로 이동합니다.");
 
@@ -307,8 +307,20 @@ public class NetworkManagerEx : IManagerBase
         if (Managers.Scene.CurrentScene != null && Managers.Scene.CurrentScene.SceneType == eSceneType.MainScene)
             return;
 
-        // 로비(MainScene)로 비동기 이동
-        _ = Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
+        // [수정] 로딩 팝업과 함께 씬 전환
+        var loadingVM = new LoadingViewModel();
+        var loadingUI = await Managers.UI.ShowDontDestroyAsync<UI_LoadingPopup>(loadingVM);
+
+        try
+        {
+            // 메인(로비) 씬으로 이동
+            _ = Managers.Scene.LoadSceneAsync(eSceneType.MainScene, loadingVM);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[LoginViewModel] 씬 전환 실패: {ex}");
+            Managers.UI.Close(loadingUI); // 실패 시 닫기
+        }
     }
 
     private string MapErrorMessage(RequestFailedException ex)

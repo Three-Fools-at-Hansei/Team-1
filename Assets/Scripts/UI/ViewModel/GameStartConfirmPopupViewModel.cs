@@ -28,19 +28,27 @@ public class GameStartConfirmPopupViewModel : ViewModelBase
     {
         Debug.Log("[GameStartConfirmPopupViewModel] 호스트 시작 요청");
 
-        // 호스트 시작 (성공 시 내부적으로 CombatScene 로드)
+        var loadingVM = new LoadingViewModel();
+        loadingVM.Report(0f);
+        await Managers.UI.ShowDontDestroyAsync<UI_LoadingPopup>(loadingVM);
+
+        // 2. 호스트 시작 (성공 시 내부적으로 CombatScene 로드 시작)
         bool success = await Managers.Network.StartHostAsync();
 
         if (success)
         {
-            Debug.Log("[GameStartConfirmPopupViewModel] 호스트 시작 성공. 닫기 요청.");
-            // 로직 성공 후 View에게 닫기 요청
+            Debug.Log("[GameStartConfirm] 호스트 시작 성공. 팝업 닫기.");
+
+            // [중요] 성공 시 이 팝업(확인창)만 닫습니다.
+            // 로딩 팝업은 Scene 전환이 완료될 때까지 화면에 남아있어야 합니다.
             OnCloseRequested?.Invoke();
         }
         else
         {
-            Debug.LogError("[GameStartConfirmPopupViewModel] 호스트 시작 실패.");
-            // 실패 시 에러 메시지 표시 로직 필요
+            Debug.LogError("[GameStartConfirm] 호스트 시작 실패.");
+
+            // 실패 시 로딩 팝업을 즉시 닫아줍니다.
+            loadingVM.Report(1.0f);
         }
     }
 

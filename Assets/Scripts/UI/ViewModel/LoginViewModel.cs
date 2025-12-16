@@ -162,8 +162,20 @@ public class LoginViewModel : UI.IViewModel
         {
             HelperMessage = "로그인 성공!";
             Render();
-            // [변경] 성공 시 MainScene으로 이동
-            await Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
+
+            // [수정] 로딩 팝업과 함께 씬 전환
+            var loadingVM = new LoadingViewModel();
+            var loadingUI = await Managers.UI.ShowDontDestroyAsync<UI_LoadingPopup>(loadingVM);
+
+            try
+            {
+                await Managers.Scene.LoadSceneAsync(eSceneType.MainScene, loadingVM);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[LoginViewModel] 씬 전환 실패: {ex}");
+                Managers.UI.Close(loadingUI); // 실패 시 닫기
+            }
             return;
         }
 

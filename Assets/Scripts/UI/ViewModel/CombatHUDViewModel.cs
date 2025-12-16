@@ -145,8 +145,20 @@ public class CombatHUDViewModel : ViewModelBase
         // 네트워크 종료 및 데이터 정리
         Managers.Network.Clear();
 
-        // 메인(로비) 씬으로 이동
-        await Managers.Scene.LoadSceneAsync(eSceneType.MainScene);
+        // [수정] 로딩 팝업과 함께 씬 전환
+        var loadingVM = new LoadingViewModel();
+        var loadingUI = await Managers.UI.ShowDontDestroyAsync<UI_LoadingPopup>(loadingVM);
+
+        try
+        {
+            // 메인(로비) 씬으로 이동
+            await Managers.Scene.LoadSceneAsync(eSceneType.MainScene, loadingVM);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[LoginViewModel] 씬 전환 실패: {ex}");
+            Managers.UI.Close(loadingUI); // 실패 시 닫기
+        }
     }
 
     protected override void OnDispose()
