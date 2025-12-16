@@ -12,20 +12,39 @@ public class Core : Entity
     public event Action CoreDestroyed;
     protected override Color DamageTextColor => Color.cyan;
 
-
     protected override void Awake()
     {
         base.Awake();
-        if (Instance != null && Instance != this)
-        {
-            Debug.LogWarning("[Core] 이미 다른 Core 인스턴스가 존재합니다.");
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
+        // [변경] Awake에서는 Instance를 설정하지 않음 (풀링 객체일 수 있으므로)
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        // 네트워크 스폰 시점에 Instance 등록
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[Core] 중복된 Core 인스턴스가 감지되었습니다. (기존 인스턴스 유지)");
+            // 필요 시 Despawn 처리 등을 할 수 있으나, 여기선 경고만 표시
+        }
+        else
+        {
+            Instance = this;
+            Debug.Log("[Core] Instance 등록 완료");
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        // 네트워크 연결 해제 시 Instance 해제
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
+        base.OnNetworkDespawn();
+    }
 
     public override void Attack()
     {
@@ -50,4 +69,3 @@ public class Core : Entity
         gameObject.SetActive(false);
     }
 }
-
