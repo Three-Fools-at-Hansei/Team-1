@@ -71,6 +71,8 @@ public class UI_LoadingPopup : UI_DontDestroyPopup
     /// </summary>
     private async void OnCloseRequested()
     {
+        await Task.Delay(500);
+
         // [연출] Fade Out 실행 (완료될 때까지 대기)
         if (_fadeOut != null)
         {
