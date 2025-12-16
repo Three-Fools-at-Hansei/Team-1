@@ -210,6 +210,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e1b783e251aa8904e894f677ac62ebba
+    m_Address: UI/View/UI_StatHUD
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3716ee735925cd4aae4dcb6661d3c6e
     m_Address: UI/Popup/UI_DialogueWindow
     m_ReadOnly: 0

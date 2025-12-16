@@ -5,11 +5,11 @@ using Unity.Netcode;
 
 public enum eGameState
 {
-    Waiting,            // ´ë±â Áß (ÀÎ¿ø ¸ðÁý)
-    WaveInProgress,     // ÀüÅõ ¿þÀÌºê ÁøÇà Áß
-    RewardSelection,    // ¿þÀÌºê Å¬¸®¾î ÈÄ º¸»ó ¼±ÅÃ
-    Victory,            // ¸ðµç ¿þÀÌºê Å¬¸®¾î (½Â¸®)
-    Defeat              // °ÔÀÓ ¿À¹ö (ÆÐ¹è)
+    Waiting,            // ï¿½ï¿½ï¿½ ï¿½ï¿½ (ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½)
+    WaveInProgress,     // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+    RewardSelection,    // ï¿½ï¿½ï¿½Ìºï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    Victory,            // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ (ï¿½Â¸ï¿½)
+    Defeat              // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ð¹ï¿½)
 }
 
 public class CombatGameManager : NetworkBehaviour
@@ -17,26 +17,27 @@ public class CombatGameManager : NetworkBehaviour
     public static CombatGameManager Instance { get; private set; }
 
     [Header("Settings")]
-    public int MaxPlayers = 2; // °ÔÀÓ ½ÃÀÛ¿¡ ÇÊ¿äÇÑ ÇÃ·¹ÀÌ¾î ¼ö
+    public int MaxPlayers = 2; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¿ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½
 
-    // °ÔÀÓ »óÅÂ ¹× ¿þÀÌºê Á¤º¸ µ¿±âÈ­
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
     public NetworkVariable<eGameState> GameState = new NetworkVariable<eGameState>(eGameState.Waiting);
     public NetworkVariable<int> CurrentWave = new NetworkVariable<int>(1);
 
-    // Àû±º ½ºÅÈ º¸Á¤Ä¡ (±âº»°ª 1.0f, º¸»óÀ¸·Î °¨¼Ò)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ (ï¿½âº»ï¿½ï¿½ 1.0f, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     public NetworkVariable<float> EnemyAtkMultiplier = new NetworkVariable<float>(1.0f);
     public NetworkVariable<float> EnemySpeedMultiplier = new NetworkVariable<float>(1.0f);
     public NetworkVariable<float> EnemyHpMultiplier = new NetworkVariable<float>(1.0f);
 
-    // ³»ºÎ °ü¸® º¯¼ö
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     private EnemySpawner _spawner;
     private HashSet<ulong> _selectedRewardClients = new HashSet<ulong>();
 
-    // »ç¸ÁÇÑ ÇÃ·¹ÀÌ¾î ¸ñ·Ï (ID)
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ (ID)
     private HashSet<ulong> _deadPlayers = new HashSet<ulong>();
 
-    // [UI Reference] »óÅÂÃ¢ HUD
+    // [UI Reference] ï¿½ï¿½ï¿½ï¿½Ã¢ HUD
     private UI_GameStatusHUD _statusHUD;
+    private UI_StatHUD _statHUD;
 
     private void Awake()
     {
@@ -55,12 +56,12 @@ public class CombatGameManager : NetworkBehaviour
             GameState.Value = eGameState.Waiting;
             _spawner = FindAnyObjectByType<EnemySpawner>();
 
-            // Å¬¶óÀÌ¾ðÆ® Á¢¼Ó/ÇØÁ¦ ÀÌº¥Æ® ¿¬°á
+            // Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
 
-        // »óÅÂ º¯°æ ÀÌº¥Æ® ¿¬°á (Server/Client ¸ðµÎ)
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½ (Server/Client ï¿½ï¿½ï¿½)
         GameState.OnValueChanged += OnGameStateChanged;
     }
 
@@ -76,19 +77,19 @@ public class CombatGameManager : NetworkBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        Debug.Log($"[CombatGameManager] ÇÃ·¹ÀÌ¾î Á¢¼Ó (ID: {clientId}). ÇöÀç ÀÎ¿ø: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
+        Debug.Log($"[CombatGameManager] ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ (ID: {clientId}). ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
-        // ÇÃ·¹ÀÌ¾î°¡ ³ª°¬À» ¶§ º¸»ó ¼±ÅÃ ¸ñ·Ï ¹× »ç¸ÁÀÚ ¸ñ·Ï¿¡¼­ Á¦°Å
+        // ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (_selectedRewardClients.Contains(clientId))
             _selectedRewardClients.Remove(clientId);
 
         if (_deadPlayers.Contains(clientId))
             _deadPlayers.Remove(clientId);
 
-        Debug.Log($"[CombatGameManager] ÇÃ·¹ÀÌ¾î ¿¬°á Á¾·á (ID: {clientId}). ´ë±â¿­ °»½Å.");
+        Debug.Log($"[CombatGameManager] ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ID: {clientId}). ï¿½ï¿½â¿­ ï¿½ï¿½ï¿½ï¿½.");
     }
 
     // ========================================================================
@@ -96,8 +97,8 @@ public class CombatGameManager : NetworkBehaviour
     // ========================================================================
 
     /// <summary>
-    /// È£½ºÆ®°¡ HUDÀÇ '°ÔÀÓ ½ÃÀÛ' ¹öÆ°À» ´­·¶À» ¶§ È£Ãâ
-    /// [º¯°æ] ºñµ¿±â »ý¼ºÀ» À§ÇØ async void·Î º¯°æ
+    /// È£ï¿½ï¿½Æ®ï¿½ï¿½ HUDï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½' ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½
+    /// [ï¿½ï¿½ï¿½ï¿½] ï¿½ñµ¿±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ async voidï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public async void StartGame()
     {
@@ -105,10 +106,10 @@ public class CombatGameManager : NetworkBehaviour
 
         if (NetworkManager.Singleton.ConnectedClientsIds.Count < MaxPlayers)
         {
-            Debug.LogWarning($"[CombatGameManager] ÀÎ¿ø ºÎÁ· ({NetworkManager.Singleton.ConnectedClientsIds.Count}/{MaxPlayers}). °ÔÀÓÀ» °­Á¦ ½ÃÀÛÇÕ´Ï´Ù.");
+            Debug.LogWarning($"[CombatGameManager] ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ({NetworkManager.Singleton.ConnectedClientsIds.Count}/{MaxPlayers}). ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.");
         }
 
-        // [Ãß°¡] ÄÚ¾î »ý¼º ·ÎÁ÷ (StartGame ½ÃÁ¡¿¡ »ý¼º)
+        // [ï¿½ß°ï¿½] ï¿½Ú¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (StartGame ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         if (Core.Instance == null)
         {
             GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
@@ -117,14 +118,14 @@ public class CombatGameManager : NetworkBehaviour
                 coreGo.transform.position = Vector3.zero;
                 var netObj = coreGo.GetComponent<NetworkObject>();
                 if (netObj != null && !netObj.IsSpawned)
-                    netObj.Spawn(); // ³×Æ®¿öÅ© ½ºÆù -> Å¬¶óÀÌ¾ðÆ®µé¿¡°Ô »ý¼º ÆÐÅ¶ Àü¼Û
+                    netObj.Spawn(); // ï¿½ï¿½Æ®ï¿½ï¿½Å© ï¿½ï¿½ï¿½ï¿½ -> Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½é¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ ï¿½ï¿½ï¿½ï¿½
 
-                Debug.Log("[CombatGameManager] ÄÚ¾î »ý¼º ¹× ½ºÆù ¿Ï·á.");
+                Debug.Log("[CombatGameManager] ï¿½Ú¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½.");
             }
             else
             {
-                Debug.LogError("[CombatGameManager] ÄÚ¾î ÇÁ¸®ÆÕ ·Îµå ½ÇÆÐ!");
-                return; // ÄÚ¾î°¡ ¾øÀ¸¸é °ÔÀÓ ÁøÇà ºÒ°¡
+                Debug.LogError("[CombatGameManager] ï¿½Ú¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½!");
+                return; // ï¿½Ú¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ò°ï¿½
             }
         }
 
@@ -132,76 +133,76 @@ public class CombatGameManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// ÀüÃ¼ °ÔÀÓ ·çÇÁ (¿þÀÌºê -> Å¬¸®¾î -> º¸»ó -> ´ÙÀ½ ¿þÀÌºê)
+    /// ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ìºï¿½ -> Å¬ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½)
     /// </summary>
     private IEnumerator CoGameLoop()
     {
-        // [Ãß°¡] ÄÚ¾î »ý¼º ÆÐÅ¶ÀÌ Å¬¶óÀÌ¾ðÆ®¿¡ µµ´ÞÇÏ°í ÃÊ±âÈ­µÉ ½Ã°£À» È®º¸ (¾ÈÀüÀåÄ¡)
+        // [ï¿½ß°ï¿½] ï¿½Ú¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ê±ï¿½È­ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ È®ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡)
         yield return new WaitForSeconds(1.0f);
 
-        Debug.Log("[GameLoop] °ÔÀÓ ·çÇÁ ½ÃÀÛ");
+        Debug.Log("[GameLoop] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½");
 
-        // »óÅÂ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         _deadPlayers.Clear();
         CurrentWave.Value = 1;
 
-        // ¹è°æÀ½ Àç»ý
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         Managers.Sound.PlayBGM("BGM");
 
         while (true)
         {
-            // 1. ÇöÀç ¿þÀÌºê µ¥ÀÌÅÍ °¡Á®¿À±â
+            // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             WaveGameData waveData = Managers.Data.Get<WaveGameData>(CurrentWave.Value);
 
-            // µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é ¸ðµç ¿þÀÌºê¸¦ Å¬¸®¾îÇÑ °ÍÀ¸·Î °£ÁÖ -> ½Â¸®
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºê¸¦ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> ï¿½Â¸ï¿½
             if (waveData == null)
             {
-                Debug.Log("[GameLoop] ¸ðµç ¿þÀÌºê Å¬¸®¾î! ½Â¸®!");
+                Debug.Log("[GameLoop] ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ Å¬ï¿½ï¿½ï¿½ï¿½! ï¿½Â¸ï¿½!");
                 SetGameState(eGameState.Victory);
                 yield break;
             }
 
-            // 2. ¿þÀÌºê ÀüÅõ ½ÃÀÛ
-            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} ½ÃÀÛ");
+            // 2. ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} ï¿½ï¿½ï¿½ï¿½");
             SetGameState(eGameState.WaveInProgress);
 
-            // ½ºÆ÷³Ê¿¡°Ô ½ºÆù ¸í·É Àü´Þ (ÄÚ·çÆ¾ ´ë±â)
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ú·ï¿½Æ¾ ï¿½ï¿½ï¿½)
             yield return StartCoroutine(CoProcessWave(waveData));
 
-            // 3. Àû Àü¸ê ´ë±â
+            // 3. ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             yield return new WaitUntil(() => _spawner.GetActiveEnemyCount() == 0);
-            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} Àû Àü¸ê È®ÀÎ.");
+            Debug.Log($"[GameLoop] Wave {CurrentWave.Value} ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½.");
 
-            // 4. º¸»ó ¼±ÅÃ ´Ü°è
-            Debug.Log("[GameLoop] º¸»ó ¼±ÅÃ ´Ü°è ÁøÀÔ");
+            // 4. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°ï¿½
+            Debug.Log("[GameLoop] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½");
 
-            _selectedRewardClients.Clear(); // [¼öÁ¤] ¼±ÅÃ ¸ñ·Ï ÃÊ±âÈ­
+            _selectedRewardClients.Clear(); // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
             SetGameState(eGameState.RewardSelection);
 
-            // Á¢¼Ó ÁßÀÎ ¸ðµç ÇÃ·¹ÀÌ¾î°¡ ¼±ÅÃÇß´ÂÁö È®ÀÎ (Deadlock ¹æÁö ·ÎÁ÷ Àû¿ëµÊ)
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ (Deadlock ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
             yield return new WaitUntil(CheckAllRewardsSelected);
 
-            Debug.Log("[GameLoop] ¸ðµç ÇÃ·¹ÀÌ¾î º¸»ó ¼±ÅÃ ¿Ï·á.");
+            Debug.Log("[GameLoop] ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½.");
 
-            // 5. ´ÙÀ½ ¿þÀÌºê ÁØºñ
+            // 5. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½Øºï¿½
             CurrentWave.Value++;
-            yield return new WaitForSeconds(3f); // 3ÃÊ Á¤ºñ ½Ã°£
+            yield return new WaitForSeconds(3f); // 3ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½
         }
     }
 
     /// <summary>
-    /// ÇöÀç Á¢¼ÓÀÚ ¼ö¿Í º¸»ó ¼±ÅÃÀÚ ¼ö¸¦ ºñ±³ÇÏ¿© ÁøÇà ¿©ºÎ °áÁ¤
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     private bool CheckAllRewardsSelected()
     {
-        // Á¢¼Ó ÁßÀÎ ¸ðµç Å¬¶óÀÌ¾ðÆ® ¼øÈ¸
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½È¸
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            // »ç¸ÁÇÑ ÇÃ·¹ÀÌ¾î´Â º¸»ó ¼±ÅÃ ´ë»ó¿¡¼­ Á¦¿Ü
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ó¿¡¼ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (_deadPlayers.Contains(client.ClientId))
                 continue;
 
-            // »ýÁ¸ÇØ ÀÖ´Âµ¥ ¾ÆÁ÷ ¼±ÅÃÇÏÁö ¾Ê¾Ò´Ù¸é false
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Âµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò´Ù¸ï¿½ false
             if (!_selectedRewardClients.Contains(client.ClientId))
                 return false;
         }
@@ -210,7 +211,7 @@ public class CombatGameManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// ¿þÀÌºê µ¥ÀÌÅÍ¸¦ ±â¹ÝÀ¸·Î ½Ã°£ Èå¸§¿¡ µû¶ó Àû ½ºÆù
+    /// ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½å¸§ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     private IEnumerator CoProcessWave(WaveGameData data)
     {
@@ -244,7 +245,7 @@ public class CombatGameManager : NetworkBehaviour
     // ========================================================================
 
     /// <summary>
-    /// ÇÃ·¹ÀÌ¾î »ç¸Á ½Ã È£Ãâ (Player.cs¿¡¼­ È£Ãâ)
+    /// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½ (Player.csï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½)
     /// </summary>
     public void OnPlayerDied(ulong clientId)
     {
@@ -253,32 +254,32 @@ public class CombatGameManager : NetworkBehaviour
         if (!_deadPlayers.Contains(clientId))
         {
             _deadPlayers.Add(clientId);
-            Debug.Log($"[CombatGameManager] Player {clientId} »ç¸Á. (ÇöÀç »ç¸ÁÀÚ: {_deadPlayers.Count}/{NetworkManager.Singleton.ConnectedClientsIds.Count})");
+            Debug.Log($"[CombatGameManager] Player {clientId} ï¿½ï¿½ï¿½. (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½: {_deadPlayers.Count}/{NetworkManager.Singleton.ConnectedClientsIds.Count})");
 
-            // ¸ðµç ÇÃ·¹ÀÌ¾î°¡ »ç¸ÁÇß´ÂÁö È®ÀÎ
+            // ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
             if (_deadPlayers.Count >= NetworkManager.Singleton.ConnectedClientsIds.Count)
             {
-                Debug.Log("[CombatGameManager] Àü¿ø »ç¸Á. ÆÐ¹è Ã³¸®.");
+                Debug.Log("[CombatGameManager] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½. ï¿½Ð¹ï¿½ Ã³ï¿½ï¿½.");
                 TriggerDefeat();
             }
         }
     }
 
     /// <summary>
-    /// ÆÐ¹è Á¶°Ç ÃæÁ· ½Ã È£Ãâ (Core ÆÄ±« or Àü¿ø »ç¸Á)
+    /// ï¿½Ð¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½ (Core ï¿½Ä±ï¿½ or ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
     /// </summary>
     public void TriggerDefeat()
     {
         if (IsServer)
         {
-            // °ÔÀÓ ·çÇÁ Á¤Áö
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             StopAllCoroutines();
 
-            // Àû ¸ðµÎ Á¦°Å
+            // ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (_spawner != null)
                 _spawner.ClearAllEnemies();
 
-            // »óÅÂ º¯°æ -> Defeat
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> Defeat
             SetGameState(eGameState.Defeat);
         }
     }
@@ -288,7 +289,7 @@ public class CombatGameManager : NetworkBehaviour
     // ========================================================================
 
     /// <summary>
-    /// Å¬¶óÀÌ¾ðÆ®°¡ º¸»óÀ» ¼±ÅÃÇßÀ» ¶§ È£Ãâ (ServerRpc)
+    /// Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½ (ServerRpc)
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     public void SelectRewardServerRpc(int rewardId, ServerRpcParams rpcParams = default)
@@ -297,68 +298,68 @@ public class CombatGameManager : NetworkBehaviour
 
         if (_deadPlayers.Contains(clientId)) return;
 
-        // Áßº¹ ¼±ÅÃ ¹æÁö
+        // ï¿½ßºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (_selectedRewardClients.Contains(clientId))
         {
-            Debug.LogWarning($"[CombatGameManager] Client({clientId})´Â ÀÌ¹Ì º¸»óÀ» ¼±ÅÃÇß½À´Ï´Ù.");
+            Debug.LogWarning($"[CombatGameManager] Client({clientId})ï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
         _selectedRewardClients.Add(clientId);
 
-        Debug.Log($"[CombatGameManager] Client({clientId}) º¸»ó ¼±ÅÃ: {rewardId}. (¿Ï·á: {_selectedRewardClients.Count}/{NetworkManager.Singleton.ConnectedClientsIds.Count})");
+        Debug.Log($"[CombatGameManager] Client({clientId}) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: {rewardId}. (ï¿½Ï·ï¿½: {_selectedRewardClients.Count}/{NetworkManager.Singleton.ConnectedClientsIds.Count})");
 
-        // ½ÇÁ¦ º¸»ó È¿°ú Àû¿ë
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         ApplyRewardEffect(rewardId, clientId);
     }
 
     /// <summary>
-    /// º¸»ó µ¥ÀÌÅÍ¿¡ µû¶ó È¿°ú¸¦ Àû¿ëÇÏ°í Å¬¶óÀÌ¾ðÆ®¿¡ µ¿±âÈ­
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
     /// </summary>
     private void ApplyRewardEffect(int rewardId, ulong targetClientId)
     {
         RewardGameData reward = Managers.Data.Get<RewardGameData>(rewardId);
         if (reward == null)
         {
-            Debug.LogError($"[CombatGameManager] º¸»ó µ¥ÀÌÅÍ(ID:{rewardId})¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError($"[CombatGameManager] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ID:{rewardId})ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
-        // Àû±º µð¹öÇÁ Å¸ÀÔ Ã³¸®
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ Ã³ï¿½ï¿½
         if (reward.targetType == "Team")
         {
             switch (reward.effectType)
             {
                 case "EnemyAtkDown":
                     EnemyAtkMultiplier.Value = Mathf.Max(0.1f, EnemyAtkMultiplier.Value - reward.value);
-                    Debug.Log($"[Reward] Àû °ø°Ý·Â °¨¼Ò Àû¿ë. ÇöÀç ºñÀ²: {EnemyAtkMultiplier.Value}");
-                    return; // Ã³¸® ¿Ï·á
+                    Debug.Log($"[Reward] ï¿½ï¿½ ï¿½ï¿½ï¿½Ý·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: {EnemyAtkMultiplier.Value}");
+                    return; // Ã³ï¿½ï¿½ ï¿½Ï·ï¿½
 
                 case "EnemySpeedDown":
                     EnemySpeedMultiplier.Value = Mathf.Max(0.1f, EnemySpeedMultiplier.Value - reward.value);
-                    Debug.Log($"[Reward] Àû ÀÌµ¿¼Óµµ °¨¼Ò Àû¿ë. ÇöÀç ºñÀ²: {EnemySpeedMultiplier.Value}");
+                    Debug.Log($"[Reward] ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Óµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: {EnemySpeedMultiplier.Value}");
                     return;
 
                 case "EnemyHpDown":
                     EnemyHpMultiplier.Value = Mathf.Max(0.1f, EnemyHpMultiplier.Value - reward.value);
-                    Debug.Log($"[Reward] Àû ÃÖ´ëÃ¼·Â °¨¼Ò Àû¿ë. ÇöÀç ºñÀ²: {EnemyHpMultiplier.Value}");
+                    Debug.Log($"[Reward] ï¿½ï¿½ ï¿½Ö´ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: {EnemyHpMultiplier.Value}");
                     return;
             }
         }
 
-        // 1. È¿°ú Àû¿ë ´ë»ó Ã£±â (ÇÃ·¹ÀÌ¾î ¹× ÄÚ¾î)
+        // 1. È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ (ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ ï¿½Ú¾ï¿½)
         List<Entity> targets = new List<Entity>();
 
         if (reward.targetType == "Team")
         {
             if (reward.effectType == "CoreHeal")
             {
-                // ÄÚ¾î È¸º¹
+                // ï¿½Ú¾ï¿½ È¸ï¿½ï¿½
                 if (Core.Instance != null) targets.Add(Core.Instance);
             }
             else
             {
-                // ÆÀ ÀüÃ¼ (¸ðµç ÇÃ·¹ÀÌ¾î)
+                // ï¿½ï¿½ ï¿½ï¿½Ã¼ (ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½)
                 foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
                 {
                     if (client.PlayerObject != null)
@@ -368,7 +369,7 @@ public class CombatGameManager : NetworkBehaviour
         }
         else // Individual
         {
-            // º¸»óÀ» ¼±ÅÃÇÑ °³ÀÎ ÇÃ·¹ÀÌ¾î
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½
             if (NetworkManager.Singleton.ConnectedClients.TryGetValue(targetClientId, out var client))
             {
                 if (client.PlayerObject != null)
@@ -376,22 +377,22 @@ public class CombatGameManager : NetworkBehaviour
             }
         }
 
-        // 2. È¿°ú Àû¿ë ¹× µ¿±âÈ­
+        // 2. È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
         foreach (var target in targets)
         {
             if (target == null) continue;
 
-            // ¼­¹ö Ãø µ¥ÀÌÅÍ º¯°æ
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             ApplyStatChange(target, reward);
         }
     }
 
     /// <summary>
-    /// ½ÇÁ¦ ½ºÅÈ °è»ê ·ÎÁ÷
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     private void ApplyStatChange(Entity target, RewardGameData reward)
     {
-        // °ª¸¸ º¯°æÇÏ¸é NetworkVariableÀÌ ÀÚµ¿À¸·Î ÀüÆÄÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ NetworkVariableï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         switch (reward.effectType)
         {
             case "MaxHp":
@@ -422,9 +423,9 @@ public class CombatGameManager : NetworkBehaviour
 
     private async void OnGameStateChanged(eGameState previous, eGameState current)
     {
-        Debug.Log($"[CombatGameManager] GameState º¯°æ: {previous} -> {current}");
+        Debug.Log($"[CombatGameManager] GameState ï¿½ï¿½ï¿½ï¿½: {previous} -> {current}");
 
-        // ÀüÅõ ½ÃÀÛ ½Ã ·Îºñ Àá±Ý (³­ÀÔ ¹æÁö) - È£½ºÆ®¸¸ ½ÇÇà
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) - È£ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (IsServer && current == eGameState.WaveInProgress)
         {
             _ = Managers.Network.SetLobbyLockStateAsync(true);
@@ -434,19 +435,25 @@ public class CombatGameManager : NetworkBehaviour
         {
             case eGameState.WaveInProgress:
                 {
-                    // [UI] ÀüÅõ ½ÃÀÛ ½Ã »óÅÂÃ¢(HUD) Ç¥½Ã (Waiting¿¡¼­ ³Ñ¾î¿ÔÀ» ¶§)
+                    // [UI] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¢(HUD) ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ HUD Ç¥ï¿½ï¿½ (Waitingï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
                     if (previous == eGameState.Waiting)
                     {
                         if (_statusHUD == null)
                         {
                             _statusHUD = await Managers.UI.ShowAsync<UI_GameStatusHUD>(new GameStatusViewModel());
                         }
+
+                        // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ HUD ï¿½ï¿½ï¿½ï¿½
+                        if (_statHUD == null)
+                        {
+                            _statHUD = await Managers.UI.ShowAsync<UI_StatHUD>(new StatHUDViewModel());
+                        }
                     }
                     break;
                 }
             case eGameState.RewardSelection:
                 {
-                    // [Sound] ·¹º§¾÷/º¸»ó È¿°úÀ½
+                    // [Sound] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ (BGM ï¿½ï¿½ï¿½ï¿½)
                     Managers.Sound.PlaySFX("LevelUp");
 
                     bool isLocalPlayerDead = false;
@@ -463,21 +470,26 @@ public class CombatGameManager : NetworkBehaviour
                     }
                     else
                     {
-                        Debug.Log("[Reward] »ç¸Á »óÅÂÀÌ¹Ç·Î º¸»ó ¼±ÅÃÀ» °Ç³Ê¶Ý´Ï´Ù.");
+                        Debug.Log("[Reward] ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç³Ê¶Ý´Ï´ï¿½.");
                     }
                     break;
                 }
             case eGameState.Victory:
                 {
-                    // [Sound] ½Â¸® È¿°úÀ½ (BGM ²ô±â)
+                    // [Sound] ï¿½Â¸ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ 
                     Managers.Sound.StopBGM();
                     Managers.Sound.PlaySFX("Win");
 
-                    // [UI] »óÅÂÃ¢ ¼û±è
+                    // [UI] ï¿½ï¿½ï¿½ï¿½Ã¢ ï¿½ï¿½ï¿½ï¿½
                     if (_statusHUD != null)
                     {
                         Managers.UI.Close(_statusHUD);
                         _statusHUD = null;
+                    }
+                    if (_statHUD != null)
+                    {
+                        Managers.UI.Close(_statHUD);
+                        _statHUD = null;
                     }
 
                     var vm = new CombatResultViewModel();
@@ -487,15 +499,20 @@ public class CombatGameManager : NetworkBehaviour
                 }
             case eGameState.Defeat:
                 {
-                    // [Sound] ÆÐ¹è È¿°úÀ½ (BGM ²ô±â)
+                    // [Sound] ï¿½Ð¹ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ (BGM ï¿½ï¿½ï¿½ï¿½)
                     Managers.Sound.StopBGM();
                     Managers.Sound.PlaySFX("Lose");
 
-                    // [UI] »óÅÂÃ¢ ¼û±è
+                    // [UI] ï¿½ï¿½ï¿½ï¿½Ã¢ ï¿½ï¿½ï¿½ï¿½
                     if (_statusHUD != null)
                     {
                         Managers.UI.Close(_statusHUD);
                         _statusHUD = null;
+                    }
+                    if (_statHUD != null)
+                    {
+                        Managers.UI.Close(_statHUD);
+                        _statHUD = null;
                     }
 
                     var vm = new CombatResultViewModel();
