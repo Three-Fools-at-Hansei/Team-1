@@ -29,18 +29,13 @@ public class CombatScene : MonoBehaviour, IScene
         Debug.Log("Combat Scene Init() - 전투 준비");
 
         // [수정] 로딩 팝업 닫기 처리
-        // 씬 로드 및 데이터 초기화가 끝났으므로 로딩 화면을 제거합니다.
-        // (메인 로비나 팝업에서 생성된 UI_LoadingPopup을 찾아서 종료 요청)
         var loadingPopup = FindAnyObjectByType<UI_LoadingPopup>();
         if (loadingPopup != null && loadingPopup.ViewModel is LoadingViewModel loadingVM)
         {
-            // 100% 진행률 보고 -> LoadingViewModel에서 OnCloseRequested 이벤트 발생 
-            // -> UI_LoadingPopup이 1초 대기 -> FadeOut -> Close 자동 수행
             loadingVM.Report(1.0f);
         }
 
         // 플레이어 시네머신 카메라 찾아서 활성화
-        // (플레이어 프리팹 내부에 있거나 씬에 배치된 카메라)
         var followCam = FindFirstObjectByType<CinemachineCamera>();
         if (followCam != null)
         {
@@ -56,19 +51,8 @@ public class CombatScene : MonoBehaviour, IScene
         // 네트워크 풀 등록 (총알, 몬스터 등)
         await InitNetworkObjectPools();
 
-        // 1. Core 생성 (호스트가 네트워크 오브젝트로 스폰하지 않았다면 로컬 생성)
-        // 호스트인 경우에만 생성하고 Spawn() 호출
-        if (NetworkManager.Singleton.IsServer)
-        {
-            GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
-            if (coreGo != null)
-            {
-                coreGo.transform.position = Vector3.zero;
-                var netObj = coreGo.GetComponent<NetworkObject>();
-                if (netObj != null && !netObj.IsSpawned)
-                    netObj.Spawn();
-            }
-        }
+        // [변경] Core 생성 로직 제거 -> CombatGameManager.StartGame()으로 이동
+        // 기존 코어 생성 코드는 삭제되었습니다.
 
         // 2. HUD 표시
         await Managers.UI.ShowAsync<UI_CombatHUD>(new CombatHUDViewModel());
