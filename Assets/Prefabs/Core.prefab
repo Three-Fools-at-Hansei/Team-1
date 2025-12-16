@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _defaultHp: 100
+  _defaultHp: 200
   _defaultAttackPower: 10
   _defaultAttackSpeed: 1
   _defaultMoveSpeed: 5
