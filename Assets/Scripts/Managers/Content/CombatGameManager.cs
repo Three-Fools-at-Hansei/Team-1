@@ -97,15 +97,35 @@ public class CombatGameManager : NetworkBehaviour
 
     /// <summary>
     /// 호스트가 HUD의 '게임 시작' 버튼을 눌렀을 때 호출
+    /// [변경] 비동기 생성을 위해 async void로 변경
     /// </summary>
-    public void StartGame()
+    public async void StartGame()
     {
         if (!IsServer) return;
 
-        // 테스트 편의를 위해 인원이 부족해도 시작은 가능하게 하되 경고 출력
         if (NetworkManager.Singleton.ConnectedClientsIds.Count < MaxPlayers)
         {
             Debug.LogWarning($"[CombatGameManager] 인원 부족 ({NetworkManager.Singleton.ConnectedClientsIds.Count}/{MaxPlayers}). 게임을 강제 시작합니다.");
+        }
+
+        // [추가] 코어 생성 로직 (StartGame 시점에 생성)
+        if (Core.Instance == null)
+        {
+            GameObject coreGo = await Managers.Resource.InstantiateAsync("Core");
+            if (coreGo != null)
+            {
+                coreGo.transform.position = Vector3.zero;
+                var netObj = coreGo.GetComponent<NetworkObject>();
+                if (netObj != null && !netObj.IsSpawned)
+                    netObj.Spawn(); // 네트워크 스폰 -> 클라이언트들에게 생성 패킷 전송
+
+                Debug.Log("[CombatGameManager] 코어 생성 및 스폰 완료.");
+            }
+            else
+            {
+                Debug.LogError("[CombatGameManager] 코어 프리팹 로드 실패!");
+                return; // 코어가 없으면 게임 진행 불가
+            }
         }
 
         StartCoroutine(CoGameLoop());
@@ -116,6 +136,9 @@ public class CombatGameManager : NetworkBehaviour
     /// </summary>
     private IEnumerator CoGameLoop()
     {
+        // [추가] 코어 생성 패킷이 클라이언트에 도달하고 초기화될 시간을 확보 (안전장치)
+        yield return new WaitForSeconds(1.0f);
+
         Debug.Log("[GameLoop] 게임 루프 시작");
 
         // 상태 초기화
@@ -423,8 +446,7 @@ public class CombatGameManager : NetworkBehaviour
                 }
             case eGameState.RewardSelection:
                 {
-                    // [Sound] 레벨업/보상 효과음 (BGM 끄기)
-                    Managers.Sound.StopBGM();
+                    // [Sound] 레벨업/보상 효과음
                     Managers.Sound.PlaySFX("LevelUp");
 
                     bool isLocalPlayerDead = false;
