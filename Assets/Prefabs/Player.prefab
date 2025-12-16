@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 2417607461013166148}
   - component: {fileID: 1672212931036797753}
   - component: {fileID: 2481570679894290748}
+  - component: {fileID: 1823092598097812117}
   m_Layer: 1
   m_Name: Player
   m_TagString: Player
@@ -402,6 +403,21 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _peekDistance: 3
   _peekSmoothTime: 0.1
+--- !u!114 &1823092598097812117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4311675286977602641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8a9f9c03a2f7f847842534e56beec4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBoundaryLimiter
+  ShowTopMostFoldoutHeaderGroup: 1
+  _boundaryMargin: 0.1
+  _targetTilemap: {fileID: 0}
 --- !u!1 &5653138823929110745
 GameObject:
   m_ObjectHideFlags: 0
