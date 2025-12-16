@@ -150,7 +150,8 @@ public class Player : Entity
         float distance = Vector2.Distance(clientFirePos, serverFirePos);
         Vector2 spawnPos = (distance > 2.0f) ? serverFirePos : clientFirePos;
 
-        _gun?.Attack(spawnPos, AttackPower);
+        // [수정] Gun.Attack 호출 시 현재 AttackSpeed 스탯 전달
+        _gun?.Attack(spawnPos, AttackPower, AttackSpeed);
     }
 
     public void UpdateAimDirection(Vector2 direction) => _gun?.UpdateAimDirection(direction);

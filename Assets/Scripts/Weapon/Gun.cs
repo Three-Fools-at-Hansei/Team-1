@@ -10,7 +10,9 @@ public class Gun : Weapon
     [SerializeField] private GameObject _bulletPrefab; // 반드시 NetworkObject가 달린 프리팹이어야 함
     [SerializeField] private Transform _firePoint;
     [SerializeField] private float _bulletSpeed = 10.0f;
-    [SerializeField] private float _fireRate = 0.5f; // 연사 속도 (초 단위)
+
+    // [변경] 고정 연사 속도 변수(_fireRate) 제거 또는 미사용 처리
+    // 이제 attackSpeed 스탯에 의해 동적으로 결정됨
 
     private float _lastFireTime;
 
@@ -25,15 +27,21 @@ public class Gun : Weapon
 
     /// <summary>
     /// 서버에서 호출되어 총알을 생성하고 네트워크에 스폰합니다.
+    /// [수정] attackSpeed 파라미터 추가
     /// </summary>
-    public void Attack(Vector2 spawnPosition, int attackPower)
+    public void Attack(Vector2 spawnPosition, int attackPower, float attackSpeed)
     {
         // 서버 권한 체크 (서버만 스폰 가능)
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
             return;
 
+        // [핵심 로직 수정] 공격 속도에 따른 쿨타임 계산 (1초 / 공격횟수)
+        // 공격속도가 0 이하일 경우 1로 보정하여 나누기 에러 방지
+        if (attackSpeed <= 0f) attackSpeed = 1f;
+        float cooldown = 1.0f / attackSpeed;
+
         // 쿨타임 체크 (서버 시간 기준)
-        if (Time.time - _lastFireTime < _fireRate)
+        if (Time.time - _lastFireTime < cooldown)
         {
             return;
         }
@@ -78,10 +86,10 @@ public class Gun : Weapon
         }
     }
 
-    // 기존 추상 메서드 구현 유지를 위한 오버로딩 (필요하다면 유지, 안 쓰면 삭제 가능)
+    // 기존 추상 메서드 구현 (기본값 1.0f 사용)
     public override void Attack(int attackPower)
     {
-        Attack(_firePoint.position, attackPower);
+        Attack(_firePoint.position, attackPower, 1.0f);
     }
 
     /// <summary>
