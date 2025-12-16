@@ -24,9 +24,9 @@
     "name": "Tank Enemy",
     "prefabPath": "Enemy_Tank",
     "hp": 200,
-    "attack": 15,
+    "attack": 25,
     "moveSpeed": 1.5,
-    "attackRange": 1.5,
+    "attackRange": 1.65,
     "attackSpeed": 0.8
   }
 }

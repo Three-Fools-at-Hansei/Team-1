@@ -229,7 +229,7 @@ MonoBehaviour:
   _defaultAttackSpeed: 1
   _defaultMoveSpeed: 6
   _attackRange: 1.65
-  _detectionRange: 20
+  _detectionRange: 7
   _healthBar: {fileID: 933322211144556677}
   _coreTarget: {fileID: 0}
   _attackCooldown: 1
