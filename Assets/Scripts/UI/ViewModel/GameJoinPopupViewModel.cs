@@ -45,21 +45,26 @@ public class GameJoinPopupViewModel : ViewModelBase
         SetMessage("접속 중...");
         OnStateChanged?.Invoke();
 
-        // 1. 네트워크 매니저를 통해 접속 시도
+        // [수정] 1. 로딩 팝업 표시
+        var loadingVM = new LoadingViewModel();
+        loadingVM.Report(0f);
+        await Managers.UI.ShowDontDestroyAsync<UI_LoadingPopup>(loadingVM);
+
+        // 2. 접속 시도
         var result = await Managers.Network.JoinByCodeAsync(_gameCode);
 
         _isBusy = false;
 
         if (result.success)
         {
-            // 성공: 팝업 닫기 (이후 NetworkManager가 Scene 전환)
-            Debug.Log("[GameJoinPopup] 접속 성공. 팝업을 닫습니다.");
+            Debug.Log("[GameJoinPopup] 접속 성공. 팝업 닫기.");
+            // 성공 시 입력 팝업만 닫음 (로딩 팝업은 씬 전환/동기화 완료까지 유지)
             OnCloseRequested?.Invoke();
         }
         else
         {
-            // 실패: 에러 메시지를 UI에 표시 (빨간색 등 뷰에서 처리 가능하도록 메시지 변경)
-            // 예: "게임이 진행 중이거나 입장할 수 없습니다."
+            // 실패 시 로딩 팝업 닫기 및 에러 표시
+            loadingVM.Report(1.0f);
             SetMessage(result.message);
         }
     }
